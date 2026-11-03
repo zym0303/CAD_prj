@@ -4,7 +4,7 @@
 
 ## Milestone 1 — Simulator interface
 Files: `TwoStage.cir`, `dut_testbench.py`, `test_dut.py`
-- [ ] Fill the `???` lines in `TwoStage.cir`: `wrdata` for tran / ac / noise / dc, plus the `noise` command (makes test_3 pass)
+- [x] Fill the `???` lines in `TwoStage.cir`: `wrdata` for tran / ac / noise / dc, plus the `noise` command (makes test_3 pass)
 - [ ] Write `find_dc_gain`, `find_ugbw`, `find_phm`, `find_slew_rate` in `dut_testbench.py` (makes test_4 pass)
 - [ ] Correctness test: several sizings, compare Python results with ngspice `meas`
 - [ ] Get `reference_designs.csv` from the TAs, put it in `CAD/`, check test_5 passes
