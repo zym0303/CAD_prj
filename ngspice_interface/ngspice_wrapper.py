@@ -4,6 +4,10 @@ import yaml
 import random
 import string
 import time 
+import shutil
+# Server ngspice if it exists (ESAT), otherwise the one on PATH (your own computer)
+_SERVER_NGSPICE = "/users/micas/mahmadza/public/bin/ngspice"
+NGSPICE_BIN = _SERVER_NGSPICE if os.path.exists(_SERVER_NGSPICE) else (shutil.which("ngspice") or "ngspice")
 
 class NgspiceWrapper(object):
     
@@ -115,7 +119,7 @@ class NgspiceWrapper(object):
 
     def simulate(self, netlist_path):
         info = 0 # this means no error occurred
-        command = "/users/micas/mahmadza/public/bin/ngspice -b %s >/dev/null 2>&1" %netlist_path
+        command = NGSPICE_BIN + " -b %s >/dev/null 2>&1" % netlist_path
         exit_code = os.system(command)
         if (exit_code % 256):
             # raise RuntimeError('program {} failed!'.format(command))

@@ -1,0 +1,16 @@
+# Python environment and caches (each person builds their own with setup_mac.sh)
+.venv/
+__pycache__/
+*.pyc
+
+# Simulation output - regenerated on every run, can be thousands of files
+no_backup/
+
+# Editor / OS clutter
+.DS_Store
+.vscode/
+*.bak
+
+# Training output (keep out of git until we pick the final results)
+output_figs/
+data/
