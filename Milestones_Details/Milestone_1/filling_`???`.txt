@@ -1,0 +1,180 @@
+Basically just fill the lines that have ??? form TwoStage.cir to the output files:
+Transient. Replace the ??? under the tran comment with:
+
+spice
+wrdata tran_TwoStage.csv v(net6)
+
+This writes the columns time v(net6).
+
+AC. Replace the ??? under the ac comment with:
+
+spice
+wrdata ac_TwoStage.csv v(net6)
+
+v(net6) is complex in AC, so this writes frequency real imag.
+
+Noise. There are two ??? lines here. Replace them with:
+
+spice
+noise v(net6) vinput dec 10 1 1T
+wrdata noise_TwoStage.csv onoise_total
+
+This uses the same sweep as the AC analysis: 10 points per decade, from 1 Hz to 1 THz.
+
+DC. Replace the ??? under the op comment with:
+
+spice
+wrdata dc_TwoStage.csv i(vdd)
+
+
+
+
+----------------------------------------------------------------------------------------------------
+OUTPUT:
+----------------------------------------------------------------------------------------------------
+
+(.venv) afonsodemello@Afonsos-MacBook-Pro-2 CAD % env -u DISPLAY ngspice ngspice_interface/files/input_netlists/TwoStage.cir
+******
+** ngspice-47 : Circuit level simulation program
+** Compiled with KLU Direct Linear Solver
+** The U. C. Berkeley CAD Group
+** Copyright 1985-1994, Regents of the University of California.
+** Copyright 2001-2026, The ngspice team.
+** Please get your ngspice manual from https://ngspice.sourceforge.io/docs.html
+** Please file your bug-reports at http://ngspice.sourceforge.net/bugrep.html
+******
+ERROR: (external)  no graphics interface;
+ please check if X-server is running,
+ or ngspice is compiled properly (see INSTALL)
+
+Note: No compatibility mode selected!
+
+
+Circuit: twostage_opamp_netlist
+
+Warning: No job (tran, ac, op etc.) defined:
+run simulation not started
+Doing analysis at TEMP = 25.000000 and TNOM = 27.000000
+
+Using SPARSE 1.3 as Direct Linear Solver
+Warning: toxe, toxp and dtox all given and toxe != toxp + dtox; dtox ignored.
+Note: vinput: dc value used for op instead of transient time=0 value.
+
+Initial Transient Solution
+--------------------------
+
+Node                                   Voltage
+----                                   -------
+net4                                  0.597932
+vdd                                        1.2
+net5                                   1.19994
+net2                                       0.9
+net3                                  0.497895
+net1                                       0.3
+net7                                   0.42735
+vss                                          0
+net6                               5.89466e-07
+net8                               5.89466e-07
+vcm                                        0.6
+aid                                       -0.6
+ein2#branch                        -1.8594e-09
+ein1#branch                        3.82293e-08
+vss#branch                         9.81984e-05
+vdd#branch                        -9.81984e-05
+vinput#branch                                0
+vicm#branch                          3.637e-08
+
+
+No. of Data Rows : 680
+Doing analysis at TEMP = 25.000000 and TNOM = 27.000000
+
+Using SPARSE 1.3 as Direct Linear Solver
+Warning: toxe, toxp and dtox all given and toxe != toxp + dtox; dtox ignored.
+Note: vinput: dc value used for op instead of transient time=0 value.
+
+No. of Data Rows : 121
+Doing analysis at TEMP = 25.000000 and TNOM = 27.000000
+
+Using SPARSE 1.3 as Direct Linear Solver
+Warning: toxe, toxp and dtox all given and toxe != toxp + dtox; dtox ignored.
+Note: vinput: dc value used for op instead of transient time=0 value.
+
+No. of Data Rows : 121
+
+No. of Data Rows : 1
+Doing analysis at TEMP = 25.000000 and TNOM = 27.000000
+
+Using SPARSE 1.3 as Direct Linear Solver
+Warning: toxe, toxp and dtox all given and toxe != toxp + dtox; dtox ignored.
+Note: vinput: dc value used for op instead of transient time=0 value.
+
+No. of Data Rows : 1
+ngspice 1 -> display
+Here are the vectors currently active:
+
+Title: twostage_opamp_netlist
+Name: op2 (Operating Point)
+Date: Tue Nov  3 12:50:19  2026
+
+    aid                 : voltage, real, 1 long
+    ein1#branch         : current, real, 1 long
+    ein2#branch         : current, real, 1 long
+    mn1#body            : voltage, real, 1 long
+    mn1#dbody           : voltage, real, 1 long
+    mn1#gate            : voltage, real, 1 long
+    mn1#sbody           : voltage, real, 1 long
+    mn2#body            : voltage, real, 1 long
+    mn2#dbody           : voltage, real, 1 long
+    mn2#gate            : voltage, real, 1 long
+    mn2#sbody           : voltage, real, 1 long
+    mn3#body            : voltage, real, 1 long
+    mn3#dbody           : voltage, real, 1 long
+    mn3#gate            : voltage, real, 1 long
+    mn3#sbody           : voltage, real, 1 long
+    mn4#body            : voltage, real, 1 long
+    mn4#dbody           : voltage, real, 1 long
+    mn4#gate            : voltage, real, 1 long
+    mn4#sbody           : voltage, real, 1 long
+    mn5#body            : voltage, real, 1 long
+    mn5#dbody           : voltage, real, 1 long
+    mn5#gate            : voltage, real, 1 long
+    mn5#sbody           : voltage, real, 1 long
+    mp1#body            : voltage, real, 1 long
+    mp1#dbody           : voltage, real, 1 long
+    mp1#gate            : voltage, real, 1 long
+    mp1#sbody           : voltage, real, 1 long
+    mp2#body            : voltage, real, 1 long
+    mp2#dbody           : voltage, real, 1 long
+    mp2#gate            : voltage, real, 1 long
+    mp2#sbody           : voltage, real, 1 long
+    mp3#body            : voltage, real, 1 long
+    mp3#dbody           : voltage, real, 1 long
+    mp3#gate            : voltage, real, 1 long
+    mp3#sbody           : voltage, real, 1 long
+    net1                : voltage, real, 1 long
+    net2                : voltage, real, 1 long
+    net3                : voltage, real, 1 long
+    net4                : voltage, real, 1 long [default scale]
+    net5                : voltage, real, 1 long
+    net6                : voltage, real, 1 long
+    net7                : voltage, real, 1 long
+    net8                : voltage, real, 1 long
+    vcm                 : voltage, real, 1 long
+    vdd                 : voltage, real, 1 long
+    vdd#branch          : current, real, 1 long
+    vicm#branch         : current, real, 1 long
+    vinput#branch       : current, real, 1 long
+    vss                 : voltage, real, 1 long
+    vss#branch          : current, real, 1 long
+ngspice 2 -> setplot
+List of plots available:
+
+Current op2     twostage_opamp_netlist (Operating Point)
+        noise2  twostage_opamp_netlist (Integrated Noise)
+        noise1  twostage_opamp_netlist (Noise Spectral Density Curves)
+        ac1     twostage_opamp_netlist (AC Analysis)
+        tran1   twostage_opamp_netlist (Transient Analysis)
+        const   Constant values (constants)
+ngspice 3 -> setplot noise2
+ngspice 4 -> print onoise_total
+onoise_total = 4.4794519e-05
