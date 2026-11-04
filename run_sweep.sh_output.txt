@@ -1,0 +1,28 @@
+(.venv) afonsodemello@Afonsos-MacBook-Pro-2 CAD % caffeinate -i bash run_sweep.sh
+=== sw_base  ===
+  best FoM 0.6283017737817478 | first feasible (step, sims) [632, 697] | runtime 1154.8 s
+=== sw_noise0.05 --noise_sigma 0.05 ===
+  best FoM 0.5278393772125797 | first feasible (step, sims) [690, 761] | runtime 1147.9 s
+=== sw_noise0.2 --noise_sigma 0.2 ===
+  best FoM 0.5647982051591227 | first feasible (step, sims) [408, 450] | runtime 1118.9 s
+=== sw_noise0.3 --noise_sigma 0.3 ===
+  best FoM 0.6022669766529907 | first feasible (step, sims) [408, 450] | runtime 1046.7 s
+=== sw_gamma0.5 --gamma 0.5 ===
+  best FoM 0.5196939255329963 | first feasible (step, sims) [740, 816] | runtime 1133.4 s
+=== sw_gamma0.0 --gamma 0.0 ===
+  best FoM 0.6128322935377502 | first feasible (step, sims) [743, 819] | runtime 1106.3 s
+=== sw_batch64 --batch_size 64 ===
+  best FoM 0.6816529080697504 | first feasible (step, sims) [620, 684] | runtime 1109.4 s
+=== sw_batch256 --batch_size 256 ===
+  best FoM 0.6515610341397391 | first feasible (step, sims) [520, 574] | runtime 1066.4 s
+=== sw_w128 --w 128 ===
+  best FoM 0.6775251683901946 | first feasible (step, sims) [299, 330] | runtime 1197.8 s
+=== sw_w1000 --w 1000 ===
+  best FoM 0.5490531412632655 | first feasible (step, sims) [973, 1072] | runtime 1176.6 s
+=== sw_lr_slow --pi_lr 1e-4 --q_lr 3e-4 ===
+  best FoM 0.6795811275963688 | first feasible (step, sims) [991, 1092] | runtime 1058.1 s
+=== sw_lr_fast --pi_lr 1e-3 --q_lr 1e-3 ===
+  best FoM 0.6585043243352732 | first feasible (step, sims) [596, 657] | runtime 1098.8 s
+(.venv) afonsodemello@Afonsos-MacBook-Pro-2 CAD % caffeinate -i bash -c '
+python -u td3_runner.py --w 128 --gamma 0.0  --run_id final_g0   > output_figs/final_g0.log 2>&1
+python -u td3_runner.py --w 128 --gamma 0.99 --run_id final_g099 > output_figs/final_g099.log 2>&1
