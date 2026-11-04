@@ -9,7 +9,7 @@ Files: `TwoStage.cir`, `dut_testbench.py`, `test_dut.py`
 - [x] Correctness test: several sizings, compare Python results with ngspice `meas`
 - [ ] Get `reference_designs.csv` from the TAs, put it in `CAD/`, check test_5 passes
 - [ ] Report: circuit topology, how each spec is measured, unit test as proof
-- [ ] Add a plot for gain, for each of the frequencies to check it properly
+- [x] Add a plot for gain, for each of the frequencies to check it properly
 
 
 ## Milestone 2 — Circuit environment
