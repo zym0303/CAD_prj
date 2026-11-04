@@ -5,9 +5,13 @@ import random
 import string
 import time 
 import shutil
+import subprocess
 # Server ngspice if it exists (ESAT), otherwise the one on PATH (your own computer)
 _SERVER_NGSPICE = "/users/micas/mahmadza/public/bin/ngspice"
 NGSPICE_BIN = _SERVER_NGSPICE if os.path.exists(_SERVER_NGSPICE) else (shutil.which("ngspice") or "ngspice")
+
+# a normal simulation takes ~0.4 s; anything this slow is a pathological design
+NGSPICE_TIMEOUT_S = 20
 
 class NgspiceWrapper(object):
     
@@ -120,12 +124,23 @@ class NgspiceWrapper(object):
         return new_netlist_path
 
     def simulate(self, netlist_path):
+        """
+        Run ngspice in batch mode. Returns 0 if ok, 1 if ngspice failed or took longer than
+        NGSPICE_TIMEOUT_S seconds (some random designs make the transient analysis take an
+        enormous number of tiny time steps and practically never finish). A timed-out run is
+        killed and reported as a failure, so the environment gives it the worst-case specs
+        instead of the whole training run hanging.
+        """
         info = 0 # this means no error occurred
-        command = NGSPICE_BIN + " -b %s >/dev/null 2>&1" % netlist_path
-        exit_code = os.system(command)
-        if (exit_code % 256):
-            # raise RuntimeError('program {} failed!'.format(command))
-            info = 1 # this means an error has occurred
+        try:
+            result = subprocess.run([NGSPICE_BIN, "-b", netlist_path],
+                                    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                                    timeout=NGSPICE_TIMEOUT_S)
+            if result.returncode < 0:      # killed by a signal (same rule as the old exit_code % 256)
+                info = 1 # this means an error has occurred
+        except subprocess.TimeoutExpired:
+            print(f"[ngspice] timeout after {NGSPICE_TIMEOUT_S} s -> design treated as failed")
+            info = 1
         return info
     
 

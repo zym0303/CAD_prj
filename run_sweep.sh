@@ -17,7 +17,8 @@ run () {   # run <run_id> <extra args...>
   local id=$1; shift
   if [ -f "output_figs/$id/summary.json" ]; then echo "skip $id (done)"; return; fi
   echo "=== $id $* ==="
-  python td3_runner.py --max_sims "$SIMS" --seed "$SEED" --run_id "$id" "$@" > "output_figs/$id.log" 2>&1
+  rm -f "solutions/$id.csv"     # a restarted run must not append to an unfinished one
+  python -u td3_runner.py --max_sims "$SIMS" --seed "$SEED" --run_id "$id" "$@" > "output_figs/$id.log" 2>&1
   python -c "import json; d=json.load(open('output_figs/$id/summary.json')); print('  best FoM', d['best_fom'], '| first feasible (step, sims)', d['first_feasible_step_and_sims'], '| runtime', d['runtime_s'], 's')"
 }
 mkdir -p output_figs
