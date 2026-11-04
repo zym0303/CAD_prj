@@ -15,3 +15,4 @@
 [td3] step   350 | sims   387 | FoM -0.5731 | best -0.3117 | failed sims 2
 [ngspice] timeout after 20 s -> design treated as failed
 [simulate] simulation failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 3)
+[td3] step   400 | sims   442 | FoM -0.8593 | best -0.3117 | failed sims 3

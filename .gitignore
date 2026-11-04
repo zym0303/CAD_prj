@@ -11,5 +11,7 @@ no_backup/
 .vscode/
 *.bak
 
-# Training output (keep out of git until we pick the final results)
+# Training output: plots, logs, history.csv, summary.json are tracked;
+# the saved network weights (~3 MB per run) are not
+output_figs/**/td3_*
 data/
