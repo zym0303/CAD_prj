@@ -12,18 +12,16 @@ Files: `TwoStage.cir`, `dut_testbench.py`, `test_dut.py`
 - [x] Confirm with the TAs: reference designs reproduced only at 27 °C (25 °C: design 1 gain/noise −7.8 %), see Milestone_1_explained.md §6
 - [ ] Report: circuit topology, how each spec is measured, unit test as proof
 
-
-
 ## Milestone 2 — Circuit environment
 File: `circuit_env.py` (can be done in parallel with milestone 1)
-- [ ] Convert actions in [-1, 1] to real parameter values (line ~67)
-- [ ] Simulate and measure for a set of parameters (line ~74)
-- [ ] Normalise specs against the targets (line ~86)
-- [ ] `reset()` (line ~110)
-- [ ] `step()` (line ~134)
-- [ ] Reward from normalised specs and hard constraints (line ~162); check against the rewards in `reference_designs.csv`
-- [ ] Unit test with hand-calculated normalised specs and rewards
-- [ ] Report: action refinement, normalisation, `step`/`reset`, the test
+- [x] Convert actions in [-1, 1] to real parameter values (line ~75); reproduces all 5 TA reference designs (`action_*` -> `param_*`)
+- [x] Simulate and measure for a set of parameters (line ~120); failed simulations give worst-case specs instead of crashing
+- [x] Normalise specs against the targets (line ~174); matches `norm_*` in `Reference_Designs/references.csv`
+- [x] `reset()` (line ~227)
+- [x] `step()` (line ~257)
+- [x] Reward from normalised specs and hard constraints (line ~320); matches the rewards in `Reference_Designs/references.csv`
+- [x] Unit test with hand-calculated normalised specs and rewards: `test_circuit_env.py`, 28/28 pass (incl. end-to-end with ngspice)
+- [ ] Report: action refinement, normalisation, `step`/`reset`, the test (material in `Milestones_Details/Milestone_2/Milestone_2_explained.md`)
 
 ## Milestone 3 — TD3 agent
 Files: `td3/agent.py`, `td3_runner.py`
