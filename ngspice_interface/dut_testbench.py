@@ -142,11 +142,13 @@ class DUT(NgspiceWrapper):
         """
         Slew rate of the open-loop step response (input: a +-VDD/2 differential pulse).
 
-        For the rising and the falling edge, find when the output crosses 10 % and 90 %
-        of its total swing (vmin..vmax), linearly interpolated between time samples:
+        Rising edge, 10 % -> 90 % of the total output swing (vmin..vmax):
             SR = (V90 - V10) / (t90 - t10)
-        Returns the smaller of the two (the worst case limits the opamp), in V/us by default.
-        Returns 0 if either edge is not found (the output does not follow the input pulse).
+        with each crossing time linearly interpolated between time samples.
+        This is the convention of the TA reference designs (Reference_Designs/references.csv):
+        rising edge only, with a 1 ns transient step, matches them to 0.000 %.
+        Returns 0 if there is no complete rising edge (the output does not follow the input).
+        Units: V/us by default.
         """
         scale = {'s': 1.0, 'ms': 1e3, 'us': 1e6, 'ns': 1e9}[time_unit]
         vmin, vmax = np.min(signal), np.max(signal)
@@ -156,31 +158,20 @@ class DUT(NgspiceWrapper):
         v_lo = vmin + threshold_low * swing    # 10 % level
         v_hi = vmin + threshold_high * swing   # 90 % level
 
-        def crossing(level, rising, t_start=0.0):
-            """Time of the first crossing of `level` after t_start (linear interpolation)."""
+        def crossing(level, t_start=0.0):
+            """Time of the first upward crossing of `level` after t_start (linear interpolation)."""
             above = signal >= level
-            edge = (~above[:-1] & above[1:]) if rising else (above[:-1] & ~above[1:])
-            idx = np.where(edge & (time[1:] > t_start))[0]
+            idx = np.where(~above[:-1] & above[1:] & (time[1:] > t_start))[0]
             if len(idx) == 0:
                 return None
             k = idx[0]
             return time[k] + (level - signal[k]) * (time[k + 1] - time[k]) / (signal[k + 1] - signal[k])
 
-        rates = []
-        t1 = crossing(v_lo, rising=True)                                            # rising: 10 %
-        t2 = crossing(v_hi, rising=True, t_start=t1) if t1 is not None else None    # then 90 %
-        if t1 is not None and t2 is not None and t2 > t1:
-            rates.append((v_hi - v_lo) / (t2 - t1))
-        t3 = crossing(v_hi, rising=False)                                           # falling: 90 %
-        t4 = crossing(v_lo, rising=False, t_start=t3) if t3 is not None else None   # then 10 %
-        if t3 is not None and t4 is not None and t4 > t3:
-            rates.append((v_hi - v_lo) / (t4 - t3))
-        if len(rates) < 2:
-            # The output did not complete both a rising and a falling edge within the
-            # simulation (it cannot follow the input pulse): treat the missing edge as
-            # slew rate 0, i.e. the worst case.
+        t10 = crossing(v_lo)
+        t90 = crossing(v_hi, t_start=t10) if t10 is not None else None
+        if t10 is None or t90 is None or t90 <= t10:
             return 0.0
-        return float(min(rates) / scale)
+        return float((v_hi - v_lo) / (t90 - t10) / scale)
 
     def _get_best_crossing(cls, xvec, yvec, val):
         interp_fun = interp.InterpolatedUnivariateSpline(xvec, yvec)

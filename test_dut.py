@@ -25,8 +25,9 @@ from ngspice_interface import DUT  # noqa: E402  (import after chdir on purpose)
 from ngspice_interface.ngspice_wrapper import NGSPICE_BIN  # noqa: E402
 
 YAML_PATH = os.path.join(CAD_DIR, "ngspice_interface", "files", "yaml_files", "TwoStage.yaml")
-REFERENCE_CSV = os.path.join(CAD_DIR, "reference_designs.csv")  # given later by the TAs
-REL_TOL = 0.05  # allowed relative difference vs. the reference measurements (5 %)
+REFERENCE_CSV = os.path.join(CAD_DIR, "Reference_Designs", "references.csv")  # from the TAs
+REL_TOL = 0.05  # allowed relative difference vs. the TA reference designs (5 %)
+TEMP = 27       # simulation temperature (same as TwoStage.cir and circuit_env.py's pvt_corner)
 
 # Example sizing (same as the __main__ block of ngspice_wrapper.py)
 PARAMS = {
@@ -88,27 +89,34 @@ class TestDUT(unittest.TestCase):
                 self.assertIsNotNone(specs.get(name), f"{name} is None (not implemented yet?)")
 
     # --- 4. compare with the reference designs --------------------------------
-    @unittest.skipUnless(os.path.isfile(REFERENCE_CSV), "reference_designs.csv not in CAD/ yet")
+    @unittest.skipUnless(os.path.isfile(REFERENCE_CSV), "Reference_Designs/references.csv not found")
     def test_5_matches_reference_designs(self):
+        """Simulate the TAs' 5 reference designs and compare every spec (within REL_TOL).
+
+        references.csv has one row per attribute and one column per design:
+            Attribute, Unit, Design 1, ..., Design 5
+            param_mp1, 1,    6, ...        <- sizes   (param_*)
+            spec_gain, V/V,  817.2, ...    <- specs   (spec_*)
+            action_*, norm_*, reward       <- used in milestone 2 (circuit_env.py)
+        """
         import pandas as pd
-        ref = pd.read_csv(REFERENCE_CSV)
-        param_cols = [c for c in ref.columns if c in self.dut.param_names]
-        spec_cols = [c for c in ref.columns if c in SPECS]
-        for i, row in ref.iterrows():
-            params = {c: row[c] for c in param_cols}
-            for c in params:                      # multipliers m* must be integers in the netlist
-                if c.startswith("m"):
-                    params[c] = int(params[c])
-            self.simulate(params)
+        ref = pd.read_csv(REFERENCE_CSV, index_col=0).drop(columns="Unit")
+        for design in ref.columns:
+            column = ref[design]
+            params = {name[len("param_"):]: float(value)
+                      for name, value in column.items() if name.startswith("param_")}
+            for name in params:                       # multipliers m* must be integers
+                if name.startswith("m"):
+                    params[name] = int(round(params[name]))
+            self.simulate(params, temp=TEMP)
             specs = self.dut.measure_metrics()
-            for name in spec_cols:
-                with self.subTest(design=i, spec=name):
-                    expected, got = float(row[name]), specs[name]
+            for name in SPECS:
+                with self.subTest(design=design, spec=name):
+                    expected, got = float(column["spec_" + name]), specs[name]
                     self.assertIsNotNone(got)
                     tol = REL_TOL * abs(expected) if expected != 0 else 1e-12
                     self.assertAlmostEqual(got, expected, delta=tol,
-                                           msg=f"design {i}: {name} = {got:.4g}, reference {expected:.4g}")
-
+                                           msg=f"{design}: {name} = {got:.6g}, reference {expected:.6g}")
 
 # =============================================================================
 # 5. Correctness: Python measurements vs. an independent ngspice reference
@@ -125,15 +133,13 @@ TOLERANCES = {
     "noise": 0.01,      # 1 %    reference integrates over a 2x finer frequency grid
     "ugbw": 0.005,      # 0.5 %  reference: 1000 points/decade instead of 10
     "phm": 0.5,         # 0.5 deg
-    "slewRate": 0.01,   # 1 %    same 50 ns data, ngspice meas instead of Python
+    "slewRate": 0.01,   # 1 %    same transient data, ngspice meas instead of Python
 }
 
 # The reference .control block. It replaces the netlist's own .control block and uses
 # ngspice's built-in 'meas' commands, so it shares no code with dut_testbench.py:
 #   - AC with 1000 points/decade (100x finer) -> gain at 1 Hz, UGBW, phase at UGBW
-#   - transient with the same 50 ns step      -> 10-90 % slew rate of both edges
-#     (+ a 1 ns run, reported but not tested: it shows the error caused by the 50 ns
-#      step of the course netlist itself, which is not a bug in our Python code)
+#   - transient with the netlist's own step   -> 10-90 % slew rate of the rising edge
 #   - noise with 20 points/decade             -> total output noise
 #   - operating point                          -> supply current
 REFERENCE_CONTROL = """
@@ -141,29 +147,15 @@ REFERENCE_CONTROL = """
 set units=degrees
 option numdgt=7
 
-* --- slew rate, same 50 ns step as TwoStage.cir: checks our Python method ---
-tran 50n 30u
+* --- slew rate: same transient as TwoStage.cir, rising edge 10-90 % ---
+{tran}
 let vmx = maximum(v(net6))
 let vmn = minimum(v(net6))
 let vlo = vmn + 0.1*(vmx - vmn)
 let vhi = vmn + 0.9*(vmx - vmn)
 meas tran t_rise trig v(net6) val=vlo rise=1 targ v(net6) val=vhi rise=1
-meas tran t_fall trig v(net6) val=vhi fall=1 targ v(net6) val=vlo fall=1
 let sr_rise = (vhi - vlo) / t_rise / 1e6
-let sr_fall = (vhi - vlo) / t_fall / 1e6
-print sr_rise sr_fall
-
-* --- slew rate with a 1 ns step: shows the effect of the 50 ns step (info only) ---
-tran 1n 30u
-let vmx = maximum(v(net6))
-let vmn = minimum(v(net6))
-let vlo = vmn + 0.1*(vmx - vmn)
-let vhi = vmn + 0.9*(vmx - vmn)
-meas tran tf_rise trig v(net6) val=vlo rise=1 targ v(net6) val=vhi rise=1
-meas tran tf_fall trig v(net6) val=vhi fall=1 targ v(net6) val=vlo fall=1
-let srf_rise = (vhi - vlo) / tf_rise / 1e6
-let srf_fall = (vhi - vlo) / tf_fall / 1e6
-print srf_rise srf_fall
+print sr_rise
 
 * --- AC with 1000 points/decade (100x finer than TwoStage.cir) ---
 ac dec 1000 1 1T
@@ -199,10 +191,12 @@ def random_design(yaml_path, rng):
 def run_reference(netlist_path):
     """Run the fine ngspice reference on a copy of the netlist; return {name: value}."""
     with open(netlist_path) as f:
-        circuit = f.read().split(".control")[0]          # keep the circuit, drop its .control
+        text = f.read()
+    circuit = text.split(".control")[0]                  # keep the circuit, drop its .control
+    tran = next(line for line in text.splitlines() if line.startswith("tran "))   # same step
     ref_path = netlist_path.replace(".cir", "_reference.cir")
     with open(ref_path, "w") as f:
-        f.write(circuit + REFERENCE_CONTROL)
+        f.write(circuit + REFERENCE_CONTROL.replace("{tran}", tran))
     out = subprocess.run([NGSPICE_BIN, "-b", ref_path], cwd=CAD_DIR,
                          capture_output=True, text=True).stdout
     values = {}
@@ -217,10 +211,7 @@ def run_reference(netlist_path):
         "noise": values.get("onoise_total"),
         "ugbw": values.get("ref_ugbw"),
         "phm": 180.0 + values["ref_phase"] if "ref_phase" in values else None,
-        "slewRate": (min(values["sr_rise"], values["sr_fall"])
-                     if "sr_rise" in values and "sr_fall" in values else None),
-        "slewRate_1ns": (min(values["srf_rise"], values["srf_fall"])
-                         if "srf_rise" in values and "srf_fall" in values else None),
+        "slewRate": values.get("sr_rise"),
     }
     return ref
 
@@ -270,11 +261,6 @@ class TestCorrectness(unittest.TestCase):
                 with self.subTest(design=label, spec=spec):
                     self.assertTrue(ok, f"{label} {spec}: python {got:.6g}, reference {expected:.6g}")
 
-            # Info only: slew rate of the 50 ns course netlist vs. a 1 ns simulation
-            fine = ref["slewRate_1ns"]
-            if fine is not None and py["slewRate"]:
-                rows.append((label, "SR@1ns", py["slewRate"], fine,
-                             abs(py["slewRate"] - fine) / abs(fine), "info"))
 
         # Print a table and save it as CSV (useful for the report).
         os.makedirs(os.path.dirname(REPORT_CSV), exist_ok=True)
@@ -288,6 +274,48 @@ class TestCorrectness(unittest.TestCase):
                 print(f"  {label:10s} {spec:9s} {got:12.5g} {exp_txt:>12s} {err_txt:>10s}  {status}")
         print(f"  saved to {REPORT_CSV}")
 
+
+
+# =============================================================================
+# 6. The slew-rate definition: rising edge, 10 % -> 90 %
+# =============================================================================
+class TestSlewRateDefinition(unittest.TestCase):
+    """find_slew_rate on synthetic waveforms with a known answer (no ngspice needed).
+
+    The TA reference designs use the RISING edge only, so a waveform whose falling
+    edge is slower (or faster) than its rising edge must still return the rising slope.
+    """
+
+    def setUp(self):
+        self.dut = DUT(YAML_PATH)
+        self.t = np.linspace(0.0, 30e-6, 30001)          # 1 ns step, like TwoStage.cir
+
+    def trapezoid(self, rise_time, fall_time, low=0.0, high=1.0, t_rise=1e-6, t_fall=11e-6):
+        """Output that ramps low->high in rise_time at t_rise, and high->low in fall_time at t_fall."""
+        up = np.clip((self.t - t_rise) / rise_time, 0.0, 1.0)
+        down = np.clip((self.t - t_fall) / fall_time, 0.0, 1.0)
+        return low + (high - low) * (up - down)
+
+    def test_7a_returns_rising_edge_when_falling_is_slower(self):
+        # rising: 1 V in 100 ns -> 10 V/us ; falling: 1 V in 500 ns -> 2 V/us
+        v = self.trapezoid(rise_time=100e-9, fall_time=500e-9)
+        self.assertAlmostEqual(self.dut.find_slew_rate(self.t, v), 10.0, delta=0.05)
+
+    def test_7b_returns_rising_edge_when_falling_is_faster(self):
+        # rising: 1 V in 400 ns -> 2.5 V/us ; falling: 1 V in 50 ns -> 20 V/us
+        v = self.trapezoid(rise_time=400e-9, fall_time=50e-9)
+        self.assertAlmostEqual(self.dut.find_slew_rate(self.t, v), 2.5, delta=0.02)
+
+    def test_7c_uses_10_to_90_percent_of_the_swing(self):
+        # swing 0.2 V -> 1.0 V (0.8 V) in 160 ns: slope 5 V/us, independent of the offset
+        v = self.trapezoid(rise_time=160e-9, fall_time=160e-9, low=0.2, high=1.0)
+        self.assertAlmostEqual(self.dut.find_slew_rate(self.t, v), 5.0, delta=0.03)
+
+    def test_7d_no_rising_edge_gives_zero(self):
+        # output only falls (never completes a rising edge) -> 0, not a crash
+        v = 1.0 - np.clip((self.t - 5e-6) / 1e-6, 0.0, 1.0)
+        self.assertEqual(self.dut.find_slew_rate(self.t, v), 0.0)
+        self.assertEqual(self.dut.find_slew_rate(self.t, np.full_like(self.t, 0.6)), 0.0)
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

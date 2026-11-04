@@ -222,6 +222,7 @@ Each test checks one link of the chain in section 1, so the first failing test s
 | test_3 | the 4 CSV files exist | the `wrdata` lines (section 3) |
 | test_4 | all 7 specs are numbers | the `find_*` functions (section 4) |
 | test_5 | specs match the TAs' `reference_designs.csv` within 5 % | skipped until the file is provided |
+| test_6 | specs match an independent ngspice `meas` reference on 9 designs | section 5.1 |
 
 Result for the test design (all tests pass):
 
@@ -232,7 +233,57 @@ phm 80.88 deg    slewRate 2.002 V/us   ugbw 3.106e+06 Hz
 
 These numbers are poor compared to the targets (gain 200, SR 15). That is not a bug — they are just example sizes. Finding good sizes is the RL agent's job.
 
-**Still to do:** test_4 only proves the specs *exist*, not that they are *correct*, and only for one design. The instructions ask for verification "across different sets of sizes". Planned test_6: several sizings, compare the Python results with an independent ngspice reference (`meas` on a 100× finer sweep), as done in sections 4.2–4.4.
+test_4 only proves the specs *exist*, not that they are *correct*, and only for one design. The instructions ask for verification "across different sets of sizes" — that is test_6.
+
+### 5.1 test_6 — correctness across several sizings (`TestCorrectness`)
+
+**Idea:** for every design, measure the specs twice with methods that share no code, and require them to agree.
+
+1. **Designs:** the `PARAMS` design + 8 random sizings, each parameter picked on the YAML grid (min, max, step). Fixed random seed (`RANDOM_SEED = 2026`) so the test is reproducible. Random designs are good here because they include *bad* designs (gain < 1, unstable, too slow) that check the guards, not only nice cases.
+2. **Python side:** the normal pipeline — `create_new_netlist` → `simulate` → `measure_metrics`.
+3. **Reference side** (`run_reference`): take the *same* generated netlist, keep the circuit, replace its `.control` block with `REFERENCE_CONTROL`, run ngspice and read the printed results. It uses ngspice's built-in `meas` commands and finer analyses:
+
+| Spec | Reference | Tolerance | Why this tolerance |
+|---|---|---|---|
+| gain | `meas ac find vm(net6) at=1`, 1000 pts/decade | 0.1 % | same frequency point |
+| current | `print -i(vdd)` after `op` | 0.1 % | same operating point |
+| noise | `onoise_total` with 20 pts/decade | 1 % | integration grid 2× finer |
+| ugbw | `meas ac when vm(net6)=1 fall=1`, 1000 pts/decade | 0.5 % | 100× finer sweep |
+| phm | `180 + vp(net6)` at the reference UGBW | 0.5° | compared modulo 360°, because `vp()` wraps (section 4.3) |
+| slewRate | `meas tran trig/targ` 10 %→90 % on both edges, **same 50 ns step** | 1 % | same data, different code — checks our method |
+
+4. **No reference result** (ngspice finds no crossing: gain < 1 everywhere, or no complete edge) → Python must return exactly 0 for ugbw / phm / slewRate.
+5. Prints a table and saves it to `no_backup/correctness_report.csv` (useful for the report).
+
+**Result (all 9 designs pass):** gain, current, UGBW, PM and slew rate agree to 0.000 %/0.000°; noise to < 0.1 %. Four random designs have gain < 1 (no UGBW → Python 0, correct), one is nearly unstable (PM 2.5°), two cannot follow the input pulse (slew → 0, correct).
+
+**Two things found while building it:**
+- **ngspice's noise integration returns NaN** for some designs at 50+ points/decade (e.g. `random_4`), while 10 and 20 points/decade agree to 0.08 %. That is an ngspice numerical problem in the reference, so the reference uses 20. The course netlist's 10 points/decade gave no NaN in 120 random designs.
+- **The missing-edge rule** in `find_slew_rate` (section 4.4) — the first version disagreed with ngspice on `random_6`/`random_7`.
+
+Runtime: about 10 s for the whole test.
+
+### 5.2 Open issue for the group: the 50 ns transient step
+
+test_6 also runs the transient at 1 ns and reports `SR@1ns` (info only, not pass/fail). Our *method* is exact, but the *data* from `tran 50n 30u` (the course netlist) is too coarse for fast edges: a 10 %–90 % edge of a design with SR = 15 V/µs takes ~65 ns, i.e. only 1–2 samples, and interpolating between them underestimates the slope.
+
+Survey over 120 random designs (small Cc, to get fast ones):
+
+| True slew rate (1 ns step) | 50 ns step underestimates by (median) |
+|---|---|
+| 0–2 V/µs | 0 % |
+| 2–5 V/µs | 2 % |
+| 5–10 V/µs | 11 % |
+| **10–20 V/µs (around the 15 V/µs target)** | **32 %** |
+| > 20 V/µs | 67 % |
+
+Consequence: a design that truly meets 15 V/µs can be reported as ~10 V/µs and be rejected; the RL agent would push for ~22 V/µs true slew rate, costing current and area.
+
+Options:
+- `tran 5n 30u` in `TwoStage.cir`: accurate, but a full simulation takes ~0.22 s instead of ~0.05 s (5k simulations: ~18 min instead of ~4 min, both fine).
+- Keep 50 ns: matches the course template and probably the TAs' `reference_designs.csv`.
+
+**Ask the TAs** which step their reference designs used before changing it. Whatever is chosen, mention it in the report: it is a good example of the unit test finding a real limitation.
 
 ---
 
@@ -243,7 +294,8 @@ Required by the instructions: *describe the topology, explain how each spec is m
 1. **Topology** — section 2 (table + input stimulus + why the DC phase is 0°).
 2. **Simulations** — one line per analysis: transient ±0.6 V differential pulse → slew rate; AC 1 Hz–1 THz → gain, UGBW, PM; noise over the same band → total output noise; operating point → supply current. Area from the estimator.
 3. **Each spec** — sections 4.1–4.4: definition, method, why (log-log, spline, unwrap, worst edge).
-4. **Proof** — the unit test table (section 5) + the accuracy comparison against the fine-sweep reference (spline vs straight line table, unstable-design example) + test_5 against the TAs' references once available.
+4. **Proof** — the unit test table (section 5) + test_6's comparison table (`no_backup/correctness_report.csv`) + the spline vs straight line table and the unstable-design example + test_5 against the TAs' references once available.
+5. **Limitation** — the 50 ns transient step (section 5.2) and what you decided.
 
 ---
 

@@ -16,7 +16,8 @@ TwoStage_opamp_netlist
 .param vcm=0.6
 
 .param VDD=1.2
-.param temp_pvt=25
+* 27 degC: reproduces the TA reference designs (same as circuit_env.py pvt_corner); at 25 degC design 1 gain/noise differ by ~7.8 %
+.param temp_pvt=27
 .param trf=0.5u ; for slew-rate calculation
 .param period=10u ; for slew-rate calculation
 .param vhigh=VDD ; for slew-rate calculation
@@ -52,8 +53,8 @@ set units=degrees
 set wr_vecnames
 option numdgt=7
 
-* transient analysis
-tran 50n 30u
+* transient analysis (1 ns step: same as the TA reference designs; 50 ns underestimates fast slew rates)
+tran 1n 30u
 * save Vout data in a file named 'tran_TwoStage.csv'
 wrdata tran_TwoStage.csv v(net6)
 
