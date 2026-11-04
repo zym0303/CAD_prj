@@ -22,6 +22,8 @@ class NgspiceWrapper(object):
         self.solutions_folder = os.path.join(project_path, 'no_backup', 'solutions')
         self.output_netlists_folder = os.path.join(project_path, 'no_backup', 'output_netlists')
         self.output_files_folder = os.path.join(project_path, 'no_backup', 'output_files')
+        os.makedirs(self.output_files_folder, exist_ok=True)
+        os.makedirs(self.output_netlists_folder, exist_ok=True)
         self.param_names = yaml_data['params'].keys()
         self.parameters = {}
         self.read_netlist()
