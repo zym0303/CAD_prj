@@ -1,0 +1,17 @@
+
+ Initialized TwoStage with simulator ngspice 
+
+[warmup] step     0 | sims     2 | FoM -3.8575 | best -3.8575 | failed sims 0
+[warmup] step    50 | sims    57 | FoM -2.8338 | best -0.6118 | failed sims 0
+[warmup] step   100 | sims   112 | FoM -3.5299 | best -0.6118 | failed sims 0
+[td3] step   150 | sims   167 | FoM -2.6189 | best -0.6118 | failed sims 0
+[td3] step   200 | sims   222 | FoM -2.7402 | best -0.6118 | failed sims 0
+[td3] step   250 | sims   277 | FoM -0.8466 | best -0.5572 | failed sims 0
+[td3] step   300 | sims   332 | FoM -0.5888 | best -0.3117 | failed sims 0
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] simulation failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 1)
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] simulation failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 2)
+[td3] step   350 | sims   387 | FoM -0.5731 | best -0.3117 | failed sims 2
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] simulation failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 3)

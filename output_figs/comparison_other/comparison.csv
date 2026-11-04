@@ -1,0 +1,8 @@
+label,run_id,best_FoM,first_feasible_at,n_feasible,n_pareto,sims_used
+w300,sw_base,0.6283,697,191,10,2000
+w128,sw_w128,0.6775,330,143,7,2000
+w1000,sw_w1000,0.5491,1072,10,3,2000
+b64,sw_batch64,0.6817,684,18,4,2000
+b256,sw_batch256,0.6516,574,196,9,2000
+lr_slow,sw_lr_slow,0.6796,1092,59,7,2000
+lr_fast,sw_lr_fast,0.6585,657,33,3,2000

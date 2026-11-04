@@ -12,5 +12,4 @@ no_backup/
 *.bak
 
 # Training output (keep out of git until we pick the final results)
-output_figs/
 data/

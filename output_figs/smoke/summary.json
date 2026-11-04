@@ -1,0 +1,26 @@
+{
+  "args": {
+    "seed": 123456,
+    "noise_sigma": 0.1,
+    "batch_size": 32,
+    "w": 50,
+    "pi_lr": 0.0003,
+    "q_lr": 0.001,
+    "gamma": 0.99,
+    "tau": 0.005,
+    "target_update_interval": 1,
+    "actor_update_interval": 2,
+    "hidden_size": 256,
+    "T": 10000,
+    "max_sims": 200,
+    "replay_size": 1000000,
+    "cuda": false,
+    "run_id": "smoke"
+  },
+  "env_steps": 181,
+  "n_simulations": 200,
+  "n_failed_sims": 0,
+  "best_fom": -0.09688075325176745,
+  "first_feasible_step_and_sims": null,
+  "runtime_s": 97.6
+}
