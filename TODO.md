@@ -25,8 +25,8 @@ File: `circuit_env.py` (can be done in parallel with milestone 1)
 
 ## Milestone 3 — TD3 agent
 Files: `td3/agent.py`, `td3_runner.py`
-- [ ] Action selection with exploration noise (`agent.py`, line ~89)
-- [ ] TD3 learning step: twin critics, target policy smoothing, delayed actor update (`agent.py`, line ~112)
+- [x] Action selection with exploration noise (`agent.py`, line ~89)
+- [x] TD3 learning step: twin critics, target policy smoothing, delayed actor update (`agent.py`, line ~112); tests: `test_td3_agent.py` 9/9 pass
 - [ ] Tune in `td3_runner.py`: noise sigma, batch size, warmup steps, actor and critic learning rates
 - [ ] 5k-simulation run → plots: max FoM vs. simulation step, and current–area Pareto front
 - [ ] Compare with the TAs' baseline agent (`baseline_runner.py`) within 5k simulations

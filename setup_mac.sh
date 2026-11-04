@@ -12,7 +12,7 @@
 set -euo pipefail
 
 CAD_DIR="$(cd "${1:-.}" && pwd)"
-PACKAGES=(numpy scipy matplotlib pyyaml pandas gymnasium torch "mcp[cli]" pydantic python-dotenv ipykernel)
+PACKAGES=(numpy scipy matplotlib pyyaml pandas gymnasium torch "mcp[cli]" pydantic python-dotenv ipykernel pytest)
 
 say()  { printf '\n\033[1;34m==> %s\033[0m\n' "$*"; }
 ok()   { printf '    \033[32m✓\033[0m %s\n' "$*"; }
