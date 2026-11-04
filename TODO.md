@@ -7,9 +7,11 @@ Files: `TwoStage.cir`, `dut_testbench.py`, `test_dut.py`
 - [x] Fill the `???` lines in `TwoStage.cir`: `wrdata` for tran / ac / noise / dc, plus the `noise` command (makes test_3 pass)
 - [x] Write `find_dc_gain`, `find_ugbw`, `find_phm`, `find_slew_rate` in `dut_testbench.py` (makes test_4 pass)
 - [x] Correctness test: several sizings, compare Python results with ngspice `meas`
-- [ ] Get `reference_designs.csv` from the TAs, put it in `CAD/`, check test_5 passes
-- [ ] Report: circuit topology, how each spec is measured, unit test as proof
+- [x] Get `reference_designs.csv` from the TAs, put it in `CAD/`, check test_5 passes
 - [x] Add a plot for gain, for each of the frequencies to check it properly
+- [x] Confirm with the TAs: reference designs reproduced only at 27 °C (25 °C: design 1 gain/noise −7.8 %), see Milestone_1_explained.md §6
+- [ ] Report: circuit topology, how each spec is measured, unit test as proof
+
 
 
 ## Milestone 2 — Circuit environment
