@@ -7,6 +7,8 @@ output_figs/comparison/harness_vs_rl.png and harness_vs_rl.csv (time and simulat
 needed to reach FoM thresholds).
 """
 import argparse
+import ast
+import json
 import os
 
 import matplotlib
@@ -57,6 +59,35 @@ def main():
     os.makedirs("output_figs/comparison", exist_ok=True)
     fig.tight_layout()
     fig.savefig("output_figs/comparison/harness_vs_rl.png", dpi=150)
+
+    # Current-area Pareto front: feasible harness designs vs. the pure-RL feasible designs
+    def front(points):
+        out, best_area = [], float("inf")
+        for c, a in sorted(points):
+            if a < best_area:
+                out.append((c, a)); best_area = a
+        return out
+    fig2, ax = plt.subplots(figsize=(6, 4.5))
+    sets = {}
+    for h in a.harness:
+        log = pd.read_csv(os.path.join("harness_runs", h, "log.csv"))
+        feas = log[log["feasible"] == 1]["specs"].map(json.loads)
+        sets[f"LLM harness ({h})"] = [(s["current"] * 1e6, s["area"] * 1e12) for s in feas]
+    try:
+        sol = pd.read_csv(os.path.join("solutions", f"{a.rl}.csv"))
+        specs = sol["Specs"].map(lambda t: ast.literal_eval(t) if isinstance(t, str) else t)
+        sets[f"TD3 only ({a.rl})"] = [(float(s["current"]) * 1e6, float(s["area"]) * 1e12) for s in specs]
+    except Exception as e:  # the RL file format is optional for this plot
+        print("RL Pareto skipped:", e)
+    for label, pts in sets.items():
+        if not pts:
+            continue
+        c, ar = zip(*pts)
+        sc = ax.scatter(c, ar, s=8, alpha=0.3)
+        fc, fa = zip(*front(pts))
+        ax.step(fc, fa, where="post", color=sc.get_facecolor()[0][:3], label=f"{label}: {len(pts)} feasible, {len(fc)} on front")
+    ax.set_xlabel("current [uA]"); ax.set_ylabel("area [um^2]"); ax.grid(alpha=0.3); ax.legend(fontsize=8)
+    fig2.tight_layout(); fig2.savefig("output_figs/comparison/pareto_harness_vs_rl.png", dpi=150)
 
     rl_best = curves[f"TD3 only ({a.rl})"]["fom"].iloc[-1]
     thresholds = [0.3, 0.5, 0.6, round(0.98 * rl_best, 3)]

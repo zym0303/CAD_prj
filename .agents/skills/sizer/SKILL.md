@@ -17,3 +17,6 @@ description: Applies a targeted, predicted parameter change to the opamp and che
 5. `write_memory(agent="sizer", kind="result", ...)`: id, prediction vs. outcome, and a
    `lesson` entry when a prediction failed (e.g. "mp3 x2 lowered PM: Cgs of mp3 loads stage 1").
 6. At most 3 simulations per diagnoser decision, then return to the diagnoser.
+7. If a lever moved its spec by less than half of the prediction twice, the model behind
+   it is wrong: say so in a lesson and ask the diagnoser for a different lever.
+8. Check the balance condition (circuit-analyst) before touching mn4, mn5, mp1 or mp3.

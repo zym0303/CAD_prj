@@ -28,10 +28,12 @@ assert abs(exp.param_to_action(mid) - 0).max() < 0.2
 back = exp.evaluation_env.action_refine(exp.param_to_action(exp.best["parameters"]))
 assert back == exp.best["parameters"], "param_to_action is not the inverse of action_refine"
 
-print("seed:", exp.seed_rl(k=2, repeat=2))
+print("seed+anchor:", exp.seed_rl(k=2, repeat=2, anchor_steps=20))
 w = exp.warmup(10)
 print("warmup: steps", w["steps_completed"], "sims", w["simulator_calls_used"], w.get("error"))
-t = exp.train(5)
+lw = exp.warmup(5, around_best=True, radius=0.15)
+print("local warmup: steps", lw["steps_completed"], lw.get("error"))
+t = exp.train(5, noise_sigma=0.05)
 print("train: steps", t["steps_completed"], "updates", t["updates_performed"], t.get("error"))
 
 exp.write_memory("test", "lesson", "smoke test ran")

@@ -1,0 +1,46 @@
+{
+  "run_id": "smoke",
+  "elapsed_s": 13.8,
+  "simulator_calls": 19,
+  "warmup_steps": 10,
+  "training_steps": 5,
+  "updates": 5,
+  "seeded_transitions": 4,
+  "best": {
+    "id": 12,
+    "source": "rl_warmup",
+    "reward": -0.804395652532586,
+    "feasible": false,
+    "specs": {
+      "area": 7.374844642857142e-10,
+      "current": 0.00018440124,
+      "gain": 106.83445000028536,
+      "noise": 0.0044950332,
+      "phm": 67.42859307688383,
+      "slewRate": 30.85492228558575,
+      "ugbw": 31074499.02977662
+    },
+    "parameters": {
+      "mp1": 11,
+      "wp1": 5e-07,
+      "lp1": 1.35e-07,
+      "mn1": 21,
+      "wn1": 2.5e-07,
+      "ln1": 1.35e-07,
+      "mp3": 6,
+      "wp3": 1e-06,
+      "lp3": 9e-08,
+      "mn3": 12,
+      "wn3": 2.5e-07,
+      "ln3": 9e-08,
+      "mn4": 1,
+      "wn4": 1.75e-06,
+      "ln4": 4.5e-08,
+      "mn5": 7,
+      "wn5": 2.5e-06,
+      "ln5": 1.35e-07,
+      "cap": 1.2e-12,
+      "res": 4400.0
+    }
+  }
+}

@@ -1,20 +1,24 @@
 ---
 name: rl-strategist
-description: Decides whether and how to run the TD3 reinforcement-learning sizer through the cad MCP tools, seeding it with the expert designs. Use when hand sizing has stalled or a broad area/current search is needed.
+description: Runs the TD3 reinforcement-learning sizer through the cad MCP tools as a local refiner anchored on the best expert design. Use for phase 3 of the opamp harness or when hand sizing has stalled.
 ---
 
 # RL strategist
 
-The TD3 sizer searches the full 20-dimensional space, but it needs data: on its own it
-found a first feasible design after ~780 simulations and FoM 0.66 after 5000. Starting it
-from the expert designs is the reason to combine both.
+Started from random designs, TD3 needs ~780 simulations to find anything feasible (milestone 3),
+and in a 550-simulation harness run it found nothing. So here it is used as a LOCAL
+refiner: its actor is first pulled onto the best expert design, then it explores around it.
 
-1. `read_memory(last_n=8)`, `get_status(k=3)`. State in one sentence why RL is used now.
-2. `seed_rl(k=10, repeat=3)` so the critic sees the good designs.
-3. If the replay buffer is still below 128 experiences, `warmup` only the missing amount.
-4. `train` in batches of 200 steps. After each batch check `improved_best`:
-   stop after 2 batches without improvement, or when the total budget for this phase
-   (default 1000 simulations) is used.
-5. `write_memory(agent="rl", kind="result", ...)`: simulations used, best id and reward
-   before/after, and whether RL found a new region (compare its parameters with the
-   expert design: which devices changed most). This is what the diagnoser polishes next.
+1. `read_memory(last_n=6)`, `get_status(k=3)`. Say in one sentence why RL is used now and
+   which design it is anchored on.
+2. `seed_rl(k=10, repeat=3, anchor_steps=300)`: expert designs into the replay buffer and
+   the actor pretrained to propose the best one (0 simulations).
+3. `warmup(n_steps=100, around_best=True, radius=0.15)`: neighbours of the best design;
+   fills the buffer to >= 128 and gives the critic local data.
+4. `train(n_steps=200, noise_sigma=0.1)` per batch. After each batch check `improved_best`:
+   - improved: continue; after 2 improving batches use noise_sigma=0.05 (finer search);
+   - 2 batches in a row without improvement, or 800 simulations in this phase, or the total budget (opamp-harness) is reached: stop.
+   Size the last batch so it does not exceed the remaining budget.
+5. `write_memory(agent="rl", kind="result", ...)`: simulations used, best id and FoM
+   before/after, how many feasible designs exist now, and which parameters of the RL
+   best differ from the expert design (this is what the sizer polishes next).

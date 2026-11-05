@@ -11,6 +11,12 @@ description: Diagnoses the current best opamp design, identifies the binding or 
      first for gain/phm/slewRate/ugbw, most positive for noise).
    - feasible: the margin of each hard constraint (normalized value). Large margins are
      wasted current or area: name the one to trade away.
+   Feasible mode (phase 2/4): FoM = 0.3 - z_area - z_current, so only current and area
+   count. Current = 30 uA + I_tail + I_2 is usually the bigger term. Spend the largest
+   margins: SR and UGBW margins allow less I_tail / I_2; a large gain margin allows
+   wider (lower-Vov) devices at lower current. Global lever: a larger S_mn3 lowers BOTH
+   mirrored currents at once (I = 30 uA * S/S_mn3) and keeps the balance condition.
+   Area: Cc dominates; drop Cc where PM margin allows, then reduce large m*W*L devices.
 3. Choose ONE lever and explain the mechanism, using the equations of circuit-analyst.
    Prefer levers that fix the worst spec without breaking a spec with a small margin.
    Known couplings: Cc trades PM against UGBW/SR/area; I_2 trades PM/SR against current;

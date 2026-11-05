@@ -32,6 +32,7 @@ def create_server(experiment):
     def call(method, **arguments):
         with lock, redirect_stdout(sys.stderr):
             try:
+                experiment.tick()
                 return getattr(experiment, method)(**arguments)
             except (ValueError, RuntimeError) as error:
                 raise ToolError(str(error)) from error
@@ -59,25 +60,32 @@ def create_server(experiment):
         return call("simulate", parameters=parameters, rationale=rationale, agent=agent, base_id=base_id)
 
     @server.tool()
-    def warmup(n_steps: StrictInt) -> dict[str, Any]:
-        """Add n_steps RANDOM designs to the RL replay buffer (1..1000), no learning.
-        Each step costs one simulation (plus one per 10-step episode reset). Use only
-        when the replay buffer is too small to train (< batch_size = 128)."""
-        return call("warmup", n_steps=n_steps)
+    def warmup(n_steps: StrictInt, around_best: StrictBool = True,
+               radius: StrictFloat = 0.15) -> dict[str, Any]:
+        """Add n_steps random designs to the RL replay buffer (1..1000), no learning.
+        around_best=True (default): designs are random perturbations of the current best
+        (radius = std in normalized action units; 0.15 ~ a few grid steps), which explores
+        its neighbourhood and yields feasible designs for the Pareto front. Each step costs
+        one simulation (plus one per 10-step episode reset)."""
+        return call("warmup", n_steps=n_steps, around_best=around_best, radius=radius)
 
     @server.tool()
-    def train(n_steps: StrictInt) -> dict[str, Any]:
+    def train(n_steps: StrictInt, noise_sigma: Optional[StrictFloat] = None) -> dict[str, Any]:
         """Run the TD3 RL sizer for n_steps steps (1..1000): it proposes designs, simulates
         them and learns from the shared replay buffer. Costs ~1.1 simulations per step.
         Needs replay_size >= 128 (warmup and/or seed_rl first). Prefer batches of 100-300
-        and check improved_best before continuing."""
-        return call("train", n_steps=n_steps)
+        and check improved_best before continuing. noise_sigma (0.01..0.5, default 0.1)
+        sets the exploration noise: smaller = finer local search around the actor's design."""
+        return call("train", n_steps=n_steps, noise_sigma=noise_sigma)
 
     @server.tool()
-    def seed_rl(k: StrictInt = 5, repeat: StrictInt = 1, only_feasible: StrictBool = False) -> dict[str, Any]:
+    def seed_rl(k: StrictInt = 5, repeat: StrictInt = 1, only_feasible: StrictBool = False,
+                anchor_steps: StrictInt = 0) -> dict[str, Any]:
         """Copy the k best LLM-simulated designs into the RL replay buffer (no simulation),
-        each repeat times (1..10), so TD3 learns from the expert designs. Call before train."""
-        return call("seed_rl", k=k, repeat=repeat, only_feasible=only_feasible)
+        each repeat times (1..10). anchor_steps (e.g. 300) also pretrains the TD3 actor to
+        propose the best expert design (behaviour cloning), so RL explores around it
+        instead of starting from random designs. Costs no simulations. Call before train."""
+        return call("seed_rl", k=k, repeat=repeat, only_feasible=only_feasible, anchor_steps=anchor_steps)
 
     @server.tool()
     def get_status(k: StrictInt = 5) -> dict[str, Any]:

@@ -87,6 +87,7 @@ class SizingExperiment:
         self.batch_size = batch_size
         self.run_id = run_id or "harness_" + datetime.now().strftime("%Y%m%d_%H%M%S")
         self.t0 = time.time()
+        self._clock_started = False
 
         self.env = CircuitEnv(run_id=self.run_id, success_threshold=0.0)
         # Direct design evaluations must not change the ongoing RL episode.
@@ -127,6 +128,11 @@ class SizingExperiment:
         with open(self.log_path, "w", newline="") as f:
             csv.writer(f).writerow(LOG_FIELDS)
         self.memory_path.touch()
+
+    def tick(self):
+        """Start the runtime clock at the first tool call (not at server start)."""
+        if not self._clock_started:
+            self.t0, self._clock_started = time.time(), True
 
     # ------------------------------------------------------------------ tools
     def design_space(self) -> dict:
@@ -187,18 +193,29 @@ class SizingExperiment:
         self._write_summary()
         return self._compact(cand, with_params=False)
 
-    def warmup(self, n_steps: int) -> dict:
-        """Append exactly n_steps random transitions, without updating weights."""
+    def warmup(self, n_steps: int, around_best: bool = False, radius: float = 0.15) -> dict:
+        """Append n_steps random transitions, without updating weights. With around_best,
+        actions are the best design's action + N(0, radius) noise (local exploration)."""
+        if around_best and self.best is None:
+            raise ValueError("No design yet to explore around.")
+        if not 0.01 <= radius <= 1.0:
+            raise ValueError("radius must be in [0.01, 1].")
+        self._local = (self.param_to_action(self.best["parameters"]), radius) if around_best else None
         return self._run_steps(n_steps, training=False)
 
-    def train(self, n_steps: int) -> dict:
+    def train(self, n_steps: int, noise_sigma: float = None) -> dict:
         """Collect n_steps policy transitions, one TD3 update per transition."""
+        if noise_sigma is not None:
+            if not 0.01 <= noise_sigma <= 0.5:
+                raise ValueError("noise_sigma must be in [0.01, 0.5].")
+            self.agent.expl_noise = noise_sigma
         if self.replay.size < self.batch_size:
             raise ValueError(f"Replay has {self.replay.size} experiences; need at least "
                              f"batch_size={self.batch_size}. Call warmup/seed_rl first.")
         return self._run_steps(n_steps, training=True)
 
-    def seed_rl(self, k: int = 5, repeat: int = 1, only_feasible: bool = False) -> dict:
+    def seed_rl(self, k: int = 5, repeat: int = 1, only_feasible: bool = False,
+                anchor_steps: int = 0) -> dict:
         """Put the k best LLM-evaluated designs into the replay buffer (no simulation).
 
         The next state depends only on the action in this environment, so a measured
@@ -216,9 +233,27 @@ class SizingExperiment:
             for _ in range(repeat):
                 self.replay.push(state, action, cand["reward"], nxt, 0.0)
                 self.seeded += 1
+        anchor_loss = None
+        if anchor_steps and chosen:
+            # Behaviour cloning: pull the actor towards the best expert design, so TD3's
+            # exploration starts around it instead of at a random point (0 simulations).
+            check_count(anchor_steps, "anchor_steps", 2000)
+            dev = next(self.agent.actor.parameters()).device
+            target = torch.as_tensor(self.param_to_action(chosen[0]["parameters"]), device=dev).unsqueeze(0)
+            for _ in range(anchor_steps):
+                states = torch.as_tensor(self.replay.sample(min(int(self.replay.size), 128))[0],
+                                         dtype=torch.float32, device=dev)
+                loss = ((self.agent.actor(states) - target) ** 2).mean()
+                self.agent.actor_optimizer.zero_grad()
+                loss.backward()
+                self.agent.actor_optimizer.step()
+            self.agent.actor_target.load_state_dict(self.agent.actor.state_dict())
+            anchor_loss = float(loss)
         self._write_summary()
         return {"seeded_ids": [c["id"] for c in chosen], "transitions_added": len(chosen) * repeat,
-                "replay_size": int(self.replay.size), "simulator_calls_used": 0}
+                "replay_size": int(self.replay.size), "simulator_calls_used": 0,
+                "anchored_to": chosen[0]["id"] if anchor_loss is not None else None,
+                "anchor_loss": anchor_loss}
 
     def get_status(self, k: int = 5) -> dict:
         """Counters and the top-k distinct designs by reward (no simulation)."""
@@ -363,6 +398,9 @@ class SizingExperiment:
                                  "rl_reset", self.env.n_failed_sims > f0, agent="td3")
                 if training:
                     action = self.agent.select_action(self.observation)
+                elif getattr(self, "_local", None) is not None:
+                    centre, radius = self._local
+                    action = np.clip(centre + np.random.normal(0, radius, centre.shape), -1, 1).astype(np.float32)
                 else:
                     action = self.env.action_space.sample()
                 s0, f0 = self.env.n_simulations, self.env.n_failed_sims
