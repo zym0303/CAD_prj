@@ -27,9 +27,9 @@ File: `circuit_env.py` (can be done in parallel with milestone 1)
 Files: `td3/agent.py`, `td3_runner.py`
 - [x] Action selection with exploration noise (`agent.py`, line ~89)
 - [x] TD3 learning step: twin critics, target policy smoothing, delayed actor update (`agent.py`, line ~112); tests: `test_td3_agent.py` 9/9 pass
-- [ ] Tune in `td3_runner.py`: noise sigma, batch size, warmup steps, actor and critic learning rates
-- [ ] 5k-simulation run → plots: max FoM vs. simulation step, and current–area Pareto front
-- [ ] Compare with the TAs' baseline agent (`baseline_runner.py`) within 5k simulations
+- [x] Tune in `td3_runner.py`: noise sigma, batch size, warmup steps, actor and critic learning rates
+- [x] 5k-simulation run → plots: max FoM vs. simulation step, and current–area Pareto front
+- [x] Compare with the TAs' baseline agent (`baseline_runner.py`) within 5k simulations
 - [ ] Report: agent implementation, episodic loop, hyperparameter choices
 
 ## Milestone 4 — LLM agentic harness
