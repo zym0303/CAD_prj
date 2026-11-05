@@ -1,0 +1,132 @@
+
+ Initialized TwoStage with simulator ngspice 
+
+[warmup] step     0 | sims     2 | FoM -3.8821 | best -3.8821 | failed sims 0
+[warmup] step    50 | sims    57 | FoM -2.1858 | best -0.6246 | failed sims 0
+[sac] step   100 | sims   112 | FoM -3.7524 | best -0.1248 | failed sims 0
+[sac] step   150 | sims   167 | FoM -1.1009 | best -0.1248 | failed sims 0
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] simulation failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 1)
+[sac] step   200 | sims   222 | FoM -0.4174 | best -0.1248 | failed sims 1
+[sac] step   250 | sims   277 | FoM -0.5092 | best -0.0383 | failed sims 1
+[sac] step   300 | sims   332 | FoM -2.4611 | best -0.0383 | failed sims 1
+[sac] step   350 | sims   387 | FoM -0.6466 | best -0.0383 | failed sims 1
+[sac] step   400 | sims   442 | FoM -0.2913 | best +0.4243 | failed sims 1
+[sac] step   450 | sims   497 | FoM -0.9414 | best +0.4243 | failed sims 1
+[sac] step   500 | sims   552 | FoM -0.7366 | best +0.4243 | failed sims 1
+[sac] step   550 | sims   607 | FoM -0.4950 | best +0.5530 | failed sims 1
+[sac] step   600 | sims   662 | FoM -1.1531 | best +0.5530 | failed sims 1
+[sac] step   650 | sims   717 | FoM +0.2318 | best +0.5530 | failed sims 1
+[sac] step   700 | sims   772 | FoM -0.2439 | best +0.5530 | failed sims 1
+[sac] step   750 | sims   827 | FoM -0.1416 | best +0.5530 | failed sims 1
+[sac] step   800 | sims   882 | FoM -0.0119 | best +0.5530 | failed sims 1
+[sac] step   850 | sims   937 | FoM -0.2191 | best +0.5530 | failed sims 1
+[sac] step   900 | sims   992 | FoM -1.1793 | best +0.5530 | failed sims 1
+[sac] step   950 | sims  1047 | FoM -0.2401 | best +0.6312 | failed sims 1
+[sac] step  1000 | sims  1102 | FoM -0.6010 | best +0.6312 | failed sims 1
+[sac] step  1050 | sims  1157 | FoM -0.6083 | best +0.6312 | failed sims 1
+[sac] step  1100 | sims  1212 | FoM -1.6744 | best +0.6312 | failed sims 1
+[sac] step  1150 | sims  1267 | FoM -0.1510 | best +0.6312 | failed sims 1
+[sac] step  1200 | sims  1322 | FoM -0.4449 | best +0.6312 | failed sims 1
+[sac] step  1250 | sims  1377 | FoM -0.5025 | best +0.6312 | failed sims 1
+[sac] step  1300 | sims  1432 | FoM -0.3582 | best +0.6312 | failed sims 1
+[sac] step  1350 | sims  1487 | FoM -0.3412 | best +0.6312 | failed sims 1
+[sac] step  1400 | sims  1542 | FoM -0.7047 | best +0.6312 | failed sims 1
+[sac] step  1450 | sims  1597 | FoM -0.1938 | best +0.6312 | failed sims 1
+[sac] step  1500 | sims  1652 | FoM -0.8067 | best +0.6312 | failed sims 1
+[sac] step  1550 | sims  1707 | FoM -0.4761 | best +0.6312 | failed sims 1
+[sac] step  1600 | sims  1762 | FoM -0.3121 | best +0.6312 | failed sims 1
+[sac] step  1650 | sims  1817 | FoM -0.7831 | best +0.6312 | failed sims 1
+[sac] step  1700 | sims  1872 | FoM -0.3639 | best +0.6312 | failed sims 1
+[sac] step  1750 | sims  1927 | FoM -1.7829 | best +0.6312 | failed sims 1
+[sac] step  1800 | sims  1982 | FoM -0.9721 | best +0.6312 | failed sims 1
+[sac] step  1850 | sims  2037 | FoM -1.9741 | best +0.6312 | failed sims 1
+[sac] step  1900 | sims  2092 | FoM -0.5206 | best +0.6312 | failed sims 1
+[sac] step  1950 | sims  2147 | FoM -0.5834 | best +0.6312 | failed sims 1
+[sac] step  2000 | sims  2202 | FoM -0.6573 | best +0.6312 | failed sims 1
+[sac] step  2050 | sims  2257 | FoM -0.9110 | best +0.6312 | failed sims 1
+[sac] step  2100 | sims  2312 | FoM -0.5335 | best +0.6312 | failed sims 1
+[sac] step  2150 | sims  2367 | FoM -1.3010 | best +0.6312 | failed sims 1
+[sac] step  2200 | sims  2422 | FoM -0.8280 | best +0.6312 | failed sims 1
+[sac] step  2250 | sims  2477 | FoM -0.6102 | best +0.6312 | failed sims 1
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] simulation failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 2)
+[sac] step  2300 | sims  2532 | FoM -0.6059 | best +0.6312 | failed sims 2
+[sac] step  2350 | sims  2587 | FoM -0.2961 | best +0.6312 | failed sims 2
+[sac] step  2400 | sims  2642 | FoM -0.5783 | best +0.6312 | failed sims 2
+[sac] step  2450 | sims  2697 | FoM -0.5627 | best +0.6312 | failed sims 2
+[sac] step  2500 | sims  2752 | FoM -0.5373 | best +0.6312 | failed sims 2
+[sac] step  2550 | sims  2807 | FoM -1.5723 | best +0.6312 | failed sims 2
+[sac] step  2600 | sims  2862 | FoM -0.0359 | best +0.6312 | failed sims 2
+[sac] step  2650 | sims  2917 | FoM -0.6260 | best +0.6312 | failed sims 2
+[sac] step  2700 | sims  2972 | FoM -0.3709 | best +0.6312 | failed sims 2
+[sac] step  2750 | sims  3027 | FoM -0.6230 | best +0.6312 | failed sims 2
+[sac] step  2800 | sims  3082 | FoM -3.0269 | best +0.6312 | failed sims 2
+[sac] step  2850 | sims  3137 | FoM -0.1729 | best +0.6312 | failed sims 2
+[sac] step  2900 | sims  3192 | FoM -0.7647 | best +0.6312 | failed sims 2
+[sac] step  2950 | sims  3247 | FoM -0.1279 | best +0.6312 | failed sims 2
+[sac] step  3000 | sims  3302 | FoM -0.3322 | best +0.6312 | failed sims 2
+[sac] step  3050 | sims  3357 | FoM -0.4729 | best +0.6312 | failed sims 2
+[sac] step  3100 | sims  3412 | FoM -0.4430 | best +0.6312 | failed sims 2
+[sac] step  3150 | sims  3467 | FoM -1.8158 | best +0.6312 | failed sims 2
+[sac] step  3200 | sims  3522 | FoM -0.4477 | best +0.6312 | failed sims 2
+[sac] step  3250 | sims  3577 | FoM -0.7329 | best +0.6312 | failed sims 2
+[sac] step  3300 | sims  3632 | FoM -1.3947 | best +0.6312 | failed sims 2
+[sac] step  3350 | sims  3687 | FoM -1.9853 | best +0.6312 | failed sims 2
+[sac] step  3400 | sims  3742 | FoM -0.4132 | best +0.6312 | failed sims 2
+[sac] step  3450 | sims  3797 | FoM -0.4641 | best +0.6312 | failed sims 2
+[sac] step  3500 | sims  3852 | FoM -0.2744 | best +0.6312 | failed sims 2
+[sac] step  3550 | sims  3907 | FoM -0.6376 | best +0.6312 | failed sims 2
+[sac] step  3600 | sims  3962 | FoM -0.6240 | best +0.6312 | failed sims 2
+[sac] step  3650 | sims  4017 | FoM -0.8514 | best +0.6312 | failed sims 2
+[sac] step  3700 | sims  4072 | FoM -0.5725 | best +0.6312 | failed sims 2
+[sac] step  3750 | sims  4127 | FoM -0.3270 | best +0.6312 | failed sims 2
+[sac] step  3800 | sims  4182 | FoM -1.0279 | best +0.6312 | failed sims 2
+[sac] step  3850 | sims  4237 | FoM -1.6707 | best +0.6312 | failed sims 2
+[sac] step  3900 | sims  4292 | FoM -0.6276 | best +0.6312 | failed sims 2
+[sac] step  3950 | sims  4347 | FoM -0.3741 | best +0.6312 | failed sims 2
+[sac] step  4000 | sims  4402 | FoM -0.5224 | best +0.6312 | failed sims 2
+[sac] step  4050 | sims  4457 | FoM -0.4414 | best +0.6312 | failed sims 2
+[sac] step  4100 | sims  4512 | FoM -0.5914 | best +0.6312 | failed sims 2
+[sac] step  4150 | sims  4567 | FoM -0.0976 | best +0.6312 | failed sims 2
+[sac] step  4200 | sims  4622 | FoM -0.8681 | best +0.6312 | failed sims 2
+[sac] step  4250 | sims  4677 | FoM -0.5300 | best +0.6312 | failed sims 2
+[sac] step  4300 | sims  4732 | FoM -0.5028 | best +0.6312 | failed sims 2
+[sac] step  4350 | sims  4787 | FoM -0.3609 | best +0.6312 | failed sims 2
+[sac] step  4400 | sims  4842 | FoM -0.2956 | best +0.6312 | failed sims 2
+[sac] step  4450 | sims  4897 | FoM -0.2288 | best +0.6312 | failed sims 2
+[sac] step  4500 | sims  4952 | FoM -0.2560 | best +0.6312 | failed sims 2
+24 feasible designs, 6 on the Pareto front -> Solutions/sac_baseline/
+{
+  "agent": "SAC baseline (TAs)",
+  "stopped_because": "5000 simulations reached",
+  "args": {
+    "seed": 123456,
+    "noise_sigma": 0.1,
+    "gamma": 0.99,
+    "tau": 0.005,
+    "target_update_interval": 1,
+    "actor_update_interval": 1,
+    "hidden_size": 256,
+    "batch_size": 100,
+    "w": 100,
+    "T": 10000,
+    "pi_lr": 0.0003,
+    "q_lr": 0.0003,
+    "alpha_lr": 0.0003,
+    "init_temperature": 0.1,
+    "replay_size": 1000000,
+    "cuda": false,
+    "run_id": "sac_baseline"
+  },
+  "max_sims": 5000,
+  "env_steps": 4545,
+  "n_simulations": 5000,
+  "n_failed_sims": 2,
+  "best_fom": 0.6311644534169947,
+  "first_feasible_step_and_sims": [
+    305,
+    337
+  ],
+  "runtime_s": 4084.4
+}

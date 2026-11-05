@@ -1,0 +1,33 @@
+{
+  "agent": "SAC baseline (TAs)",
+  "stopped_because": "5000 simulations reached",
+  "args": {
+    "seed": 123456,
+    "noise_sigma": 0.1,
+    "gamma": 0.99,
+    "tau": 0.005,
+    "target_update_interval": 1,
+    "actor_update_interval": 1,
+    "hidden_size": 256,
+    "batch_size": 100,
+    "w": 100,
+    "T": 10000,
+    "pi_lr": 0.0003,
+    "q_lr": 0.0003,
+    "alpha_lr": 0.0003,
+    "init_temperature": 0.1,
+    "replay_size": 1000000,
+    "cuda": false,
+    "run_id": "sac_baseline"
+  },
+  "max_sims": 5000,
+  "env_steps": 4545,
+  "n_simulations": 5000,
+  "n_failed_sims": 2,
+  "best_fom": 0.6311644534169947,
+  "first_feasible_step_and_sims": [
+    305,
+    337
+  ],
+  "runtime_s": 4084.4
+}

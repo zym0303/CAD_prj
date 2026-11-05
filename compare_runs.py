@@ -1,7 +1,7 @@
 """
 Compare runs (e.g. our TD3 vs. the TAs' baseline) on the same simulation budget.
 
-    python compare_runs.py --runs <run_id>:TD3 <baseline_run_id>:Baseline --max_sims 5000
+    python compare_runs.py --runs <run_id>:TD3 <baseline_run_id>:Baseline --max_sims 5000 [--out_dir comparison]
 
 For each run it reads
     output_figs/<run_id>/history.csv   (written by td3_runner.py: FoM per step + n_simulations)
@@ -9,7 +9,7 @@ or, if that file is missing (e.g. a baseline that does not use our runner),
     output_figs/<run_id>/reward_history.npy / .csv  (one FoM per step; x-axis = step)
 and the feasible designs in solutions/<run_id>.csv.
 
-Writes output_figs/comparison/
+Writes output_figs/<out_dir>/ (default output_figs/comparison/)
     max_fom_vs_sims.png   running max FoM vs. number of simulations, all runs
     pareto_overlay.png    current-area Pareto fronts, all runs
     comparison.csv        table: best FoM, first feasible, #feasible, #Pareto, per run
@@ -60,9 +60,10 @@ def main():
     p = argparse.ArgumentParser()
     p.add_argument('--runs', nargs='+', required=True, help='run_id:label pairs')
     p.add_argument('--max_sims', type=int, default=5000)
+    p.add_argument('--out_dir', default='comparison', help='subfolder of output_figs/ to write into')
     args = p.parse_args()
 
-    out_dir = os.path.join('output_figs', 'comparison')
+    out_dir = os.path.join('output_figs', args.out_dir)
     os.makedirs(out_dir, exist_ok=True)
     plt.rcParams.update({'font.size': 14})
     fig1, ax1 = plt.subplots(figsize=(8, 5))
