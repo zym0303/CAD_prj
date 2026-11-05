@@ -7,7 +7,7 @@ Unit tests for Milestone 3: the TD3 agent (td3/agent.py) and the runner (td3_run
     3. learning             TD3 finds the optimum of a toy "design" problem whose
                             structure is the same as the circuit env (s' depends on a only)
     4. runner               full td3_runner.main() with ngspice mocked: simulation budget,
-                            logs, plots, Solutions folder
+                            logs, plots, Pareto solutions folder
 
 Run from CAD/:   python -m pytest test_td3_agent.py -v
 (add  -m "not slow"  to skip the learning test)
@@ -234,6 +234,6 @@ def test_runner_end_to_end_mocked(tmp_path, monkeypatch):
     assert sum(r['phase'] == 'warmup' for r in hist) == 50
     for fig in ('max_reward.png', 'pareto.png', 'average_score.png'):
         assert os.path.isfile(f'output_figs/test/{fig}')
-    sols = os.listdir('Solutions/test')
+    sols = os.listdir('solutions/test')
     assert 'pareto_solutions.csv' in sols
     assert any(f.endswith('.cir') for f in sols)

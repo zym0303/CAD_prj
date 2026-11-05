@@ -92,7 +92,7 @@ The method returns `{'critic_loss', 'actor_loss'}` for logging (the losses go in
 2. **Training**: each episode = `reset()` (random start design, which costs one simulation), then 10 × [`select_action` → `step` → `push` → one gradient update]. That's an update-to-data ratio of 1.
 3. `clean.sh` runs every 100 steps.
 4. **Stop** when `env.n_simulations >= --max_sims` (default **5000**, reset included) or after `--T` steps. 5000 simulations ≈ 4545 steps.
-5. **Finalize**: final `max_reward.png`; the Pareto front of all feasible designs, with **netlists regenerated** into `Solutions/<run_id>/` (since `clean.sh` deletes the originals) plus `pareto_solutions.csv`; `pareto.png` (all feasible designs in grey); agent weights; `summary.json`.
+5. **Finalize**: final `max_reward.png`; the Pareto front of all feasible designs, with **netlists regenerated** into `solutions/<run_id>/` (since `clean.sh` deletes the originals) plus `pareto_solutions.csv`; `pareto.png` (all feasible designs in grey); agent weights; `summary.json`.
 
 **Bugs fixed relative to the skeleton**
 
@@ -106,7 +106,7 @@ The method returns `{'critic_loss', 'actor_loss'}` for logging (the losses go in
 | `./clean.sh` needs exec permission | `bash ./clean.sh` |
 | batch larger than the warmup data | `ValueError` if `w < batch_size` |
 
-**Outputs per run** (`output_figs/<run_id>/`): `history.csv` (one row per step: step, n_simulations, phase, FoM, running max, feasible, losses, wall time), `max_reward.png`, `average_score.png`, `pareto.png`, `summary.json`, `td3_*` weights. Plus `solutions/<run_id>.csv` and `Solutions/<run_id>/`.
+**Outputs per run** (`output_figs/<run_id>/`): `history.csv` (one row per step: step, n_simulations, phase, FoM, running max, feasible, losses, wall time), `max_reward.png`, `average_score.png`, `pareto.png`, `summary.json`, `td3_*` weights. Plus `solutions/<run_id>.csv` (every feasible design) and `solutions/<run_id>/` (Pareto netlists + `pareto_solutions.csv`). For the submission, copy `solutions/final_g099/` into a folder named `Solutions/`.
 
 ---
 
@@ -141,7 +141,7 @@ The budget is tiny by RL standards (original TD3: 1M steps; here ~4.5k), and eve
 | `test_delayed_actor_and_target_updates` | it. 1: critic only; it. 2: actor + both targets |
 | `test_soft_update_formula` | θ' = τθ + (1−τ)θ' exactly |
 | `test_td3_learns_toy_design_problem` (slow) | on a hidden-optimum problem with s' = f(a), the learned μ gets ≥ 5× closer to the optimum than random designs (achieved ≈ 10×) |
-| `test_runner_end_to_end_mocked` | full `main()` with fake specs: budget respected (reset counted), warmup = w steps, history rows = steps, the 3 plots, `Solutions/` with netlists |
+| `test_runner_end_to_end_mocked` | full `main()` with fake specs: budget respected (reset counted), warmup = w steps, history rows = steps, the 3 plots, `solutions/test/` with netlists |
 
 ---
 

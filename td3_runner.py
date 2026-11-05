@@ -153,18 +153,20 @@ def train_policy(args, env_pool, agent, total_steps):
 
 
 # ----------------------------------------------------------------------------
-# After training: final plots and the Solutions folder
+# After training: final plots and the Pareto solutions (solutions/<run_id>/)
 # ----------------------------------------------------------------------------
 def _parse_dict(text):
     # the CSV stores str(dict); numpy scalars may appear as np.float64(...)
     return eval(text, {'__builtins__': {}, 'np': np})
 
 
-def export_pareto_solutions(env, run_id, out_root='Solutions'):
+def export_pareto_solutions(env, run_id, out_root='solutions'):
     """
     Read every feasible design from ./solutions/<run_id>.csv, keep the current-area
     Pareto-optimal ones, regenerate their netlists (clean.sh deletes the originals) and
-    write them with a CSV of params, specs and FoM to Solutions/<run_id>/.
+    write them with a CSV of params, specs and FoM to solutions/<run_id>/.
+    (lowercase, like the env's solutions/<run_id>.csv: macOS treats Solutions/ and
+    solutions/ as one folder, git and Linux as two)
     """
     csv_path = os.path.join('solutions', f'{run_id}.csv')
     if not os.path.isfile(csv_path):
