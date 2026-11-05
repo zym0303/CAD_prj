@@ -31,8 +31,10 @@ assert back == exp.best["parameters"], "param_to_action is not the inverse of ac
 print("seed+anchor:", exp.seed_rl(k=2, repeat=2, anchor_steps=20))
 w = exp.warmup(10)
 print("warmup: steps", w["steps_completed"], "sims", w["simulator_calls_used"], w.get("error"))
-lw = exp.warmup(5, around_best=True, radius=0.15)
+lw = exp.warmup(5, around_best=True, n_params=2)
 print("local warmup: steps", lw["steps_completed"], lw.get("error"))
+sw = exp.sweep("res", [1000.0, 2000.0, 3000.0], rationale="Rc sweep test", agent="test")
+print("sweep:", [(r["value"], r["reward"]) for r in sw["results"]])
 t = exp.train(5, noise_sigma=0.05)
 print("train: steps", t["steps_completed"], "updates", t["updates_performed"], t.get("error"))
 

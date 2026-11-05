@@ -1,0 +1,4 @@
+method,best_fom,total_time_s,total_sims,time_to_0.3,sims_to_0.3,time_to_0.5,sims_to_0.5,time_to_0.6,sims_to_0.6,time_to_0.645,sims_to_0.645
+LLM harness (harness_20261105_192216),0.6857,1032.4,577,498.32,17,498.32,17,498.32,17,555.5,19
+LLM harness (harness_20261106_000906),0.6877,890.9,917,244.93,21,244.93,21,244.93,21,244.93,21
+TD3 only (final_g0),0.6583,2662.5,5000,476.4,785,626.4,1085,626.4,1085,626.4,1085

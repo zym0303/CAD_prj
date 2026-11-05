@@ -28,7 +28,8 @@ only the memory it needs. Otherwise play the roles one after another in this ses
 
 Budgets (the user may override them, e.g. "budget 1500 sims, 30 hand sims"):
 - total simulator calls: 1000 (default);
-- hand simulations (analyst + sizer): 40. These cost LLM tokens; RL simulations barely do.
+- hand decisions: 40. Each simulate OR sweep call counts as one (a sweep of 6 values is
+  one decision). Decisions cost LLM tokens; RL and sweep simulations barely do.
 Start by stating the mode and both budgets in one line. This skill is the full
 instruction; the user does not repeat the steps.
 
@@ -52,10 +53,13 @@ best infeasible design), then back to phase 2.
 
 There is no target FoM: always keep improving until a budget is used.
 - Moving between phases is decided by stalls (the phase rules above), never by the FoM value.
-- After phase 4, if both budgets have room left: repeat phase 3 (RL anchored on the new
-  best, at most the remaining total budget) and phase 4, while hand simulations remain.
-- Stop and go to phase 5 when the total budget is used, or the hand budget is used and the
-  last RL round gave < 0.005 improvement (nothing left that is cheap in tokens).
+- MANDATORY LOOP: after every phase 4, call get_status. If simulator_calls < total budget
+  - 100 AND hand decisions remain, go back to phase 3 (rl round 2+ settings, anchored on the
+  new best), then phase 4 again. Being "converged" or "optimal" is not a reason to skip
+  this: unused budget is wasted. The reviewer may start only when simulator_calls >= total
+  budget - 100, or hand decisions are used up.
+- In phase 4, prefer one `sweep` (e.g. Rc or Cc over 5-8 grid values) to several simulate
+  calls: same information, far fewer tokens.
 - Before each phase, check get_status: never start a batch that would exceed the budget;
   shrink it instead (e.g. train(n_steps=remaining // 1.1)).
 - Reaching feasibility is NOT a reason to stop: it starts phase 2.

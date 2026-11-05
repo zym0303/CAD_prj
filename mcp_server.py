@@ -60,14 +60,25 @@ def create_server(experiment):
         return call("simulate", parameters=parameters, rationale=rationale, agent=agent, base_id=base_id)
 
     @server.tool()
-    def warmup(n_steps: StrictInt, around_best: StrictBool = True,
-               radius: StrictFloat = 0.15) -> dict[str, Any]:
-        """Add n_steps random designs to the RL replay buffer (1..1000), no learning.
-        around_best=True (default): designs are random perturbations of the current best
-        (radius = std in normalized action units; 0.15 ~ a few grid steps), which explores
-        its neighbourhood and yields feasible designs for the Pareto front. Each step costs
-        one simulation (plus one per 10-step episode reset)."""
-        return call("warmup", n_steps=n_steps, around_best=around_best, radius=radius)
+    def warmup(n_steps: StrictInt, around_best: StrictBool = True, n_params: StrictInt = 3,
+               max_steps: StrictInt = 2, top_k: StrictInt = 3) -> dict[str, Any]:
+        """Add n_steps designs to the RL replay buffer (1..1000), no learning, one
+        simulation each. around_best=True (default): sparse local search, i.e. neighbours of
+        the top_k best designs (feasible first) that change only n_params parameters by
+        1..max_steps grid steps. Gives many feasible designs (Pareto data) and local data for
+        the critic. around_best=False: uniformly random designs."""
+        return call("warmup", n_steps=n_steps, around_best=around_best, n_params=n_params,
+                    max_steps=max_steps, top_k=top_k)
+
+    @server.tool()
+    def sweep(parameter: str, values: list[StrictFloat | StrictInt], rationale: str,
+              agent: str, base_id: Optional[StrictInt] = None) -> dict[str, Any]:
+        """Simulate 2..10 values of ONE parameter on a fixed base design (default: the best)
+        in a single call: len(values) simulator calls but one decision. Use it for 1-D fine
+        tuning (Rc, Cc, one multiplicity) instead of several simulate calls. Values must be
+        on the grid. Returns each value's id, reward, feasibility and key specs."""
+        return call("sweep", parameter=parameter, values=values, rationale=rationale,
+                    agent=agent, base_id=base_id)
 
     @server.tool()
     def train(n_steps: StrictInt, noise_sigma: Optional[StrictFloat] = None) -> dict[str, Any]:

@@ -13,12 +13,14 @@ refiner: its actor is first pulled onto the best expert design, then it explores
    which design it is anchored on.
 2. `seed_rl(k=10, repeat=3, anchor_steps=300)`: expert designs into the replay buffer and
    the actor pretrained to propose the best one (0 simulations).
-3. `warmup(n_steps=100, around_best=True, radius=0.15)`: neighbours of the best design;
-   fills the buffer to >= 128 and gives the critic local data.
-4. `train(n_steps=200, noise_sigma=0.1)` per batch. After each batch check `improved_best`:
-   - improved: continue; after 2 improving batches use noise_sigma=0.05 (finer search);
-   - 2 batches in a row without improvement, or 800 simulations in this phase, or the total budget (opamp-harness) is reached: stop.
-   Size the last batch so it does not exceed the remaining budget.
+3. `warmup(n_steps=100, around_best=True, n_params=3, max_steps=2, top_k=3)`: sparse
+   neighbours of the 3 best designs (only 3 parameters changed by 1-2 grid steps each), so
+   most stay feasible: Pareto data and local data for the critic. Not needed in round 2+
+   when the replay buffer is already >= 128; then do a shorter one (n_steps=50, n_params=2).
+4. `train(n_steps=200, noise_sigma=0.1)` per batch (round 2+: noise_sigma=0.05). After each
+   batch check `improved_best`: stop after 2 batches in a row without improvement, after 800
+   simulations in this phase, or at the total budget (size the last batch to fit).
+   Episodes restart from the best design, so no simulations are spent on random resets.
 5. `write_memory(agent="rl", kind="result", ...)`: simulations used, best id and FoM
    before/after, how many feasible designs exist now, and which parameters of the RL
    best differ from the expert design (this is what the sizer polishes next).

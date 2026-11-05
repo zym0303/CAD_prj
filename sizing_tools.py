@@ -193,15 +193,59 @@ class SizingExperiment:
         self._write_summary()
         return self._compact(cand, with_params=False)
 
-    def warmup(self, n_steps: int, around_best: bool = False, radius: float = 0.15) -> dict:
-        """Append n_steps random transitions, without updating weights. With around_best,
-        actions are the best design's action + N(0, radius) noise (local exploration)."""
-        if around_best and self.best is None:
-            raise ValueError("No design yet to explore around.")
-        if not 0.01 <= radius <= 1.0:
-            raise ValueError("radius must be in [0.01, 1].")
-        self._local = (self.param_to_action(self.best["parameters"]), radius) if around_best else None
+    def warmup(self, n_steps: int, around_best: bool = False, n_params: int = 3,
+               max_steps: int = 2, top_k: int = 3) -> dict:
+        """Append n_steps transitions, without updating weights. Default: random designs.
+        around_best: neighbours of the top_k best (feasible first) designs, each changing
+        only n_params random parameters by 1..max_steps grid steps (sparse local search)."""
+        self._local = None
+        if around_best:
+            if self.best is None:
+                raise ValueError("No design yet to explore around.")
+            check_count(n_params, "n_params", len(self.param_names))
+            check_count(max_steps, "max_steps", 5)
+            check_count(top_k, "top_k", 10)
+            ranked = sorted(self.candidates.values(), key=lambda c: (c["feasible"], c["reward"]), reverse=True)
+            self._local = ([c["parameters"] for c in ranked[:top_k]], n_params, max_steps)
         return self._run_steps(n_steps, training=False)
+
+    def _neighbour(self):
+        """A sparse grid-step perturbation of one of the warmup centres, not yet simulated."""
+        centres, n_params, max_steps = self._local
+        steps = [s for s in range(-max_steps, max_steps + 1) if s]
+        for _ in range(20):
+            p = dict(centres[np.random.randint(len(centres))])
+            for name in np.random.choice(self.param_names, size=n_params, replace=False):
+                grid = self.grids[name]
+                k = int(np.argmin(np.abs(grid - p[name])))
+                p[name] = grid[int(np.clip(k + np.random.choice(steps), 0, len(grid) - 1))]
+            if tuple(self._canon(p)[n] for n in self.param_names) not in self.candidates:
+                break
+        return self.param_to_action(p)
+
+    def _canon(self, p):
+        return {n: int(round(p[n])) if self.is_int[n] else float(f"{p[n]:.6e}") for n in self.param_names}
+
+    def sweep(self, parameter: str, values: list, rationale: str, agent: str = "", base_id=None) -> dict:
+        """Simulate a 1-D sweep of one parameter around a base design (one LLM decision,
+        len(values) simulator calls). The base stays fixed during the sweep."""
+        if parameter not in self.grids:
+            raise ValueError(f"Unknown parameter {parameter}.")
+        if not 2 <= len(values) <= 10:
+            raise ValueError("Give 2..10 values.")
+        base = self.by_id.get(base_id) if base_id is not None else self.best
+        if base is None:
+            raise ValueError("No base design.")
+        rows = []
+        for v in values:
+            r = self.simulate({parameter: v}, rationale=f"[sweep {parameter}] {rationale}",
+                              agent=agent, base_id=base["id"])
+            rows.append({"value": v, "id": r["id"], "reward": r["reward"], "feasible": r["feasible"],
+                         "violated": r["violated"],
+                         "specs": {k: r["specs"][k] for k in ("current", "area", "phm", "ugbw", "slewRate")}})
+        best = max(rows, key=lambda x: x["reward"])
+        return {"base_id": base["id"], "parameter": parameter, "results": rows,
+                "best_in_sweep": {"id": best["id"], "value": best["value"], "reward": best["reward"]}}
 
     def train(self, n_steps: int, noise_sigma: float = None) -> dict:
         """Collect n_steps policy transitions, one TD3 update per transition."""
@@ -248,7 +292,7 @@ class SizingExperiment:
                 loss.backward()
                 self.agent.actor_optimizer.step()
             self.agent.actor_target.load_state_dict(self.agent.actor.state_dict())
-            anchor_loss = float(loss)
+            anchor_loss = float(loss.detach())
         self._write_summary()
         return {"seeded_ids": [c["id"] for c in chosen], "transitions_added": len(chosen) * repeat,
                 "replay_size": int(self.replay.size), "simulator_calls_used": 0,
@@ -390,7 +434,13 @@ class SizingExperiment:
         phase = "rl_train" if training else "rl_warmup"
         for _ in range(n_steps):
             try:
-                if self.observation is None:
+                if self.observation is None and self.best is not None:
+                    # s' depends only on the action, so start the episode from the best
+                    # design's measured specs instead of paying for a random reset.
+                    self.observation = np.array([self.best["normalized_specs"][n] for n in self.env.dict_targets],
+                                                dtype=np.float32)
+                    self.env.episode_steps, self.env.score = 0, 0.0
+                elif self.observation is None:
                     s0, f0 = self.env.n_simulations, self.env.n_failed_sims
                     self.observation = self.env.reset()
                     self.simulator_calls += self.env.n_simulations - s0
@@ -399,8 +449,7 @@ class SizingExperiment:
                 if training:
                     action = self.agent.select_action(self.observation)
                 elif getattr(self, "_local", None) is not None:
-                    centre, radius = self._local
-                    action = np.clip(centre + np.random.normal(0, radius, centre.shape), -1, 1).astype(np.float32)
+                    action = self._neighbour()
                 else:
                     action = self.env.action_space.sample()
                 s0, f0 = self.env.n_simulations, self.env.n_failed_sims
