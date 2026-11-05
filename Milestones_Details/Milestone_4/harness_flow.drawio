@@ -1,0 +1,158 @@
+<mxfile host="app.diagrams.net">
+  <diagram id="harness" name="LLM sizing harness">
+    <mxGraphModel dx="1400" dy="1100" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1300" pageHeight="1150" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <!-- Title -->
+        <mxCell id="title" value="&lt;b&gt;Milestone 4: explainable LLM sizing harness for the two-stage Miller opamp&lt;/b&gt;" style="text;html=1;fontSize=20;align=left;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="40" y="10" width="900" height="40" as="geometry"/>
+        </mxCell>
+
+        <!-- Layer 1: user + agy -->
+        <mxCell id="user" value="&lt;b&gt;Designer&lt;/b&gt;&lt;br&gt;&quot;Use the opamp-harness skill&lt;br&gt;to size the opamp&quot;" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;" vertex="1" parent="1">
+          <mxGeometry x="70" y="60" width="30" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="agy" value="&lt;b&gt;Antigravity CLI (agy)&lt;/b&gt;&lt;br&gt;LLM (Gemini / Claude / GPT-OSS via /model)&lt;br&gt;MCP client: starts mcp_server.py over stdio" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="240" y="60" width="300" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="skills" value="&lt;b&gt;.agents/skills/&lt;/b&gt; (instruction skills)&lt;br&gt;opamp-harness · circuit-analyst · diagnoser&lt;br&gt;sizer · rl-strategist · reviewer&lt;br&gt;&lt;i&gt;agent sees name + description; reads full SKILL.md when needed&lt;/i&gt;" style="shape=note;whiteSpace=wrap;html=1;size=14;fillColor=#fff2cc;strokeColor=#d6b656;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="600" y="55" width="360" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_user_agy" value="prompt" style="endArrow=block;html=1;" edge="1" parent="1" source="user" target="agy">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_skills_agy" value="loads" style="endArrow=block;html=1;dashed=1;" edge="1" parent="1" source="skills" target="agy">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Layer 2: agents -->
+        <mxCell id="orch" value="&lt;b&gt;Orchestrator (opamp-harness skill)&lt;/b&gt; — one agent per sub-task; each role reads memory first and ends with one memory entry" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#6c8ebf;dashed=1;verticalAlign=top;align=left;spacingLeft=10;spacingTop=4;arcSize=3;" vertex="1" parent="1">
+          <mxGeometry x="40" y="170" width="960" height="320" as="geometry"/>
+        </mxCell>
+        <mxCell id="analyst" value="&lt;b&gt;1. Circuit analyst&lt;/b&gt;&lt;br&gt;topology + hand equations&lt;br&gt;(I_tail, I_2, Cc, gm1, p2)&lt;br&gt;→ first design, ≤ 2 sims&lt;br&gt;&lt;i&gt;memory: plan&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="60" y="220" width="180" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="diag" value="&lt;b&gt;2. Diagnoser&lt;/b&gt;&lt;br&gt;binding / violated spec&lt;br&gt;of the best design → picks&lt;br&gt;ONE lever + trade-off&lt;br&gt;&lt;i&gt;memory: decision&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="320" y="220" width="180" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="sizer" value="&lt;b&gt;3. Sizer&lt;/b&gt;&lt;br&gt;change 1-3 params,&lt;br&gt;predict → simulate → check&lt;br&gt;≤ 3 sims per decision&lt;br&gt;&lt;i&gt;memory: result, lesson&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="580" y="220" width="180" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="rl" value="&lt;b&gt;4. RL strategist&lt;/b&gt;&lt;br&gt;seed_rl(expert designs) →&lt;br&gt;train in 200-step batches,&lt;br&gt;stop after 2 without gain&lt;br&gt;&lt;i&gt;memory: result&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="320" y="375" width="180" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="reviewer" value="&lt;b&gt;5. Reviewer&lt;/b&gt;&lt;br&gt;get_lineage(best) →&lt;br&gt;margins, design story,&lt;br&gt;failed predictions&lt;br&gt;→ explanation.md" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="800" y="220" width="180" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_an_di" value="plan" style="endArrow=block;html=1;" edge="1" parent="1" source="analyst" target="diag">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_di_si" value="lever" style="endArrow=block;html=1;exitX=1;exitY=0.3;entryX=0;entryY=0.3;" edge="1" parent="1" source="diag" target="sizer">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_si_di" value="result&lt;br&gt;(loop, ~25 sims)" style="endArrow=block;html=1;exitX=0;exitY=0.7;entryX=1;entryY=0.7;" edge="1" parent="1" source="sizer" target="diag">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_di_rl" value="stall: 3 sims without&lt;br&gt;gain, or only area/current left" style="endArrow=block;html=1;exitX=0.3;exitY=1;entryX=0.3;entryY=0;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="diag" target="rl">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="160" y="355" as="offset"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_rl_di" value="polish RL best" style="endArrow=block;html=1;exitX=0.7;exitY=0;entryX=0.7;entryY=1;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="rl" target="diag">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_si_rev" value="done" style="endArrow=block;html=1;" edge="1" parent="1" source="sizer" target="reviewer">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_agy_orch" value="runs roles" style="endArrow=block;html=1;" edge="1" parent="1" source="agy" target="orch">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Memory -->
+        <mxCell id="memory" value="&lt;b&gt;Shared memory&lt;/b&gt;&lt;br&gt;memory.jsonl&lt;br&gt;short notes: plan / observation /&lt;br&gt;decision / result / lesson&lt;br&gt;&lt;i&gt;= context management:&lt;br&gt;agents read summaries,&lt;br&gt;not full histories&lt;/i&gt;" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;size=12;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="1050" y="230" width="200" height="170" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_orch_mem" value="read_memory /&lt;br&gt;write_memory" style="endArrow=block;startArrow=block;html=1;dashed=1;" edge="1" parent="1" source="orch" target="memory">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Layer 3: MCP server -->
+        <mxCell id="mcp" value="&lt;b&gt;MCP server — mcp_server.py&lt;/b&gt; (stdio; stdout reserved for the protocol, calls serialized by a lock)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;verticalAlign=top;align=left;spacingLeft=10;arcSize=4;" vertex="1" parent="1">
+          <mxGeometry x="40" y="540" width="1210" height="130" as="geometry"/>
+        </mxCell>
+        <mxCell id="t_design" value="&lt;b&gt;Design&lt;/b&gt;&lt;br&gt;design_space()&lt;br&gt;simulate(params, rationale,&lt;br&gt;agent, base_id) — partial params,&lt;br&gt;grid check, no duplicate sims" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="60" y="570" width="270" height="85" as="geometry"/>
+        </mxCell>
+        <mxCell id="t_rl" value="&lt;b&gt;RL sizer&lt;/b&gt;&lt;br&gt;seed_rl(k, repeat) — 0 sims&lt;br&gt;warmup(n) — random designs&lt;br&gt;train(n) — TD3 steps + updates" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="350" y="570" width="270" height="85" as="geometry"/>
+        </mxCell>
+        <mxCell id="t_trace" value="&lt;b&gt;Trace&lt;/b&gt;&lt;br&gt;get_status(k) — counters, top-k&lt;br&gt;get_lineage(id) — chain of&lt;br&gt;changes + rationales" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="640" y="570" width="270" height="85" as="geometry"/>
+        </mxCell>
+        <mxCell id="t_mem" value="&lt;b&gt;Memory&lt;/b&gt;&lt;br&gt;write_memory(agent, kind, content)&lt;br&gt;read_memory(agent, kind, last_n)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="930" y="570" width="300" height="85" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_orch_mcp" value="MCP tool calls (JSON) ⇅ compact results" style="endArrow=block;startArrow=block;html=1;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="orch" target="mcp">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Layer 4: backend -->
+        <mxCell id="backend" value="&lt;b&gt;Python backend — SizingExperiment (sizing_tools.py)&lt;/b&gt; — one persistent object: state survives between tool calls" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;verticalAlign=top;align=left;spacingLeft=10;arcSize=4;" vertex="1" parent="1">
+          <mxGeometry x="40" y="710" width="1210" height="150" as="geometry"/>
+        </mxCell>
+        <mxCell id="b_eval" value="&lt;b&gt;evaluation_env&lt;/b&gt; (CircuitEnv)&lt;br&gt;LLM designs; does not&lt;br&gt;disturb the RL episode" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="60" y="745" width="210" height="95" as="geometry"/>
+        </mxCell>
+        <mxCell id="b_rl" value="&lt;b&gt;RL: CircuitEnv + TD3 + ReplayBuffer&lt;/b&gt;&lt;br&gt;milestone 3 settings (γ=0, σ=0.1,&lt;br&gt;batch 128, q_lr 1e-3)&lt;br&gt;param_to_action() = inverse of&lt;br&gt;action_refine() for seeding" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="290" y="745" width="270" height="95" as="geometry"/>
+        </mxCell>
+        <mxCell id="b_cand" value="&lt;b&gt;Candidate history&lt;/b&gt;&lt;br&gt;id, parent, changes, rationale,&lt;br&gt;specs, normalized specs,&lt;br&gt;FoM, feasible, violated" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="580" y="745" width="240" height="95" as="geometry"/>
+        </mxCell>
+        <mxCell id="b_score" value="&lt;b&gt;Scoring (from CircuitEnv)&lt;/b&gt;&lt;br&gt;z = (y − y*) / (y + y*)&lt;br&gt;FoM = 0.3 + (−z_area − z_current)&lt;br&gt;if all hard constraints met" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="840" y="745" width="240" height="95" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_mcp_back" value="Python call" style="endArrow=block;startArrow=block;html=1;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="mcp" target="backend">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_mem_file" value="" style="endArrow=none;html=1;dashed=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;exitPerimeter=0;" edge="1" parent="1" source="memory" target="t_mem">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Layer 5: simulator + outputs -->
+        <mxCell id="ngspice" value="&lt;b&gt;ngspice&lt;/b&gt;&lt;br&gt;TwoStage.cir (45 nm, TT, 27 °C)&lt;br&gt;dut_testbench.py → gain, UGBW, PM,&lt;br&gt;noise, slew rate, current, area" style="shape=process;whiteSpace=wrap;html=1;backgroundOutline=1;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="60" y="910" width="330" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_back_ng" value="1 simulator call&lt;br&gt;per design (budget)" style="endArrow=block;startArrow=block;html=1;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="b_eval" target="ngspice">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="files" value="&lt;b&gt;harness_runs/&amp;lt;run_id&amp;gt;/&lt;/b&gt;&lt;br&gt;log.csv — every sim: time, sims, source,&lt;br&gt;agent, parent, changes, rationale, FoM&lt;br&gt;summary.json · memory.jsonl · explanation.md" style="shape=document;whiteSpace=wrap;html=1;boundedLbl=1;fillColor=#f8cecc;strokeColor=#b85450;size=0.15;" vertex="1" parent="1">
+          <mxGeometry x="460" y="900" width="320" height="110" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_back_files" value="writes" style="endArrow=block;html=1;" edge="1" parent="1" source="b_cand" target="files">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="compare" value="&lt;b&gt;compare_harness.py&lt;/b&gt;&lt;br&gt;max FoM vs runtime and vs sims&lt;br&gt;harness vs pure TD3 (final_g0)&lt;br&gt;→ harness_vs_rl.png / .csv" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="850" y="910" width="260" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="rlhist" value="output_figs/final_g0/history.csv&lt;br&gt;(milestone 3: FoM 0.658, 5000 sims, 2664 s)" style="text;html=1;align=center;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="850" y="1030" width="260" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_files_cmp" value="" style="endArrow=block;html=1;" edge="1" parent="1" source="files" target="compare">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_hist_cmp" value="" style="endArrow=block;html=1;dashed=1;" edge="1" parent="1" source="rlhist" target="compare">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="report" value="&lt;b&gt;Report&lt;/b&gt;: speed comparison,&lt;br&gt;explainability examples (lineage),&lt;br&gt;best solutions + reasoning" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#b85450;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="1140" y="910" width="130" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_cmp_rep" value="" style="endArrow=block;html=1;" edge="1" parent="1" source="compare" target="report">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

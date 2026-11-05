@@ -1,6 +1,8 @@
-"""Expose the example Python operations through a local stdio MCP server.
+"""Expose the sizing experiment (sizing_tools.py) to the LLM agents as a stdio MCP server.
 
-The coding agent launches this file. Its stdout is reserved for the MCP protocol
+stdout is reserved for the MCP protocol: everything the course code prints goes to stderr.
+
+    agy mcp add --type stdio --env PATH="$PATH" cad -- "$PWD/../.venv/bin/python" "$PWD/mcp_server.py"
 """
 
 import argparse
@@ -9,11 +11,11 @@ import os
 from pathlib import Path
 import sys
 from threading import Lock
-from typing import Any
+from typing import Any, Optional
 
 from mcp.server import MCPServer
 from mcp.server.mcpserver.exceptions import ToolError
-from pydantic import StrictFloat, StrictInt
+from pydantic import StrictBool, StrictFloat, StrictInt
 
 with redirect_stdout(sys.stderr):
     from sizing_tools import SizingExperiment
@@ -23,7 +25,7 @@ def create_server(experiment):
     """Register tools for one experiment; serialize calls that share its state."""
     server = MCPServer(
         "CAD sizing",
-        description="Circuit simulation, random warmup, TD3 training, and experiment status.",
+        description="Two-stage Miller opamp sizing: simulation, TD3 RL sizer, trace and shared memory.",
     )
     lock = Lock()
 
@@ -35,49 +37,71 @@ def create_server(experiment):
                 raise ToolError(str(error)) from error
 
     @server.tool()
-    def simulate(parameters: dict[str, StrictFloat]) -> dict[str, Any]:
-        """Simulate a complete physical design on the YAML parameter grids.
+    def design_space() -> dict[str, Any]:
+        """Parameter grids (min, max, step, unit), spec targets, hard constraints and the
+        FoM definition. No simulation. Call once at the start instead of reading files."""
+        return call("design_space")
 
-        Supply all 20 named parameters: multiplicities are counts, widths/lengths
-        are meters, cap is farads, and res is ohms. Invalid values are rejected.
-        Return actual parameters, physical/normalized specs, units, reward, and
-        hard_constraints_satisfied. Record the design without changing RL replay,
-        weights, or the current episode. Uses one simulator call.
-        Specs: area m^2, current A, gain V/V, noise V RMS, phm degrees,
-        slewRate rising 10-90% V/us, and ugbw Hz. Higher reward is better.
+    @server.tool()
+    def simulate(parameters: dict[str, StrictFloat | StrictInt], rationale: str,
+                 agent: str, base_id: Optional[StrictInt] = None) -> dict[str, Any]:
+        """Simulate ONE design (costs one simulator call; the budget is small).
+
+        parameters: physical values on the YAML grid (multiplicities are counts, widths and
+        lengths in meters, cap in farads, res in ohms). It may be PARTIAL: only give the
+        parameters you change; the others are copied from base_id (default: current best).
+        rationale: required. Which spec you expect to change, in which direction, and the
+        circuit reason (e.g. "raise Cc 1p->2p: moves the 2nd pole/zero, PM 48->60 deg, UGBW drops").
+        agent: your role name (e.g. "sizer"). Off-grid values are rejected with the nearest
+        allowed values. Repeated designs are not re-simulated. Returns id, specs,
+        normalized specs, reward (FoM), feasible, violated constraints and the changes.
         """
-        return call("simulate", parameters=parameters)
+        return call("simulate", parameters=parameters, rationale=rationale, agent=agent, base_id=base_id)
 
     @server.tool()
     def warmup(n_steps: StrictInt) -> dict[str, Any]:
-        """Add n_steps random RL transitions (1..1000), without updating weights.
-
-        Continue the shared buffer and episode. Return status, best candidates,
-        experiences_added, simulator_calls_used, and updates_performed (zero).
-        Episode resets use additional simulations. Prefer small batches.
-        """
+        """Add n_steps RANDOM designs to the RL replay buffer (1..1000), no learning.
+        Each step costs one simulation (plus one per 10-step episode reset). Use only
+        when the replay buffer is too small to train (< batch_size = 128)."""
         return call("warmup", n_steps=n_steps)
 
     @server.tool()
     def train(n_steps: StrictInt) -> dict[str, Any]:
-        """Continue TD3 for n_steps new environment transitions (1..1000).
-
-        Require warmup to fill at least batch_size experiences (default 100).
-        Append new experiences and learn from the shared replay buffer. Actor
-        updates follow TD3's delay. Return progress, per-call counts, and best
-        candidates by reward. Resets cost extra simulations. Prefer small batches.
-        """
+        """Run the TD3 RL sizer for n_steps steps (1..1000): it proposes designs, simulates
+        them and learns from the shared replay buffer. Costs ~1.1 simulations per step.
+        Needs replay_size >= 128 (warmup and/or seed_rl first). Prefer batches of 100-300
+        and check improved_best before continuing."""
         return call("train", n_steps=n_steps)
 
     @server.tool()
-    def get_status(k: StrictInt = 5) -> dict[str, Any]:
-        """Read counters and the k best distinct measured candidates (1..20).
+    def seed_rl(k: StrictInt = 5, repeat: StrictInt = 1, only_feasible: StrictBool = False) -> dict[str, Any]:
+        """Copy the k best LLM-simulated designs into the RL replay buffer (no simulation),
+        each repeat times (1..10), so TD3 learns from the expert designs. Call before train."""
+        return call("seed_rl", k=k, repeat=repeat, only_feasible=only_feasible)
 
-        Includes physical parameters, specs, normalized specs, reward and constraint
-        satisfaction. simulator_calls counts attempts, including resets and failures.
-        Does not simulate or train. Candidates may be infeasible; inspect their flag.
-        """
+    @server.tool()
+    def get_status(k: StrictInt = 5) -> dict[str, Any]:
+        """Counters (simulator calls, RL steps, elapsed time) and the k best designs
+        (1..20) with parameters, specs, reward and violated constraints. No simulation."""
         return call("get_status", k=k)
+
+    @server.tool()
+    def get_lineage(candidate_id: StrictInt) -> dict[str, Any]:
+        """The chain of designs that led to a candidate: for each step the agent, the
+        changed parameters, the rationale and the result. Use it to explain a solution."""
+        return call("get_lineage", candidate_id=candidate_id)
+
+    @server.tool()
+    def write_memory(agent: str, kind: str, content: str) -> dict[str, Any]:
+        """Leave a SHORT note (<= 2000 chars) for the other agents. kind is one of
+        plan, observation, decision, result, lesson. Write conclusions, not raw data."""
+        return call("write_memory", agent=agent, kind=kind, content=content)
+
+    @server.tool()
+    def read_memory(agent: str = "", kind: str = "", last_n: StrictInt = 10) -> dict[str, Any]:
+        """Read the most recent notes of the other agents, optionally filtered by agent
+        and/or kind. Read this before acting instead of asking for the full history."""
+        return call("read_memory", agent=agent, kind=kind, last_n=last_n)
 
     return server
 
@@ -85,13 +109,14 @@ def create_server(experiment):
 def main():
     parser = argparse.ArgumentParser(description="CAD sizing MCP server (stdio)")
     parser.add_argument("--seed", type=int, default=123456)
-    parser.add_argument("--batch-size", type=int, default=100)
+    parser.add_argument("--batch-size", type=int, default=128)
     parser.add_argument("--replay-size", type=int, default=100_000)
+    parser.add_argument("--run-id", default=None)
     args = parser.parse_args()
     # Existing course code resolves model/netlist paths relative to the project.
     os.chdir(Path(__file__).resolve().parent)
     with redirect_stdout(sys.stderr):
-        experiment = SizingExperiment(args.seed, args.batch_size, args.replay_size)
+        experiment = SizingExperiment(args.seed, args.batch_size, args.replay_size, args.run_id)
     create_server(experiment).run(transport="stdio")
 
 

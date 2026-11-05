@@ -33,13 +33,25 @@ Files: `td3/agent.py`, `td3_runner.py`
 - [ ] Report: agent implementation, episodic loop, hyperparameter choices
 
 ## Milestone 4 — LLM agentic harness
-- [ ] Install and learn the Antigravity CLI (check Toledo / ask the TAs)
+- [x] Install and learn the Antigravity CLI (check Toledo / ask the TAs)
 - [ ] Split sizing into sub-tasks; one LLM agent per sub-task (prompt, MCP tools, skills)
 - [ ] MCP tools: run a simulation, run the RL sizer
 - [ ] Context and memory passing between agents
 - [ ] Runtime vs. max FoM comparison against the pure RL sizer (plot or table)
 - [ ] Examples of explainability (traceable reasoning and decision steps)
 - [ ] Report: agents, tools, context/memory, skills, best solutions with reasoning
+
+### Milestone 4 Details:
+Split sizing into sub-tasks, one agent per sub-task. Each agent needs its own prompt, MCP tools and skill file.
+MCP tools: at least simulate and run the RL sizer.
+Context and memory: each agent gets compact summaries of what earlier agents decided, not the full history.
+The agents decide when to call RL. Calling it every time doesn’t count.
+Use few simulations. The instructions say this explicitly.
+Report deliverables:
+the agents, tools, memory and skills
+examples of traceable reasoning
+the best solutions, with the reasoning behind them
+runtime vs. max FoM for the harness against pure RL, as a plot or a table
 
 ## Submission
 - [ ] Report PDF, at most 10 pages
