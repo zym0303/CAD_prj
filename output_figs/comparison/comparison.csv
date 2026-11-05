@@ -1,0 +1,3 @@
+label,run_id,best_FoM,first_feasible_at,n_feasible,n_pareto,sims_used
+gamma0,final_g0,0.6583,783,1941,7,5000
+gamma0.99,final_g099,0.6854,330,580,7,5000

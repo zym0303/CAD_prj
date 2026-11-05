@@ -1,0 +1,29 @@
+{
+  "args": {
+    "seed": 123456,
+    "noise_sigma": 0.1,
+    "batch_size": 128,
+    "w": 128,
+    "pi_lr": 0.0003,
+    "q_lr": 0.001,
+    "gamma": 0.99,
+    "tau": 0.005,
+    "target_update_interval": 1,
+    "actor_update_interval": 2,
+    "hidden_size": 256,
+    "T": 10000,
+    "max_sims": 5000,
+    "replay_size": 1000000,
+    "cuda": false,
+    "run_id": "final_g099"
+  },
+  "env_steps": 4545,
+  "n_simulations": 5000,
+  "n_failed_sims": 12,
+  "best_fom": 0.6854229725737693,
+  "first_feasible_step_and_sims": [
+    299,
+    330
+  ],
+  "runtime_s": 2777.9
+}
