@@ -1,0 +1,4 @@
+label,run_id,best_FoM,first_feasible_at,n_feasible,n_pareto,sims_used
+TD3 gamma0,final_g0,0.6583,783,1941,7,5000
+TD3 gamma0.99,final_g099,0.6854,330,580,7,5000
+SAC baseline,sac_baseline,0.6312,337,24,6,5000
