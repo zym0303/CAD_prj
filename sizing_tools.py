@@ -39,7 +39,9 @@ SPEC_UNITS = {
     "phm": "deg", "slewRate": "V/us", "ugbw": "Hz",
 }
 MAX_STEPS_PER_CALL = 1000
-MEMORY_KINDS = ("plan", "observation", "decision", "result", "lesson")
+MEMORY_KINDS = ("plan", "observation", "decision", "result", "lesson", "model")
+# "model": the modeler's complete design model of this run, rewritten as a new version on evidence
+MEMORY_MAX_CHARS = {"model": 4000}   # every other kind: 2000
 LOG_FIELDS = ["sim_call", "elapsed_s", "candidate_id", "source", "agent", "parent_id",
               "changes", "rationale", "reward", "best_reward", "feasible", "violated",
               "failed", "specs", "parameters"]
@@ -118,6 +120,7 @@ class SizingExperiment:
         self.best = None
         self._last_clean = 0
         self.op_lookups = 0       # operating_point / compare_operating_points calls (0 simulations)
+        self.model_versions = 0   # write_memory(kind="model") calls of the modeler
 
         # Parameter grids, identical to CircuitEnv.action_refine.
         self.grids, self.is_int = {}, {}
@@ -329,6 +332,7 @@ class SizingExperiment:
             "replay_size": int(self.replay.size),
             "n_feasible": len(feasible),
             "op_lookups": self.op_lookups,
+            "model_versions": self.model_versions,
             "best": [self._compact(c) for c in ranked[:k]],
             "best_feasible_id": feasible[0]["id"] if feasible else None,
         }
@@ -380,12 +384,16 @@ class SizingExperiment:
         """Append a short note for the other agents (context passing)."""
         if kind not in MEMORY_KINDS:
             raise ValueError(f"kind must be one of {MEMORY_KINDS}.")
-        if not content.strip() or len(content) > 2000:
-            raise ValueError("content must be 1..2000 characters; summarize.")
+        limit = MEMORY_MAX_CHARS.get(kind, 2000)
+        if not content.strip() or len(content) > limit:
+            raise ValueError(f"content must be 1..{limit} characters for kind '{kind}'; summarize.")
         entry = {"t": round(time.time() - self.t0, 1), "sim_calls": self.simulator_calls,
                  "agent": agent, "kind": kind, "content": content.strip()}
         with open(self.memory_path, "a") as f:
             f.write(json.dumps(entry) + "\n")
+        if kind == "model":
+            self.model_versions += 1
+            self._write_summary()
         return {"ok": True, "n_entries": sum(1 for _ in open(self.memory_path))}
 
     def read_memory(self, agent: str = "", kind: str = "", last_n: int = 10) -> dict:
@@ -560,6 +568,7 @@ class SizingExperiment:
                    "simulator_calls": self.simulator_calls, "warmup_steps": self.warmup_steps,
                    "training_steps": self.training_steps, "updates": self.updates,
                    "seeded_transitions": self.seeded, "op_lookups": self.op_lookups,
+                   "model_versions": self.model_versions,
                    "best": None if self.best is None else {
                        k: self.best[k] for k in ("id", "source", "reward", "feasible",
                                                  "specs", "parameters")}}

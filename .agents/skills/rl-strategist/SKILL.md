@@ -5,8 +5,8 @@ description: Runs the TD3 reinforcement-learning sizer through the cad MCP tools
 
 # RL strategist
 
-Started from random designs, TD3 needs ~780 simulations to find anything feasible (milestone 3),
-and in a 550-simulation harness run it found nothing. So here it is used as a LOCAL
+Started from random designs, TD3 is sample-inefficient: in a 20-dimensional space it needs
+many simulations before it finds any feasible design. So here it is used as a LOCAL
 refiner: its actor is first pulled onto the best expert design, then it explores around it.
 
 1. `read_memory(last_n=6)`, `get_status(k=3)`. Say in one sentence why RL is used now and

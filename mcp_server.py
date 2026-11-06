@@ -53,7 +53,7 @@ def create_server(experiment):
         lengths in meters, cap in farads, res in ohms). It may be PARTIAL: only give the
         parameters you change; the others are copied from base_id (default: current best).
         rationale: required. Which spec you expect to change, in which direction, and the
-        circuit reason (e.g. "raise Cc 1p->2p: moves the 2nd pole/zero, PM 48->60 deg, UGBW drops").
+        circuit reason (e.g. "raise Cc: moves the 2nd pole/zero, expect PM up, UGBW down").
         agent: your role name (e.g. "sizer"). Off-grid values are rejected with the nearest
         allowed values. Repeated designs are not re-simulated. Returns id, specs,
         normalized specs, reward (FoM), feasible, violated constraints and the changes,
@@ -137,13 +137,16 @@ def create_server(experiment):
     @server.tool()
     def write_memory(agent: str, kind: str, content: str) -> dict[str, Any]:
         """Leave a SHORT note (<= 2000 chars) for the other agents. kind is one of
-        plan, observation, decision, result, lesson. Write conclusions, not raw data."""
+        plan, observation, decision, result, lesson, model. Write conclusions, not raw data.
+        kind "model" (modeler only, <= 4000 chars): the COMPLETE current design model of
+        this run, written as a new version each time it changes."""
         return call("write_memory", agent=agent, kind=kind, content=content)
 
     @server.tool()
     def read_memory(agent: str = "", kind: str = "", last_n: StrictInt = 10) -> dict[str, Any]:
         """Read the most recent notes of the other agents, optionally filtered by agent
-        and/or kind. Read this before acting instead of asking for the full history."""
+        and/or kind. Read this before acting instead of asking for the full history.
+        read_memory(kind="model", last_n=1) gives the current design model."""
         return call("read_memory", agent=agent, kind=kind, last_n=last_n)
 
     return server
