@@ -88,7 +88,7 @@ class NgspiceWrapper(object):
                         new_value = str(parameters[param_name])
                     elif param_name == "temp_pvt" and temp_pvt is not None:
                         new_value = str(temp_pvt)
-                    elif param_name in ["VREF", "ICMV"] and vcm is not None:
+                    elif param_name in ["VREF", "ICMV", "vcm"] and vcm is not None:
                         new_value = str(vcm)
                     elif param_name == "VHIGH" and vhigh is not None:
                         new_value = str(vhigh)

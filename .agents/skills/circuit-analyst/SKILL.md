@@ -23,8 +23,9 @@ I_tail = 30 uA * S4/S3, I_2 = 30 uA * S5/S3 (same L for the mirror devices keeps
 ## First-order design equations
 
 - Total current ~ 30 uA + I_tail + I_2 (target 200 uA, minimized): plan I_tail + I_2 <= 170 uA.
-- BALANCE CONDITION (must hold, or stage 1's output bias shifts and the gain collapses,
-  observed: 601 -> 54 V/V after changing mn4 alone): S_mp3 / S_mp1 = 2 * S_mn5 / S_mn4.
+- BALANCE CONDITION (zero systematic offset): S_mp3 / S_mp1 = 2 * S_mn5 / S_mn4. If it does
+  not hold, the DC level at stage 1's output shifts, mp3 or mn5 leaves saturation and the
+  gain collapses.
   Whenever you change mn4, mn5, mp1 or mp3, change the partner so the ratio stays equal.
 - UGBW ~ gm1 / (2 pi Cc), gm1 = sqrt(2 k' S1 I_tail/2): larger S1, I_tail or smaller Cc.
 - Slew rate ~ min(I_tail / Cc, I_2 / (Cc + CL)), in V/us with I in uA and C in pF.
@@ -32,9 +33,9 @@ I_tail = 30 uA * S4/S3, I_2 = 30 uA * S5/S3 (same L for the mirror devices keeps
 - Phase margin: p2 ~ gm6 / CL must be well above UGBW (p2 > 2.2 UGBW for 60 deg with the
   zero removed). Rc ~ 1/gm6 cancels the RHP zero; slightly larger moves it to the LHP and helps PM.
   Typical rule: Cc >= 0.22 CL for 60 deg => Cc around 2-3 pF.
-- With small Cc (< ~1.5 pF) UGBW stops following gm1/Cc: it is limited by the 2nd pole
-  gm6/CL (CL = 10 pF). Observed: mn1 +50% gave only +2% UGBW. Then raise gm6: more I_2
-  (mn5) with a wider mp3, keeping the balance condition.
+- When Cc is small, gm1/Cc approaches the 2nd pole gm6/CL (CL = 10 pF) and UGBW stops
+  following gm1/Cc: raising gm1 then helps little. Raise gm6 instead: more I_2 (mn5) with
+  a wider mp3, keeping the balance condition.
 - Noise (input-referred): larger gm1 and larger gate area of mn1/mp1 reduce it; long-L loads help.
 - Area: sum of m*W*L of all devices plus the capacitor; Cc usually dominates, so keep Cc small.
 - Mirror matching: use the same length for mn3, mn4, mn5.

@@ -71,6 +71,8 @@ Narrate every decision for the user in 1-3 sentences: role, what, why, expected 
 - Do NOT read project files, reference designs or configs, and do not explore the
   folder. The skills and `design_space` contain everything; runtime counts in the
   comparison with the RL sizer, and the design must come from reasoning, not copying.
+- Use NO information from earlier runs: do not read other harness_runs folders, solutions,
+  logs or memory files of past runs. Only this run's memory (read_memory) and tools.
 
 - Context: start each role by calling `read_memory` (last 5-10 entries). Do not re-read
   the netlist or old tool outputs; the memory is the shared context.

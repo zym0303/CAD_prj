@@ -25,3 +25,20 @@ def save_solutions_csv(run_id, simulation_step, circuit_params, specs, reward):
         print(f"Error saving solution to CSV: {e}")
     
     return csv_file_name
+
+def save_corner_specs_csv(run_id, simulation_step, corners, corner_specs):
+    """PVT-robust mode: one row per corner for every accepted design -> ./solutions/<run_id>_corners.csv"""
+    csv_file_name = f'./solutions/{run_id}_corners.csv'
+    spec_names = list(corner_specs[0].keys())
+    try:
+        file_exists = os.path.isfile(csv_file_name)
+        with open(csv_file_name, 'a', newline='') as csvfile:
+            writer = csv.writer(csvfile)
+            if not file_exists:
+                writer.writerow(['Simulation step', 'process', 'voltage', 'temp'] + spec_names)
+            for corner, specs in zip(corners, corner_specs):
+                writer.writerow([simulation_step, corner['process'], corner['voltage'], corner['temp']]
+                                + [specs[n] for n in spec_names])
+    except Exception as e:
+        print(f"Error saving corner specs to CSV: {e}")
+    return csv_file_name
