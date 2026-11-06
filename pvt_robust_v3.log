@@ -127,3 +127,5 @@ mkdir: no_backup/output_netlists: File exists
 [simulate] {'process': 'TT', 'voltage': 1.2, 'temp': 0} failed (FileNotFoundError: /Users/afonsodemello/Documents/University/Masters/KU_Leuven/MSc_Electrical_Engineering/Year_2/Semester_1/Computer-Aided_IC_Design/Project/code/CAD/no_backup/output_files/tran_TwoStage_1793989883_qngwqyupvg.csv not found.) -> worst-case specs (failed so far: 40)
 [td3] step  1450 | sims  1597 | FoM -1.2421 | best -0.1440 | failed sims 40
 [td3] step  1500 | sims  1652 | FoM -0.8784 | best -0.1440 | failed sims 40
+[td3] step  1550 | sims  1707 | FoM -0.4982 | best -0.1440 | failed sims 40
+[td3] step  1600 | sims  1762 | FoM -1.0661 | best -0.1440 | failed sims 40
