@@ -1,0 +1,190 @@
+<mxfile host="app.diagrams.net">
+  <diagram id="wf" name="Harness workflow (detailed)">
+    <mxGraphModel dx="1600" dy="1200" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="3200" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <mxCell id="title" value="&lt;b&gt;Explainable LLM sizing harness: full workflow (opamp-harness skill)&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:12px&quot;&gt;Antigravity CLI + cad MCP server · two-stage Miller opamp · roles: analyst, diagnoser, sizer, rl, reviewer&lt;/font&gt;" style="text;html=1;fontSize=20;align=left;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="200" y="-60" width="1100" height="50" as="geometry"/>
+        </mxCell>
+
+        <!-- ===================== START / MODE ===================== -->
+        <mxCell id="start" value="&lt;b&gt;User prompt&lt;/b&gt;&lt;br&gt;&quot;Use the opamp-harness skill to size the opamp, full workflow with RL&quot;" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="440" y="0" width="320" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="orch" value="&lt;b&gt;Orchestrator&lt;/b&gt; (reads opamp-harness SKILL.md)&lt;br&gt;• detects the mode from the prompt&lt;br&gt;• budgets: 1000 simulator calls, 40 hand decisions (overridable)&lt;br&gt;• states mode + budgets in one line" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="420" y="100" width="360" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="modeD" value="&lt;b&gt;Mode?&lt;/b&gt;" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="500" y="205" width="200" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="test" value="&lt;b&gt;test mode&lt;/b&gt; (&quot;test&quot;, &quot;quick&quot;)&lt;br&gt;analyst + one diagnoser → sizer round&lt;br&gt;≤ 5 simulations, no RL&lt;br&gt;get_status(k=3), then stop" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="870" y="210" width="260" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="testEnd" value="Stop" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="1160" y="225" width="80" height="50" as="geometry"/>
+        </mxCell>
+
+        <!-- ===================== PHASE 1 ===================== -->
+        <mxCell id="p1" value="PHASE 1 · Feasibility (≤ 25 simulations)" style="rounded=1;arcSize=2;dashed=1;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;verticalAlign=top;align=left;spacingLeft=10;fontStyle=1;opacity=60;" vertex="1" parent="1">
+          <mxGeometry x="200" y="340" width="820" height="660" as="geometry"/>
+        </mxCell>
+        <mxCell id="analyst" value="&lt;b&gt;Analyst&lt;/b&gt; (circuit-analyst skill)&lt;br&gt;• design_space() once: grids, targets, FoM definition&lt;br&gt;• hand equations: current split (I_tail, I_2 via mirrors of mn3) → Cc from PM → S1 from UGBW = gm1/(2π·Cc) → mp3 from p2 = gm6/CL above 2.2·UGBW → L for gain&lt;br&gt;• balance condition S_mp3/S_mp1 = 2·S_mn5/S_mn4&lt;br&gt;• simulate ≤ 2 full designs, equations in the rationale&lt;br&gt;• write_memory(plan)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="400" y="380" width="400" height="130" as="geometry"/>
+        </mxCell>
+        <mxCell id="diag1" value="&lt;b&gt;Diagnoser&lt;/b&gt; (infeasible mode)&lt;br&gt;• read_memory(8), get_status(3)&lt;br&gt;• lists violated specs, worst normalized violation first&lt;br&gt;• picks ONE lever + mechanism + expected trade-off&lt;br&gt;&amp;nbsp;&amp;nbsp;(Cc: PM vs UGBW/SR/area · I_2: PM/SR vs current · L: gain vs UGBW/PM)&lt;br&gt;• write_memory(decision)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="400" y="535" width="400" height="115" as="geometry"/>
+        </mxCell>
+        <mxCell id="sizer1" value="&lt;b&gt;Sizer&lt;/b&gt;&lt;br&gt;• simulate(changed params only, base_id) with rationale&lt;br&gt;&amp;nbsp;&amp;nbsp;&quot;change: mechanism; expect spec old → new&quot;&lt;br&gt;• or sweep(one param, 5-8 grid values) = 1 decision&lt;br&gt;• compares prediction vs. outcome; wrong → revert to previous best, write a lesson&lt;br&gt;• ≤ 3 simulations per diagnoser decision&lt;br&gt;• write_memory(result / lesson)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="400" y="675" width="400" height="130" as="geometry"/>
+        </mxCell>
+        <mxCell id="feasD" value="&lt;b&gt;Feasible?&lt;/b&gt;&lt;br&gt;all 5 hard constraints met&lt;br&gt;(FoM ≥ 0.3)" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="490" y="835" width="220" height="120" as="geometry"/>
+        </mxCell>
+        <mxCell id="p1budD" value="&lt;b&gt;Phase-1 sims&lt;br&gt;below 25?&lt;/b&gt;" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="240" y="845" width="180" height="100" as="geometry"/>
+        </mxCell>
+
+        <!-- ===================== PHASE 2 ===================== -->
+        <mxCell id="p2" value="PHASE 2 · Optimization (≤ 15 simulations)" style="rounded=1;arcSize=2;dashed=1;html=1;fillColor=#d5e8d4;strokeColor=#82b366;verticalAlign=top;align=left;spacingLeft=10;fontStyle=1;opacity=60;" vertex="1" parent="1">
+          <mxGeometry x="200" y="1030" width="820" height="500" as="geometry"/>
+        </mxCell>
+        <mxCell id="diag2" value="&lt;b&gt;Diagnoser&lt;/b&gt; (feasible mode)&lt;br&gt;• FoM = 0.3 − z_area − z_current: only current and area count now&lt;br&gt;• current = 30 µA + I_tail + I_2 (usually the larger term)&lt;br&gt;• spends the largest margins: SR/UGBW margin → less I_tail / I_2; large gain margin → wider, lower-Vov devices&lt;br&gt;• global lever: larger S_mn3 lowers both mirrored currents, balance kept&lt;br&gt;• area: Cc first, then large m·W·L devices&lt;br&gt;• write_memory(decision)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="400" y="1070" width="400" height="150" as="geometry"/>
+        </mxCell>
+        <mxCell id="sizer2" value="&lt;b&gt;Sizer&lt;/b&gt;: same procedure as phase 1&lt;br&gt;(simulate with prediction, or sweep; revert on failure;&lt;br&gt;checks the balance condition before touching mn4, mn5, mp1, mp3)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="400" y="1245" width="400" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="stallD" value="&lt;b&gt;Stall?&lt;/b&gt;&lt;br&gt;4 sizer sims in a row with&lt;br&gt;ΔFoM below 0.005, or 15 sims used" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="460" y="1345" width="280" height="140" as="geometry"/>
+        </mxCell>
+        <mxCell id="rlD" value="&lt;b&gt;no-rl mode?&lt;/b&gt;" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="500" y="1555" width="200" height="90" as="geometry"/>
+        </mxCell>
+
+        <!-- ===================== PHASE 3 ===================== -->
+        <mxCell id="p3" value="PHASE 3 · RL refinement, TD3 anchored on the best expert design (≤ 800 simulations or the remaining budget)" style="rounded=1;arcSize=2;dashed=1;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;verticalAlign=top;align=left;spacingLeft=10;fontStyle=1;opacity=60;" vertex="1" parent="1">
+          <mxGeometry x="200" y="1680" width="820" height="700" as="geometry"/>
+        </mxCell>
+        <mxCell id="rl1" value="&lt;b&gt;RL strategist&lt;/b&gt; (rl-strategist skill)&lt;br&gt;• read_memory(6), get_status(3)&lt;br&gt;• says why RL is used now and which design it is anchored on" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d79b00;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="400" y="1720" width="400" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="seed" value="&lt;b&gt;seed_rl(k=10, repeat=3, anchor_steps=300)&lt;/b&gt; · 0 simulations&lt;br&gt;• 10 best expert designs × 3 into the replay buffer&lt;br&gt;• behaviour cloning: TD3 actor pretrained to output the best design&lt;br&gt;&amp;nbsp;&amp;nbsp;(param_to_action = inverse of action_refine)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d79b00;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="400" y="1815" width="400" height="85" as="geometry"/>
+        </mxCell>
+        <mxCell id="repD" value="&lt;b&gt;replay buffer&lt;br&gt;≥ 128?&lt;/b&gt;" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="500" y="1925" width="200" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="warm" value="&lt;b&gt;warmup&lt;/b&gt;(around_best=True)&lt;br&gt;round 1: n_steps=100, n_params=3, max_steps=2, top_k=3&lt;br&gt;round 2+: n_steps=50, n_params=2&lt;br&gt;sparse neighbours of the 3 best designs: few params ± 1-2 grid steps → mostly feasible (Pareto data)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d79b00;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="740" y="1920" width="260" height="110" as="geometry"/>
+        </mxCell>
+        <mxCell id="train" value="&lt;b&gt;train(n_steps=200, noise_sigma=0.1)&lt;/b&gt; per batch (round 2+: σ = 0.05)&lt;br&gt;• actor proposes → ngspice → (s, a, r, s') into replay → 1 TD3 update per step&lt;br&gt;• episodes restart from the best design: no simulations spent on random resets&lt;br&gt;• last batch sized to fit the budget" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d79b00;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="400" y="2055" width="400" height="95" as="geometry"/>
+        </mxCell>
+        <mxCell id="rlStopD" value="&lt;b&gt;Stop RL?&lt;/b&gt;&lt;br&gt;2 batches in a row without improved_best,&lt;br&gt;800 sims in this phase, or total budget" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="445" y="2175" width="310" height="120" as="geometry"/>
+        </mxCell>
+        <mxCell id="rlmem" value="write_memory(rl, result): sims used, best before/after, # feasible designs, which params of the RL best differ from the expert design" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d79b00;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="400" y="2315" width="400" height="50" as="geometry"/>
+        </mxCell>
+
+        <!-- ===================== PHASE 4 ===================== -->
+        <mxCell id="p4" value="PHASE 4 · Polish (≤ 6 simulations)" style="rounded=1;arcSize=2;dashed=1;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;verticalAlign=top;align=left;spacingLeft=10;fontStyle=1;opacity=60;" vertex="1" parent="1">
+          <mxGeometry x="200" y="2410" width="820" height="160" as="geometry"/>
+        </mxCell>
+        <mxCell id="polish" value="&lt;b&gt;Diagnoser → Sizer on the RL best&lt;/b&gt;&lt;br&gt;• prefers one sweep (Rc or Cc over 5-8 grid values) to several simulate calls&lt;br&gt;• e.g. best run: Rc swept down to the UGBW boundary → FoM 0.668 → 0.688" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#9673a6;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="400" y="2450" width="400" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="loopD" value="&lt;b&gt;MANDATORY LOOP check&lt;/b&gt; (get_status)&lt;br&gt;simulator calls below budget − 100&lt;br&gt;AND hand decisions left?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="445" y="2600" width="310" height="140" as="geometry"/>
+        </mxCell>
+
+        <!-- ===================== PHASE 5 ===================== -->
+        <mxCell id="p5" value="PHASE 5 · Review" style="rounded=1;arcSize=2;dashed=1;html=1;fillColor=#f8cecc;strokeColor=#b85450;verticalAlign=top;align=left;spacingLeft=10;fontStyle=1;opacity=60;" vertex="1" parent="1">
+          <mxGeometry x="200" y="2770" width="820" height="200" as="geometry"/>
+        </mxCell>
+        <mxCell id="reviewer" value="&lt;b&gt;Reviewer&lt;/b&gt; (reviewer skill)&lt;br&gt;• get_status(5), read_memory(20), get_lineage(best feasible id)&lt;br&gt;• writes explanation.md: parameters + specs with margins · design story (one line per lineage step) · equations vs. RL vs. failed predictions · sims and time used · trade-offs left&lt;br&gt;• write_memory(reviewer, result)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#b85450;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="400" y="2810" width="400" height="130" as="geometry"/>
+        </mxCell>
+        <mxCell id="end" value="&lt;b&gt;Done&lt;/b&gt;: get_status(3) + 5-line summary&lt;br&gt;(best id, FoM, feasible, sims, elapsed time)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="430" y="3000" width="340" height="80" as="geometry"/>
+        </mxCell>
+
+        <!-- ===================== EDGES ===================== -->
+        <mxCell id="e1" style="endArrow=block;html=1;" edge="1" parent="1" source="start" target="orch"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e2" style="endArrow=block;html=1;" edge="1" parent="1" source="orch" target="modeD"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e3" value="test" style="endArrow=block;html=1;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="modeD" target="test"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e3b" style="endArrow=block;html=1;" edge="1" parent="1" source="test" target="testEnd"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e4" value="full / no-rl" style="endArrow=block;html=1;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="modeD" target="analyst"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e5" value="plan" style="endArrow=block;html=1;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="analyst" target="diag1"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e6" value="lever" style="endArrow=block;html=1;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="diag1" target="sizer1"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e7" style="endArrow=block;html=1;" edge="1" parent="1" source="sizer1" target="feasD"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e8" value="no" style="endArrow=block;html=1;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="feasD" target="p1budD"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e9" value="yes: next round" style="endArrow=block;html=1;edgeStyle=orthogonalEdgeStyle;labelBackgroundColor=#ffffff;exitX=0.5;exitY=0;entryX=0;entryY=0.5;" edge="1" parent="1" source="p1budD" target="diag1">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="330" y="592"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e10" value="no: fallback → RL anchored on the best infeasible design, then phase 2" style="endArrow=block;html=1;edgeStyle=orthogonalEdgeStyle;dashed=1;strokeColor=#b85450;fontColor=#b85450;labelBackgroundColor=#ffffff;exitX=0;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="p1budD" target="rl1">
+          <mxGeometry x="-0.2" relative="1" as="geometry"><Array as="points"><mxPoint x="215" y="895"/><mxPoint x="215" y="1755"/></Array><mxPoint x="-10" y="0" as="offset"/></mxGeometry>
+        </mxCell>
+        <mxCell id="e11" value="yes → phase 2" style="endArrow=block;html=1;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="feasD" target="diag2"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e12" value="lever" style="endArrow=block;html=1;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="diag2" target="sizer2"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e13" style="endArrow=block;html=1;" edge="1" parent="1" source="sizer2" target="stallD"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e14" value="no: next round" style="endArrow=block;html=1;edgeStyle=orthogonalEdgeStyle;labelBackgroundColor=#ffffff;exitX=0;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="stallD" target="diag2">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="320" y="1415"/><mxPoint x="320" y="1145"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e15" value="yes" style="endArrow=block;html=1;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="stallD" target="rlD"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e16" value="yes: skip RL" style="endArrow=block;html=1;edgeStyle=orthogonalEdgeStyle;labelBackgroundColor=#ffffff;exitX=0;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="rlD" target="reviewer">
+          <mxGeometry x="-0.6" relative="1" as="geometry"><Array as="points"><mxPoint x="185" y="1600"/><mxPoint x="185" y="2875"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e17" value="no" style="endArrow=block;html=1;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="rlD" target="rl1"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e18" style="endArrow=block;html=1;" edge="1" parent="1" source="rl1" target="seed"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e19" style="endArrow=block;html=1;" edge="1" parent="1" source="seed" target="repD"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e20" value="no" style="endArrow=block;html=1;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="repD" target="warm"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e21" style="endArrow=block;html=1;edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=1;entryX=1;entryY=0.5;" edge="1" parent="1" source="warm" target="train">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="870" y="2102"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e22" value="yes" style="endArrow=block;html=1;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="repD" target="train"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e23" style="endArrow=block;html=1;" edge="1" parent="1" source="train" target="rlStopD"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e24" value="no: next batch" style="endArrow=block;html=1;edgeStyle=orthogonalEdgeStyle;labelBackgroundColor=#ffffff;exitX=0;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="rlStopD" target="train">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="320" y="2235"/><mxPoint x="320" y="2102"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e25" value="yes" style="endArrow=block;html=1;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="rlStopD" target="rlmem"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e26" value="RL best" style="endArrow=block;html=1;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="rlmem" target="polish"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e27" style="endArrow=block;html=1;" edge="1" parent="1" source="polish" target="loopD"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e28" value="yes: RL round 2+ (warmup 50 / n_params 2, σ = 0.05),&lt;br&gt;anchored on the NEW best" style="endArrow=block;html=1;edgeStyle=orthogonalEdgeStyle;strokeColor=#d79b00;fontColor=#d79b00;labelBackgroundColor=#ffffff;exitX=1;exitY=0.5;entryX=1;entryY=0.5;" edge="1" parent="1" source="loopD" target="rl1">
+          <mxGeometry x="-0.75" relative="1" as="geometry"><Array as="points"><mxPoint x="1045" y="2670"/><mxPoint x="1045" y="1755"/></Array><mxPoint x="-110" y="20" as="offset"/></mxGeometry>
+        </mxCell>
+        <mxCell id="e29" value="no: budget used" style="endArrow=block;html=1;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="loopD" target="reviewer"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e30" style="endArrow=block;html=1;" edge="1" parent="1" source="reviewer" target="end"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <!-- ===================== RIGHT PANEL ===================== -->
+        <mxCell id="mem" value="&lt;b&gt;Shared memory&lt;/b&gt;&lt;br&gt;harness_runs/&amp;lt;run&amp;gt;/memory.jsonl&lt;br&gt;&lt;br&gt;Every role STARTS with read_memory (last 5-10 notes) and ENDS with one write_memory:&lt;br&gt;plan · observation · decision · result · lesson&lt;br&gt;&lt;br&gt;&lt;i&gt;Context management: roles hand over short summaries with ids and numbers, never full tool outputs or the netlist.&lt;/i&gt;" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;size=12;fillColor=#fff2cc;strokeColor=#d6b656;align=left;spacingLeft=8;spacingRight=8;" vertex="1" parent="1">
+          <mxGeometry x="1090" y="340" width="330" height="250" as="geometry"/>
+        </mxCell>
+        <mxCell id="rules" value="&lt;b&gt;Rules for every role&lt;/b&gt;&lt;br&gt;• never read project files, reference designs or configs: design from reasoning&lt;br&gt;• every simulate needs a rationale with a prediction&lt;br&gt;• never simulate &quot;to see what happens&quot;&lt;br&gt;• narrate each decision in 1-3 sentences (role, what, why, expected effect)&lt;br&gt;• check get_status before each batch; never exceed a budget&lt;br&gt;• feasibility is NOT a reason to stop&lt;br&gt;• no FoM target: phases change on stalls, the run ends on budget" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;align=left;spacingLeft=8;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="1090" y="620" width="330" height="200" as="geometry"/>
+        </mxCell>
+        <mxCell id="knowledge" value="&lt;b&gt;Circuit knowledge in the skills&lt;/b&gt; (learned from runs)&lt;br&gt;• balance condition S_mp3/S_mp1 = 2·S_mn5/S_mn4, or the gain collapses (601 → 54 V/V)&lt;br&gt;• small Cc: UGBW limited by p2 = gm6/CL (CL = 10 pF), not by gm1/Cc&lt;br&gt;• Rc for pole-zero cancellation; PM very sensitive to Rc&lt;br&gt;• L = 45 nm on the signal path collapses the gain&lt;br&gt;• prediction off by 2× twice → change lever" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;align=left;spacingLeft=8;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="1090" y="850" width="330" height="170" as="geometry"/>
+        </mxCell>
+        <mxCell id="tools" value="&lt;b&gt;MCP tools and their cost&lt;/b&gt;&lt;table border=&quot;1&quot; cellpadding=&quot;3&quot; style=&quot;border-collapse:collapse;font-size:11px;width:100%&quot;&gt;&lt;tr&gt;&lt;th&gt;tool&lt;/th&gt;&lt;th&gt;sims&lt;/th&gt;&lt;th&gt;decisions&lt;/th&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;design_space&lt;/td&gt;&lt;td&gt;0&lt;/td&gt;&lt;td&gt;0&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;simulate (partial params, base_id)&lt;/td&gt;&lt;td&gt;1&lt;/td&gt;&lt;td&gt;1&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;sweep (2-10 values)&lt;/td&gt;&lt;td&gt;n&lt;/td&gt;&lt;td&gt;1&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;seed_rl (+ anchor)&lt;/td&gt;&lt;td&gt;0&lt;/td&gt;&lt;td&gt;0&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;warmup&lt;/td&gt;&lt;td&gt;n&lt;/td&gt;&lt;td&gt;0&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;train&lt;/td&gt;&lt;td&gt;n&lt;/td&gt;&lt;td&gt;0&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;get_status / get_lineage&lt;/td&gt;&lt;td&gt;0&lt;/td&gt;&lt;td&gt;0&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;read_ / write_memory&lt;/td&gt;&lt;td&gt;0&lt;/td&gt;&lt;td&gt;0&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;i&gt;Off-grid values are rejected with the nearest allowed values; repeated designs are not re-simulated.&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;align=left;spacingLeft=8;spacingRight=8;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="1090" y="1050" width="330" height="290" as="geometry"/>
+        </mxCell>
+        <mxCell id="budget" value="&lt;b&gt;Budgets&lt;/b&gt;&lt;br&gt;• total simulator calls: 1000 (ngspice time)&lt;br&gt;• hand decisions: 40 (LLM tokens)&lt;br&gt;• phase 1 ≤ 25 sims · phase 2 ≤ 15 · phase 3 ≤ 800 · phase 4 ≤ 6&lt;br&gt;• reviewer only when sims ≥ budget − 100 or no hand decisions left" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;align=left;spacingLeft=8;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="1090" y="1370" width="330" height="120" as="geometry"/>
+        </mxCell>
+        <mxCell id="backend" value="&lt;b&gt;Behind every simulation&lt;/b&gt;&lt;br&gt;MCP call → mcp_server.py (lock, stdout → stderr, errors → ToolError) → SizingExperiment (sizing_tools.py) → CircuitEnv → ngspice (TwoStage.cir, TT, 27 °C) → dut_testbench.py → 7 specs → normalize → FoM&lt;br&gt;&lt;br&gt;LLM designs use a separate evaluation_env, so they never disturb the RL episode." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;align=left;spacingLeft=8;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="1090" y="1520" width="330" height="170" as="geometry"/>
+        </mxCell>
+        <mxCell id="outputs" value="&lt;b&gt;Outputs per run&lt;/b&gt; (harness_runs/&amp;lt;run_id&amp;gt;/)&lt;br&gt;• log.csv: one row per simulator call: elapsed time, sim count, source (llm / rl_warmup / rl_train), agent, parent id, changed params, rationale, FoM, running best, feasible, violated specs&lt;br&gt;• memory.jsonl: the agents' notes&lt;br&gt;• summary.json: counters + best design&lt;br&gt;• explanation.md: the reviewer's report&lt;br&gt;&lt;br&gt;→ compare_harness.py: max FoM vs runtime and vs sims, harness vs pure TD3; current-area Pareto fronts" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;align=left;spacingLeft=8;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="1090" y="1720" width="330" height="230" as="geometry"/>
+        </mxCell>
+        <mxCell id="best" value="&lt;b&gt;Best run with this workflow&lt;/b&gt; (harness_20261106_000906)&lt;br&gt;FoM 0.688 · feasible after 21 sims / 245 s · 917 sims · 891 s · 16 hand decisions · 76 feasible designs&lt;br&gt;Pure TD3 (final_g0): FoM 0.658 · first feasible after 785 sims · 5000 sims · 2663 s" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;align=left;spacingLeft=8;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="1090" y="1980" width="330" height="120" as="geometry"/>
+        </mxCell>
+        <mxCell id="memlink" value="read / write" style="endArrow=block;startArrow=block;html=1;dashed=1;strokeColor=#d6b656;labelBackgroundColor=#ffffff;exitX=1;exitY=0.25;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="p1" target="mem"><mxGeometry relative="1" as="geometry"/></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
