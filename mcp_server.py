@@ -25,7 +25,8 @@ def create_server(experiment):
     """Register tools for one experiment; serialize calls that share its state."""
     server = MCPServer(
         "CAD sizing",
-        description="Two-stage Miller opamp sizing: simulation, TD3 RL sizer, trace and shared memory.",
+        description="Two-stage Miller opamp sizing: simulation, transistor operating point, "
+                    "TD3 RL sizer, trace and shared memory.",
     )
     lock = Lock()
 
@@ -55,7 +56,8 @@ def create_server(experiment):
         circuit reason (e.g. "raise Cc 1p->2p: moves the 2nd pole/zero, PM 48->60 deg, UGBW drops").
         agent: your role name (e.g. "sizer"). Off-grid values are rejected with the nearest
         allowed values. Repeated designs are not re-simulated. Returns id, specs,
-        normalized specs, reward (FoM), feasible, violated constraints and the changes.
+        normalized specs, reward (FoM), feasible, violated constraints and the changes,
+        plus op_warnings when the bias is broken (a device in triode, output at a rail).
         """
         return call("simulate", parameters=parameters, rationale=rationale, agent=agent, base_id=base_id)
 
@@ -109,6 +111,28 @@ def create_server(experiment):
         """The chain of designs that led to a candidate: for each step the agent, the
         changed parameters, the rationale and the result. Use it to explain a solution."""
         return call("get_lineage", candidate_id=candidate_id)
+
+    @server.tool()
+    def operating_point(candidate_id: Optional[StrictInt] = None) -> dict[str, Any]:
+        """Transistor-level DC operating point of an ALREADY SIMULATED design (default: the
+        best). 0 simulator calls: the data was saved by that design's own simulation.
+
+        Returns warnings (devices in triode or close to it; output at a rail = balance
+        condition broken, with the side to fix), notes (2nd pole vs UGBW, Rc zero, gain
+        estimate), circuit values (I_bias, I_tail, I_2, stage gains A1/A2, gm1/(2pi Cc),
+        p2 = gm6/(2pi CL), zero, balance ratio of the sizes, DC levels) and per device Id,
+        gm, gds, Vgs, Vth, Vov, Vds, Vdsat, saturation margin, region, inversion, gm/Id,
+        gm/gds. Use it to find WHY a spec fails before choosing a lever."""
+        return call("operating_point", candidate_id=candidate_id)
+
+    @server.tool()
+    def compare_operating_points(id_a: StrictInt, id_b: StrictInt) -> dict[str, Any]:
+        """What changed electrically between two simulated designs, e.g. parent -> child to
+        explain a failed prediction, or expert design -> RL best. 0 simulator calls.
+        Returns parameter changes, specs of both, device and circuit quantities that moved
+        by more than 5 % (with region/inversion changes) and warnings that appeared or
+        disappeared."""
+        return call("compare_operating_points", id_a=id_a, id_b=id_b)
 
     @server.tool()
     def write_memory(agent: str, kind: str, content: str) -> dict[str, Any]:

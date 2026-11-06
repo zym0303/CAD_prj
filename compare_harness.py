@@ -48,13 +48,14 @@ def main():
     for label, df in curves.items():
         axes[0].step(df["time"].clip(lower=1), df["fom"], where="post", label=label)
         axes[1].step(df["sims"], df["fom"], where="post", label=label)
-    for ax, xl in zip(axes, ["runtime [s] (log)", "simulator calls"]):
+    for ax, xl in zip(axes, ["runtime [s] (log)", "simulator calls (log)"]):
         ax.axhline(0.3, color="grey", ls=":", lw=1)  # FoM > 0.3 <=> feasible
         ax.set_xlabel(xl)
         ax.set_ylabel("max FoM reached")
         ax.set_ylim(bottom=-1)
         ax.grid(alpha=0.3)
     axes[0].set_xscale("log")
+    axes[1].set_xscale("log")
     axes[0].legend()
     os.makedirs("output_figs/comparison", exist_ok=True)
     fig.tight_layout()

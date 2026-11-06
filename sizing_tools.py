@@ -9,6 +9,9 @@ Explainability / bookkeeping written to harness_runs/<run_id>/:
                    changed parameters, rationale, specs, reward, running best.
     memory.jsonl   short notes the agents write for each other (context passing).
     summary.json   counters and best design, rewritten after every tool call.
+    op_data.jsonl  transistor operating point (Id, gm, gds, Vgs, Vth, Vds, Vdsat, node
+                   voltages) of every simulated design, saved by the same simulation
+                   (optional task 2; read through operating_point / compare_operating_points).
 """
 
 import csv
@@ -27,6 +30,7 @@ import torch
 
 os.environ.setdefault("MPLBACKEND", "Agg")
 from circuit_env import CircuitEnv
+from ngspice_interface.op_data import compare as compare_op, derive as derive_op, read_op_data
 from td3 import ReplayBuffer, TD3
 
 
@@ -113,6 +117,7 @@ class SizingExperiment:
         self.next_id = 1
         self.best = None
         self._last_clean = 0
+        self.op_lookups = 0       # operating_point / compare_operating_points calls (0 simulations)
 
         # Parameter grids, identical to CircuitEnv.action_refine.
         self.grids, self.is_int = {}, {}
@@ -125,9 +130,11 @@ class SizingExperiment:
         self.out_dir.mkdir(parents=True, exist_ok=True)
         self.log_path = self.out_dir / "log.csv"
         self.memory_path = self.out_dir / "memory.jsonl"
+        self.op_path = self.out_dir / "op_data.jsonl"
         with open(self.log_path, "w", newline="") as f:
             csv.writer(f).writerow(LOG_FIELDS)
         self.memory_path.touch()
+        self.op_path.write_text("")
 
     def tick(self):
         """Start the runtime clock at the first tool call (not at server start)."""
@@ -184,14 +191,19 @@ class SizingExperiment:
         specs = self.evaluation_env.simulate(params)
         self.simulator_calls += 1
         failed = self.evaluation_env.n_failed_sims > failed_before
+        op = read_op_data(self.evaluation_env.simulation_engine)  # same simulation, no extra call
         changes = {} if base is None else {n: params[n] for n in self.param_names
                                            if params[n] != base["parameters"][n]}
         cand = self._record(self.evaluation_env, params, specs, "llm", failed,
                             agent=agent, rationale=rationale,
-                            parent=None if base is None else base["id"], changes=changes)
+                            parent=None if base is None else base["id"], changes=changes, op=op)
         self._maybe_clean()
         self._write_summary()
-        return self._compact(cand, with_params=False)
+        out = self._compact(cand, with_params=False)
+        warnings = self._derive(cand)["warnings"] if cand["op"] else []
+        if warnings:
+            out["op_warnings"] = warnings
+        return out
 
     def warmup(self, n_steps: int, around_best: bool = False, n_params: int = 3,
                max_steps: int = 2, top_k: int = 3) -> dict:
@@ -243,6 +255,8 @@ class SizingExperiment:
             rows.append({"value": v, "id": r["id"], "reward": r["reward"], "feasible": r["feasible"],
                          "violated": r["violated"],
                          "specs": {k: r["specs"][k] for k in ("current", "area", "phm", "ugbw", "slewRate")}})
+            if r.get("op_warnings"):
+                rows[-1]["op_warnings"] = r["op_warnings"]
         best = max(rows, key=lambda x: x["reward"])
         return {"base_id": base["id"], "parameter": parameter, "results": rows,
                 "best_in_sweep": {"id": best["id"], "value": best["value"], "reward": best["reward"]}}
@@ -314,6 +328,7 @@ class SizingExperiment:
             "rl_updates": self.updates,
             "replay_size": int(self.replay.size),
             "n_feasible": len(feasible),
+            "op_lookups": self.op_lookups,
             "best": [self._compact(c) for c in ranked[:k]],
             "best_feasible_id": feasible[0]["id"] if feasible else None,
         }
@@ -330,6 +345,36 @@ class SizingExperiment:
                           "violated": cand["violated"]})
             cand = self.by_id.get(cand["parent"])
         return {"lineage_oldest_first": chain[::-1]}
+
+    def operating_point(self, candidate_id: int = None) -> dict:
+        """Transistor-level operating point of a simulated design (default: the best).
+        0 simulator calls: the data was saved by the design's own simulation."""
+        cand = self._get_candidate(candidate_id)
+        self.op_lookups += 1
+        self._write_summary()
+        d = self._derive(cand)
+        # conclusions first, the full device table last
+        return {"id": cand["id"], "source": cand["source"], "reward": sig(cand["reward"]),
+                "feasible": cand["feasible"], "violated": cand["violated"],
+                "warnings": d["warnings"], "notes": d["notes"], "circuit": d["circuit"],
+                "devices": d["devices"]}
+
+    def compare_operating_points(self, id_a: int, id_b: int) -> dict:
+        """What changed between two simulated designs: parameters, specs, and the device and
+        circuit quantities that moved by more than 5 % (0 simulator calls)."""
+        a, b = self._get_candidate(id_a), self._get_candidate(id_b)
+        self.op_lookups += 1
+        self._write_summary()
+        diff = compare_op(self._derive(a), self._derive(b))
+        return {
+            "a": {"id": a["id"], "source": a["source"], "reward": sig(a["reward"]), "feasible": a["feasible"]},
+            "b": {"id": b["id"], "source": b["source"], "reward": sig(b["reward"]), "feasible": b["feasible"]},
+            "parameter_changes": {n: [a["parameters"][n], b["parameters"][n]] for n in self.param_names
+                                  if a["parameters"][n] != b["parameters"][n]},
+            "spec_changes": {k: [sig(a["specs"][k]), sig(b["specs"][k])] for k in a["specs"]},
+            "device_changes": diff["devices"], "circuit_changes": diff["circuit"],
+            "warnings_only_in_a": diff["warnings_only_in_a"], "warnings_only_in_b": diff["warnings_only_in_b"],
+        }
 
     def write_memory(self, agent: str, kind: str, content: str) -> dict:
         """Append a short note for the other agents (context passing)."""
@@ -385,9 +430,25 @@ class SizingExperiment:
             clean[name] = int(grid[k]) if self.is_int[name] else float(f"{grid[k]:.6e}")
         return clean
 
+    def _get_candidate(self, candidate_id):
+        """A simulated design that has operating-point data (default: the best)."""
+        cand = self.best if candidate_id is None else self.by_id.get(candidate_id)
+        if cand is None:
+            raise ValueError("No design yet." if candidate_id is None else f"Unknown candidate_id {candidate_id}.")
+        if cand.get("op") is None:
+            raise ValueError(f"No operating-point data for design {cand['id']} (its simulation failed).")
+        return cand
+
+    def _derive(self, cand):
+        """Derived operating-point quantities of a candidate (see ngspice_interface/op_data.py)."""
+        ugbw = cand["specs"].get("ugbw")
+        return derive_op(cand["op"], cand["parameters"],
+                         ugbw if ugbw is not None and math.isfinite(ugbw) and ugbw > 0 else None)
+
     def _record(self, env, parameters, specs, source, failed, agent="", rationale="",
-                parent=None, changes=None):
-        """Score one measurement with the environment's own methods, store and log it."""
+                parent=None, changes=None, op=None):
+        """Score one measurement with the environment's own methods, store and log it.
+        op: operating-point data of the same simulation (read_op_data), or None."""
         norm = env.normalize_specs(specs)
         reward, feasible = env.reward_computation(norm)
         violated = [s for s in env.hard_constraints
@@ -397,8 +458,11 @@ class SizingExperiment:
                 "specs": {k: float(v) for k, v in specs.items()}, "normalized_specs": norm,
                 "reward": float(reward), "feasible": bool(feasible), "violated": violated,
                 "failed": bool(failed), "sim_call": self.simulator_calls,
-                "elapsed_s": round(time.time() - self.t0, 2)}
+                "elapsed_s": round(time.time() - self.t0, 2), "op": op}
         self.next_id += 1
+        if op is not None:
+            with open(self.op_path, "a") as f:
+                f.write(json.dumps({"id": cand["id"], "source": source, **op}) + "\n")
         self.by_id[cand["id"]] = cand
         if not failed and all(math.isfinite(v) for v in cand["specs"].values()):
             self.candidates[tuple(parameters[n] for n in self.param_names)] = cand
@@ -445,7 +509,8 @@ class SizingExperiment:
                     self.observation = self.env.reset()
                     self.simulator_calls += self.env.n_simulations - s0
                     self._record(self.env, self.env.param_values, self.env.real_specs,
-                                 "rl_reset", self.env.n_failed_sims > f0, agent="td3")
+                                 "rl_reset", self.env.n_failed_sims > f0, agent="td3",
+                                 op=read_op_data(self.env.simulation_engine))
                 if training:
                     action = self.agent.select_action(self.observation)
                 elif getattr(self, "_local", None) is not None:
@@ -456,7 +521,8 @@ class SizingExperiment:
                 next_obs, reward, done, info = self.env.step(action)
                 self.simulator_calls += self.env.n_simulations - s0
                 failed = self.env.n_failed_sims > f0
-                self._record(self.env, info["params"], info["specs"], phase, failed, agent="td3")
+                self._record(self.env, info["params"], info["specs"], phase, failed, agent="td3",
+                             op=read_op_data(self.env.simulation_engine))
                 if not failed:
                     self.replay.push(self.observation, action, reward, next_obs, float(done))
                 if training and self.replay.size >= self.batch_size:
@@ -493,7 +559,7 @@ class SizingExperiment:
         summary = {"run_id": self.run_id, "elapsed_s": round(time.time() - self.t0, 1),
                    "simulator_calls": self.simulator_calls, "warmup_steps": self.warmup_steps,
                    "training_steps": self.training_steps, "updates": self.updates,
-                   "seeded_transitions": self.seeded,
+                   "seeded_transitions": self.seeded, "op_lookups": self.op_lookups,
                    "best": None if self.best is None else {
                        k: self.best[k] for k in ("id", "source", "reward", "feasible",
                                                  "specs", "parameters")}}

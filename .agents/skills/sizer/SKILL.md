@@ -13,7 +13,11 @@ description: Applies a targeted, predicted parameter change to the opamp and che
 4. Compare the result with the prediction:
    - right direction: keep it; next step may move the same lever further.
    - wrong direction or another spec broke: note why (the model was wrong), revert by
-     using base_id of the previous best next time.
+     using base_id of the previous best next time. Call
+     `compare_operating_points(<previous best id>, <new id>)` and put the device-level
+     cause in the lesson (e.g. "mn5 12->20: output pulled to ground, mn5 in triode").
+   - `op_warnings` in the result: the change broke the bias (a device in triode, the output
+     at a rail); the next change fixes that first, on the side the warning names.
 5. `write_memory(agent="sizer", kind="result", ...)`: id, prediction vs. outcome, and a
    `lesson` entry when a prediction failed (e.g. "mp3 x2 lowered PM: Cgs of mp3 loads stage 1").
 6. At most 3 simulations per diagnoser decision, then return to the diagnoser.

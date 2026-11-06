@@ -72,6 +72,11 @@ wrdata noise_TwoStage.csv onoise_total
 op
 * save the total current consumption in a file named 'dc_TwoStage.csv'
 wrdata dc_TwoStage.csv i(vdd)
+* transistor operating point of the same 'op' analysis (optional task 2): Id, gm, gds,
+* Vgs, Vth, Vds, Vdsat of every device and the DC node voltages, saved in 'op_TwoStage.csv'.
+* Output only: it adds no analysis and does not change any measured spec.
+* Read by ngspice_interface/op_data.py.
+wrdata op_TwoStage.csv @mn1[id] @mn1[gm] @mn1[gds] @mn1[vgs] @mn1[vth] @mn1[vds] @mn1[vdsat] @mn2[id] @mn2[gm] @mn2[gds] @mn2[vgs] @mn2[vth] @mn2[vds] @mn2[vdsat] @mp1[id] @mp1[gm] @mp1[gds] @mp1[vgs] @mp1[vth] @mp1[vds] @mp1[vdsat] @mp2[id] @mp2[gm] @mp2[gds] @mp2[vgs] @mp2[vth] @mp2[vds] @mp2[vdsat] @mn3[id] @mn3[gm] @mn3[gds] @mn3[vgs] @mn3[vth] @mn3[vds] @mn3[vdsat] @mn4[id] @mn4[gm] @mn4[gds] @mn4[vgs] @mn4[vth] @mn4[vds] @mn4[vdsat] @mp3[id] @mp3[gm] @mp3[gds] @mp3[vgs] @mp3[vth] @mp3[vds] @mp3[vdsat] @mn5[id] @mn5[gm] @mn5[gds] @mn5[vgs] @mn5[vth] @mn5[vds] @mn5[vdsat] v(net3) v(net4) v(net5) v(net6) v(net7)
 
 .endc
 

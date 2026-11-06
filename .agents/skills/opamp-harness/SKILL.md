@@ -13,10 +13,10 @@ only the memory it needs. Otherwise play the roles one after another in this ses
 | Role (agent name) | Skill | Job | Tools |
 |---|---|---|---|
 | analyst | circuit-analyst | Explain topology, derive a first design from equations | design_space, simulate (1-2), write_memory |
-| diagnoser | diagnoser | Find the binding spec of the current best and pick the lever | get_status, read_memory, write_memory |
-| sizer | sizer | One targeted change per simulation, predicted then checked | simulate, read_memory, write_memory |
+| diagnoser | diagnoser | Find the binding spec of the current best and pick the lever | get_status, operating_point, read_memory, write_memory |
+| sizer | sizer | One targeted change per simulation, predicted then checked | simulate, compare_operating_points, read_memory, write_memory |
 | rl | rl-strategist | Run TD3 anchored on the best expert design (local refinement) | seed_rl, warmup, train, get_status |
-| reviewer | reviewer | Verify and explain the final solution | get_status, get_lineage, read_memory |
+| reviewer | reviewer | Verify and explain the final solution | get_status, get_lineage, operating_point, compare_operating_points, read_memory |
 
 ## Modes (pick from the user's words; default = full)
 
@@ -30,6 +30,8 @@ Budgets (the user may override them, e.g. "budget 1500 sims, 30 hand sims"):
 - total simulator calls: 1000 (default);
 - hand decisions: 40. Each simulate OR sweep call counts as one (a sweep of 6 values is
   one decision). Decisions cost LLM tokens; RL and sweep simulations barely do.
+- operating-point lookups (operating_point, compare_operating_points): at most 20. They
+  use 0 simulations and do not count as hand decisions.
 Start by stating the mode and both budgets in one line. This skill is the full
 instruction; the user does not repeat the steps.
 
