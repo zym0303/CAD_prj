@@ -87,13 +87,14 @@ def _sig(x, digits=4):
     return float(f"{x:.{digits}g}")
 
 
-def derive(op, params, ugbw=None):
+def derive(op, params, ugbw=None, vdd=VDD):
     """Turn raw operating-point data into quantities an agent can reason with.
 
     Args:
         op: output of read_op_data.
         params: the design's parameters (needs 'cap' and 'res').
         ugbw: measured UGBW in Hz (optional), to compare with the 2nd pole.
+        vdd: supply voltage of the simulated corner (for the output-at-VDD warning).
 
     Returns:
         {"devices": per-device table, "circuit": stage gains, poles, zero, currents,
@@ -156,7 +157,7 @@ def derive(op, params, ugbw=None):
     if abs(balance) > BALANCE_WARN:
         warnings.append(f"stage 1 unbalanced: V(net5) - V(net4) = {balance*1e3:.0f} mV "
                         "(balance condition S_mp3/S_mp1 = 2*S_mn5/S_mn4 not met)")
-    if vout > VDD - RAIL_WARN:
+    if vout > vdd - RAIL_WARN:
         warnings.append(f"output DC level at VDD: V(net6) = {vout:.3f} V, mp3 sources more than mn5 "
                         f"sinks (balance ratio {balance_ratio:.2f} > 1): smaller S_mp3 or larger S_mn5")
     elif vout < RAIL_WARN:

@@ -10,6 +10,11 @@ description: Applies a targeted, predicted parameter change to the opamp and che
 2. Change 1-3 parameters, all serving the chosen lever. Send only the changed parameters
    to `simulate` (the others come from the best design, or from `base_id`). Values must be
    on the grid; if rejected, use the nearest allowed value the error gives.
+   Bias check first: if the change touches a transistor (m, w or l of any device), screen
+   1-5 candidate values with ONE `quick_analysis(variants=[...], analyses=["op"])`
+   (0 simulator calls). Drop the variants with `op_warnings`; among the rest prefer the
+   highest `fom_if_feasible` that still serves the lever, then `simulate` only that one.
+   Rc and Cc do not change the bias: no check for them.
 3. Rationale format: "<change>: <mechanism>; expect <spec> <old> -> <new estimate>".
    Base the estimate on the model's equations that are marked trusted for this design.
 4. Compare the result with the prediction:

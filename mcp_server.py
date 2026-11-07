@@ -25,8 +25,9 @@ def create_server(experiment):
     """Register tools for one experiment; serialize calls that share its state."""
     server = MCPServer(
         "CAD sizing",
-        description="Two-stage Miller opamp sizing: simulation, transistor operating point, "
-                    "TD3 RL sizer, trace and shared memory.",
+        description="Two-stage Miller opamp sizing: simulation, cheap analyses (op/ac/noise/"
+                    "short tran, PVT corners), transistor operating point, TD3 RL sizer, "
+                    "trace and shared memory.",
     )
     lock = Lock()
 
@@ -133,6 +134,30 @@ def create_server(experiment):
         by more than 5 % (with region/inversion changes) and warnings that appeared or
         disappeared."""
         return call("compare_operating_points", id_a=id_a, id_b=id_b)
+
+    @server.tool()
+    def quick_analysis(variants: list[dict[str, StrictFloat | StrictInt]], rationale: str,
+                       agent: str, analyses: list[str] = ["op"],
+                       base_id: Optional[StrictInt] = None,
+                       corner: Optional[dict[str, str | StrictFloat | StrictInt]] = None,
+                       include_devices: StrictBool = False) -> dict[str, Any]:
+        """CHEAP screening of 1..10 variants BEFORE spending simulator calls. NOT a simulator
+        call and NOT a candidate (never best, Pareto front or RL data): confirm the variant you
+        choose with simulate. Each run is counted in quick_runs.
+
+        variants: partial parameter dicts applied to base_id (default: the best), e.g.
+        [{"mn5": 10}, {"mn5": 12}]; {} = the base design itself.
+        analyses: any of "op" (~0.01 s: exact current, transistor operating point, bias
+        warnings), "ac" (~0.01 s: exact gain, UGBW, PM), "noise" (~0.01 s: exact noise),
+        "tran" (~0.1 s: slew rate from a short 5 us transient). Area is always given.
+        corner: optional PVT corner, e.g. {"process": "SS", "temp": 80, "voltage": 1.1};
+        default TT, 27 C, 1.2 V (the corner of simulate).
+        Per variant: measured specs, violated hard constraints among them, not_measured,
+        reward/feasible if all 7 specs were measured, otherwise fom_if_feasible (the FoM if
+        the unmeasured specs pass; area and current are exact), and with "op": op_warnings,
+        op_notes and key circuit values (full device table: include_devices=True)."""
+        return call("quick_analysis", variants=variants, analyses=analyses, rationale=rationale,
+                    agent=agent, base_id=base_id, corner=corner, include_devices=include_devices)
 
     @server.tool()
     def write_memory(agent: str, kind: str, content: str) -> dict[str, Any]:
