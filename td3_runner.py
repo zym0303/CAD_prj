@@ -63,6 +63,11 @@ def readParser(argv=None):
     parser.add_argument('--cuda', default=False, action="store_true",
                         help='not used: the device is chosen automatically in td3/agent.py')
 
+    parser.add_argument('--pvt_robust', default=False, action='store_true',
+                        help='accept a design only if it meets the specs in all 12 PVT corners '
+                             '{TT,SS,FF} x {1.2V,1.0V} x {0C,100C}; --max_sims then counts designs '
+                             '(each design = 12 ngspice runs)')
+
     parser.add_argument('--run_id', type=str, default=datetime.now().strftime('%Y-%m-%d--%H-%M-%S'), metavar='N',
                         help='run identifier (default: current time)')
 
@@ -222,6 +227,7 @@ def finalize(args, env, agent, total_steps, start_time, logger):
         'env_steps': total_steps,
         'n_simulations': env.n_simulations,
         'n_failed_sims': env.n_failed_sims,
+        'n_corner_sims': env.n_corner_sims,
         'best_fom': float(np.max(env.reward_history)) if env.reward_history else None,
         'first_feasible_step_and_sims': logger.first_feasible,
         'runtime_s': round(time.time() - start_time, 1),
@@ -242,7 +248,7 @@ def main(args=None):
     torch.manual_seed(args.seed)
     np.random.seed(args.seed)
     # Initial environment
-    env = CircuitEnv(run_id=args.run_id)
+    env = CircuitEnv(run_id=args.run_id, pvt_robust=args.pvt_robust)
     env.action_space.seed(args.seed)          # makes the warmup designs reproducible too
     state_dim = env.observation_space.shape[0]
     action_dim = env.action_space.shape[0]

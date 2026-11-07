@@ -185,6 +185,44 @@ class TestQuickTool(unittest.TestCase):
         with self.assertRaises(ValueError):
             x.quick_analysis([{}], rationale=" ", agent="test")
 
+    def test_6a_corner_check_twelve_corners(self):
+        from circuit_env import CircuitEnv
+        x = self.x
+        before = (x.simulator_calls, len(x.by_id), x.best["id"])
+        runs, checks = x.quick_runs, x.corner_checks
+        out = x.corner_check(rationale="test", agent="test")
+        self.assertEqual(before, (x.simulator_calls, len(x.by_id), x.best["id"]), "not a simulation")
+        self.assertEqual(len(out["corners"]), len(CircuitEnv.PVT_CORNERS))
+        self.assertEqual(x.quick_runs - runs, len(CircuitEnv.PVT_CORNERS))
+        self.assertEqual(x.corner_checks, checks + 1)
+        self.assertEqual(out["not_measured"], [])
+        # the worst case is the min (or max) over the corners, as in CircuitEnv._worst_case
+        for name, worst in out["worst_case"].items():
+            values = [row["specs"][name] for row in out["corners"]]
+            expected = max(values) if name in CircuitEnv.LOWER_IS_BETTER else min(values)
+            self.assertAlmostEqual(worst["value"], expected, delta=1e-9 * abs(expected) + 1e-15, msg=name)
+        failing = [row["corner"] for row in out["corners"] if row["violated"]]
+        self.assertEqual(out["failing_corners"], failing)
+        self.assertEqual(out["feasible_in_all_corners"], not failing)
+        # the TT 1.2 V corners bracket the nominal 27 C simulation
+        tt = [row["specs"]["current"] for row in out["corners"] if row["corner"].startswith("TT 1.2V")]
+        self.assertTrue(min(tt) <= x.best["specs"]["current"] * 1.05)
+        # cached: a second check runs nothing
+        x.corner_check(rationale="again", agent="test")
+        self.assertEqual(x.quick_runs - runs, len(CircuitEnv.PVT_CORNERS))
+
+    def test_6b_corner_check_variant_and_bad_input(self):
+        x = self.x
+        out = x.corner_check(rationale="test", agent="test", variant={"cap": 3e-12}, analyses=["ac"])
+        self.assertEqual(out["variant"], {"cap": 3e-12})
+        self.assertIsNone(out["nominal"])
+        self.assertIn("current", out["not_measured"])
+        for kwargs in (dict(rationale=" "), dict(analyses=["dc"]), dict(variant={"cap": 3.05e-12}),
+                       dict(candidate_id=99999), dict(variant=[1])):
+            with self.subTest(**{k: str(v) for k, v in kwargs.items()}):
+                with self.assertRaises(ValueError):
+                    x.corner_check(**{"rationale": "test", "agent": "test", **kwargs})
+
 
 if __name__ == "__main__":
     unittest.main()

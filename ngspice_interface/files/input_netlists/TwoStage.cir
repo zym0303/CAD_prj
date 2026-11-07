@@ -58,6 +58,11 @@ tran 1n 30u
 * save Vout data in a file named 'tran_TwoStage.csv'
 wrdata tran_TwoStage.csv v(net6)
 
+* 'reset' before each new analysis: older ngspice (e.g. ngspice-36 from Ubuntu 22.04) seeds the next
+* DC operating point with the end state of the transient, and this open-loop amp then converges to a
+* wrong solution (gain ~1e-3). Harmless on newer ngspice (the course server).
+reset
+
 * ac analysis
 ac dec 10 1 1T
 * save Vout data in a file named 'ac_TwoStage.csv'
@@ -69,6 +74,7 @@ noise v(net6) vinput dec 10 1 1T
 wrdata noise_TwoStage.csv onoise_total
 
 * dc analysis
+reset
 op
 * save the total current consumption in a file named 'dc_TwoStage.csv'
 wrdata dc_TwoStage.csv i(vdd)

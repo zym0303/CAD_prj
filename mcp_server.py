@@ -160,6 +160,20 @@ def create_server(experiment):
                     agent=agent, base_id=base_id, corner=corner, include_devices=include_devices)
 
     @server.tool()
+    def corner_check(rationale: str, agent: str, candidate_id: Optional[StrictInt] = None,
+                     variant: Optional[dict[str, StrictFloat | StrictInt]] = None,
+                     analyses: list[str] = ["op", "ac", "noise", "tran"]) -> dict[str, Any]:
+        """CHEAP robustness check of one design over the 12 PVT corners {TT,SS,FF} x
+        {1.2 V, 1.0 V} x {0 C, 100 C} (~1 s, 12 quick runs, 0 simulator calls, not a candidate).
+        candidate_id: a simulated design (default: the best); variant: optional partial
+        parameter dict applied to it, e.g. {"cap": 7e-13}.
+        Returns worst_case (worst value of every spec and the corner that sets it),
+        worst_case_fom and feasible_in_all_corners (the FoM of the PVT-robust mode),
+        failing_corners, and per corner the specs and violated hard constraints."""
+        return call("corner_check", rationale=rationale, agent=agent, candidate_id=candidate_id,
+                    variant=variant, analyses=analyses)
+
+    @server.tool()
     def write_memory(agent: str, kind: str, content: str) -> dict[str, Any]:
         """Leave a SHORT note (<= 2000 chars) for the other agents. kind is one of
         plan, observation, decision, result, lesson, model. Write conclusions, not raw data.

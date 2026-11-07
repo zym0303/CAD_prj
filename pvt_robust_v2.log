@@ -1,0 +1,261 @@
+
+ Initialized TwoStage with simulator ngspice 
+
+ PVT-robust mode: 12 corners, 8 parallel ngspice runs
+
+[warmup] step     0 | sims     2 | FoM -3.8963 | best -3.8963 | failed sims 0
+[warmup] step    50 | sims    57 | FoM -2.8691 | best -1.0460 | failed sims 0
+[warmup] step   100 | sims   112 | FoM -3.5771 | best -1.0460 | failed sims 0
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'TT', 'voltage': 1.2, 'temp': 100} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 1)
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'TT', 'voltage': 1.2, 'temp': 0} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 2)
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'SS', 'voltage': 1.2, 'temp': 100} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 3)
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'SS', 'voltage': 1.2, 'temp': 0} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 4)
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'FF', 'voltage': 1.2, 'temp': 100} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 5)
+[warmup] step   150 | sims   167 | FoM -3.8357 | best -0.9865 | failed sims 5
+[warmup] step   200 | sims   222 | FoM -3.8917 | best -0.4373 | failed sims 5
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'TT', 'voltage': 1.2, 'temp': 100} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 6)[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'SS', 'voltage': 1.2, 'temp': 0} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 7)
+
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'SS', 'voltage': 1.0, 'temp': 0} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 8)
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'TT', 'voltage': 1.0, 'temp': 0} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 9)
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'TT', 'voltage': 1.2, 'temp': 0} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 10)
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'TT', 'voltage': 1.0, 'temp': 100} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 11)
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'FF', 'voltage': 1.2, 'temp': 0} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 12)
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'FF', 'voltage': 1.0, 'temp': 0} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 13)
+[warmup] step   250 | sims   277 | FoM -2.2305 | best -0.4373 | failed sims 13
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'TT', 'voltage': 1.2, 'temp': 0} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 14)
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'SS', 'voltage': 1.0, 'temp': 0} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 15)
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'TT', 'voltage': 1.0, 'temp': 0} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 16)
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'SS', 'voltage': 1.0, 'temp': 100} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 17)
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'SS', 'voltage': 1.2, 'temp': 100} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 18)
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'SS', 'voltage': 1.2, 'temp': 0} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 19)
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'TT', 'voltage': 1.2, 'temp': 100} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 20)
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'FF', 'voltage': 1.2, 'temp': 0} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 21)
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'FF', 'voltage': 1.0, 'temp': 0} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 22)
+[td3] step   300 | sims   332 | FoM -2.4150 | best -0.4373 | failed sims 22
+[td3] step   350 | sims   387 | FoM -2.4238 | best -0.4373 | failed sims 22
+[td3] step   400 | sims   442 | FoM -2.3824 | best -0.4373 | failed sims 22
+[td3] step   450 | sims   497 | FoM -1.4872 | best -0.4373 | failed sims 22
+[td3] step   500 | sims   552 | FoM -1.7055 | best -0.4373 | failed sims 22
+[td3] step   550 | sims   607 | FoM -1.0706 | best -0.4373 | failed sims 22
+[td3] step   600 | sims   662 | FoM -0.9756 | best -0.4373 | failed sims 22
+[td3] step   650 | sims   717 | FoM -0.9934 | best -0.4373 | failed sims 22
+[td3] step   700 | sims   772 | FoM -0.7891 | best -0.3175 | failed sims 22
+[td3] step   750 | sims   827 | FoM -1.5853 | best -0.2884 | failed sims 22
+[td3] step   800 | sims   882 | FoM -0.7800 | best -0.2884 | failed sims 22
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'TT', 'voltage': 1.0, 'temp': 0} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 23)
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'TT', 'voltage': 1.2, 'temp': 0} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 24)
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'SS', 'voltage': 1.2, 'temp': 0} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 25)
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'FF', 'voltage': 1.2, 'temp': 0} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 26)
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'FF', 'voltage': 1.0, 'temp': 0} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 27)
+[td3] step   850 | sims   937 | FoM -1.4372 | best -0.2884 | failed sims 27
+[td3] step   900 | sims   992 | FoM -1.4314 | best -0.2884 | failed sims 27
+[td3] step   950 | sims  1047 | FoM -0.5271 | best -0.1860 | failed sims 27
+[td3] step  1000 | sims  1102 | FoM -0.7247 | best -0.1860 | failed sims 27
+[td3] step  1050 | sims  1157 | FoM -0.4541 | best -0.1860 | failed sims 27
+[td3] step  1100 | sims  1212 | FoM -0.8928 | best -0.1860 | failed sims 27
+[td3] step  1150 | sims  1267 | FoM -2.2678 | best -0.1860 | failed sims 27
+[td3] step  1200 | sims  1322 | FoM -1.1602 | best -0.1860 | failed sims 27
+[td3] step  1250 | sims  1377 | FoM -1.7727 | best -0.1860 | failed sims 27
+[td3] step  1300 | sims  1432 | FoM -0.5863 | best -0.1860 | failed sims 27
+[td3] step  1350 | sims  1487 | FoM -0.9042 | best -0.1860 | failed sims 27
+[td3] step  1400 | sims  1542 | FoM -0.3013 | best -0.1771 | failed sims 27
+[td3] step  1450 | sims  1597 | FoM -1.0500 | best -0.1771 | failed sims 27
+[td3] step  1500 | sims  1652 | FoM -2.6430 | best -0.1771 | failed sims 27
+[td3] step  1550 | sims  1707 | FoM -2.3321 | best -0.1771 | failed sims 27
+[td3] step  1600 | sims  1762 | FoM -0.6855 | best -0.1771 | failed sims 27
+[td3] step  1650 | sims  1817 | FoM -2.1433 | best -0.1771 | failed sims 27
+[td3] step  1700 | sims  1872 | FoM -1.3280 | best -0.1771 | failed sims 27
+[td3] step  1750 | sims  1927 | FoM -0.7436 | best -0.1771 | failed sims 27
+[td3] step  1800 | sims  1982 | FoM -1.9504 | best -0.1771 | failed sims 27
+[td3] step  1850 | sims  2037 | FoM -2.7460 | best -0.1771 | failed sims 27
+[td3] step  1900 | sims  2092 | FoM -2.0394 | best -0.1771 | failed sims 27
+[td3] step  1950 | sims  2147 | FoM -2.7698 | best -0.1771 | failed sims 27
+[td3] step  2000 | sims  2202 | FoM -2.3864 | best -0.1771 | failed sims 27
+[td3] step  2050 | sims  2257 | FoM -1.9057 | best -0.1771 | failed sims 27
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'TT', 'voltage': 1.0, 'temp': 0} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 28)
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'TT', 'voltage': 1.2, 'temp': 0} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 29)
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'SS', 'voltage': 1.0, 'temp': 0} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 30)
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'FF', 'voltage': 1.2, 'temp': 0} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 31)
+[td3] step  2100 | sims  2312 | FoM -0.9716 | best -0.1771 | failed sims 31
+[td3] step  2150 | sims  2367 | FoM -1.0565 | best -0.1771 | failed sims 31
+[td3] step  2200 | sims  2422 | FoM -1.3793 | best -0.1771 | failed sims 31
+[td3] step  2250 | sims  2477 | FoM -0.9503 | best -0.1771 | failed sims 31
+[td3] step  2300 | sims  2532 | FoM -2.0929 | best -0.1771 | failed sims 31
+[td3] step  2350 | sims  2587 | FoM -1.3931 | best -0.1771 | failed sims 31
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'TT', 'voltage': 1.2, 'temp': 0} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 32)
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'SS', 'voltage': 1.2, 'temp': 0} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 33)
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'SS', 'voltage': 1.0, 'temp': 0} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 34)
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'TT', 'voltage': 1.0, 'temp': 0} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 35)
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'FF', 'voltage': 1.2, 'temp': 0} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 36)
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'FF', 'voltage': 1.0, 'temp': 0} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 37)
+[td3] step  2400 | sims  2642 | FoM -2.5753 | best -0.1771 | failed sims 37
+[td3] step  2450 | sims  2697 | FoM -1.6314 | best -0.1771 | failed sims 37
+[td3] step  2500 | sims  2752 | FoM -2.8546 | best -0.1771 | failed sims 37
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'TT', 'voltage': 1.2, 'temp': 0} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 38)
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'SS', 'voltage': 1.0, 'temp': 0} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 39)
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'TT', 'voltage': 1.0, 'temp': 0} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 40)
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'SS', 'voltage': 1.2, 'temp': 0} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 41)
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'FF', 'voltage': 1.2, 'temp': 0} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 42)
+[td3] step  2550 | sims  2807 | FoM -2.9251 | best -0.1771 | failed sims 42
+[td3] step  2600 | sims  2862 | FoM -2.5049 | best -0.1771 | failed sims 42
+[td3] step  2650 | sims  2917 | FoM -1.4940 | best -0.1771 | failed sims 42
+[td3] step  2700 | sims  2972 | FoM -2.8128 | best -0.1771 | failed sims 42
+[td3] step  2750 | sims  3027 | FoM -1.5982 | best -0.1771 | failed sims 42
+[td3] step  2800 | sims  3082 | FoM -1.5903 | best -0.1771 | failed sims 42
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'TT', 'voltage': 1.0, 'temp': 100} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 43)
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'TT', 'voltage': 1.2, 'temp': 0} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 44)
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'SS', 'voltage': 1.0, 'temp': 0} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 45)
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'SS', 'voltage': 1.2, 'temp': 0} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 46)
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'FF', 'voltage': 1.0, 'temp': 0} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 47)
+[td3] step  2850 | sims  3137 | FoM -1.3592 | best -0.1771 | failed sims 47
+[td3] step  2900 | sims  3192 | FoM -1.7853 | best -0.1771 | failed sims 47
+[td3] step  2950 | sims  3247 | FoM -2.9021 | best -0.1771 | failed sims 47
+[td3] step  3000 | sims  3302 | FoM -2.5584 | best -0.1771 | failed sims 47
+[td3] step  3050 | sims  3357 | FoM -0.8724 | best -0.1771 | failed sims 47
+[td3] step  3100 | sims  3412 | FoM -0.9426 | best -0.1771 | failed sims 47
+[td3] step  3150 | sims  3467 | FoM -0.8467 | best -0.1771 | failed sims 47
+[td3] step  3200 | sims  3522 | FoM -2.9094 | best -0.1771 | failed sims 47
+[td3] step  3250 | sims  3577 | FoM -0.4191 | best -0.1771 | failed sims 47
+[td3] step  3300 | sims  3632 | FoM -2.7353 | best -0.1771 | failed sims 47
+[td3] step  3350 | sims  3687 | FoM -3.9465 | best -0.1771 | failed sims 47
+[td3] step  3400 | sims  3742 | FoM -1.0314 | best -0.1771 | failed sims 47
+[td3] step  3450 | sims  3797 | FoM -2.9236 | best -0.1771 | failed sims 47
+[td3] step  3500 | sims  3852 | FoM -2.8649 | best -0.1771 | failed sims 47
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'TT', 'voltage': 1.2, 'temp': 100} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 48)
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'TT', 'voltage': 1.0, 'temp': 100} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 49)
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'TT', 'voltage': 1.0, 'temp': 0} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 50)
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'TT', 'voltage': 1.2, 'temp': 0} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 51)
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'SS', 'voltage': 1.0, 'temp': 100} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 52)
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'SS', 'voltage': 1.2, 'temp': 0} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 53)
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'SS', 'voltage': 1.0, 'temp': 0} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 54)
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'FF', 'voltage': 1.2, 'temp': 0} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 55)
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'FF', 'voltage': 1.2, 'temp': 100} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 56)
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'FF', 'voltage': 1.0, 'temp': 0} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 57)
+[ngspice] timeout after 20 s -> design treated as failed
+[ngspice] timeout after 20 s -> design treated as failed[simulate] {'process': 'TT', 'voltage': 1.2, 'temp': 0} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 58)
+
+[simulate] {'process': 'TT', 'voltage': 1.0, 'temp': 0} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 59)
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'SS', 'voltage': 1.2, 'temp': 0} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 60)
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'FF', 'voltage': 1.2, 'temp': 0} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 61)
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'FF', 'voltage': 1.0, 'temp': 0} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 62)
+[td3] step  3550 | sims  3907 | FoM -2.3782 | best -0.1771 | failed sims 62
+[td3] step  3600 | sims  3962 | FoM -3.9431 | best -0.1771 | failed sims 62
+[td3] step  3650 | sims  4017 | FoM -2.3072 | best -0.1771 | failed sims 62
+[td3] step  3700 | sims  4072 | FoM -2.8802 | best -0.1771 | failed sims 62
+[td3] step  3750 | sims  4127 | FoM -2.9883 | best -0.1771 | failed sims 62
+[td3] step  3800 | sims  4182 | FoM -3.8284 | best -0.1771 | failed sims 62
+[td3] step  3850 | sims  4237 | FoM -2.6313 | best -0.1771 | failed sims 62
+[td3] step  3900 | sims  4292 | FoM -2.7631 | best -0.1771 | failed sims 62
+[td3] step  3950 | sims  4347 | FoM -2.9492 | best -0.1771 | failed sims 62
+[td3] step  4000 | sims  4402 | FoM -1.7866 | best -0.1771 | failed sims 62
+[td3] step  4050 | sims  4457 | FoM -2.5759 | best -0.1771 | failed sims 62
+[td3] step  4100 | sims  4512 | FoM -2.2211 | best -0.1771 | failed sims 62
+[td3] step  4150 | sims  4567 | FoM -0.9505 | best -0.1771 | failed sims 62
+[td3] step  4200 | sims  4622 | FoM -2.4844 | best -0.1771 | failed sims 62
+[td3] step  4250 | sims  4677 | FoM -2.7481 | best -0.1771 | failed sims 62
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'TT', 'voltage': 1.2, 'temp': 0} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 63)
+[ngspice] timeout after 20 s -> design treated as failed
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'SS', 'voltage': 1.0, 'temp': 0} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 64)
+[simulate] {'process': 'TT', 'voltage': 1.0, 'temp': 0} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 65)
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'SS', 'voltage': 1.2, 'temp': 0} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 66)
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'FF', 'voltage': 1.2, 'temp': 0} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 67)
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'FF', 'voltage': 1.0, 'temp': 0} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 68)
+[td3] step  4300 | sims  4732 | FoM -1.0396 | best -0.1771 | failed sims 68
+[td3] step  4350 | sims  4787 | FoM -1.1431 | best -0.1771 | failed sims 68
+[td3] step  4400 | sims  4842 | FoM -1.1422 | best -0.1743 | failed sims 68
+[td3] step  4450 | sims  4897 | FoM -0.8503 | best -0.0863 | failed sims 68
+[td3] step  4500 | sims  4952 | FoM -0.3865 | best -0.0863 | failed sims 68
+No feasible design found -> no Pareto solutions to export.
+{
+  "args": {
+    "seed": 123456,
+    "noise_sigma": 0.1,
+    "batch_size": 128,
+    "w": 300,
+    "pi_lr": 0.0003,
+    "q_lr": 0.001,
+    "gamma": 0.99,
+    "tau": 0.005,
+    "target_update_interval": 1,
+    "actor_update_interval": 2,
+    "hidden_size": 256,
+    "T": 10000,
+    "max_sims": 5000,
+    "replay_size": 1000000,
+    "cuda": false,
+    "pvt_robust": true,
+    "run_id": "pvt_robust_v2"
+  },
+  "env_steps": 4545,
+  "n_simulations": 5000,
+  "n_failed_sims": 68,
+  "n_corner_sims": 60000,
+  "best_fom": -0.08626819475014436,
+  "first_feasible_step_and_sims": null,
+  "runtime_s": 7268.2
+}

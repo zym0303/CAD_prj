@@ -4,19 +4,24 @@ import numpy as np
 import os
 import yaml
 import math
+import threading
+from concurrent.futures import ThreadPoolExecutor
 from ngspice_interface import DUT as DUT_NGSpice
 from ngspice_interface.area_estimation import BPTM45nmAreaEstimator
 from utils.plotting import plotLearning, plot_running_maximum
-from utils.saving import save_solutions_csv
+from utils.saving import save_solutions_csv, save_corner_specs_csv
 
 class CircuitEnv(gym.Env):
     PER_LOW, PER_HIGH = -np.inf, +np.inf
     # specs for which a smaller value is better (upper bound / minimization);
     # every other spec in the YAML is 'higher is better' (lower bound)
     LOWER_IS_BETTER = ('noise', 'area', 'current')
+    # Optional task 1: a design is only accepted if it meets the specs in all 12 corners
+    PVT_CORNERS = [{'process': p, 'voltage': v, 'temp': t}
+                   for p in ('TT', 'SS', 'FF') for v in (1.2, 1.0) for t in (0, 100)]
     
     def __init__(self, config=None, circuit_name='TwoStage', run_id='rllib_baseline',
-                 success_threshold=0.0, simulator='ngspice'):
+                 success_threshold=0.0, simulator='ngspice', pvt_robust=False, n_workers=None):
         self.run_id = run_id
         self.max_steps_per_episode = 10
         self.env_steps = 0
@@ -71,6 +76,20 @@ class CircuitEnv(gym.Env):
         self.score = 0.0           # sum of rewards in the current episode
         self._use_env_rng = False  # becomes True once reset() gets a seed
         self.pvt_corner = {'process': 'TT', 'voltage': 1.2, 'temp': 27}
+
+        # PVT-robust mode: every design is simulated in the 12 corners (in parallel, one
+        # DUT object per corner because a DUT keeps per-run state such as random_name)
+        # and the agent sees / is rewarded on the WORST-CASE specs over the corners.
+        self.pvt_robust = pvt_robust
+        self.n_corner_sims = 0       # every single ngspice run (12 per design in robust mode)
+        self.corner_specs = None     # per-corner specs of the last design (robust mode only)
+        self._lock = threading.Lock()
+        if pvt_robust:
+            self.corners = list(CircuitEnv.PVT_CORNERS)
+            self.corner_engines = [DUT_NGSpice(circuit_yaml_path) for _ in self.corners]
+            self.n_workers = n_workers or min(len(self.corners), os.cpu_count() or 1)
+            self._pool = ThreadPoolExecutor(max_workers=self.n_workers)
+            print(f" PVT-robust mode: {len(self.corners)} corners, {self.n_workers} parallel ngspice runs\n")
     
     def action_refine(self, action):
         """
@@ -139,27 +158,63 @@ class CircuitEnv(gym.Env):
         Returns:
             dict: {'area', 'current', 'gain', 'noise', 'phm', 'slewRate', 'ugbw'} as floats.
         """
-        engine = self.simulation_engine
-        self.n_simulations += 1
+        self.n_simulations += 1          # one design evaluation (= 12 ngspice runs in robust mode)
+        if not self.pvt_robust:
+            return self._simulate_corner(self.simulation_engine, params, self.pvt_corner)
+
+        jobs = [self._pool.submit(self._simulate_corner, eng, params, corner)
+                for eng, corner in zip(self.corner_engines, self.corners)]
+        self.corner_specs = [job.result() for job in jobs]
+        return self._worst_case(self.corner_specs)
+
+    def _simulate_corner(self, engine, params, corner):
+        """One ngspice run of `params` in one PVT corner (the Milestone 2 code)."""
+        with self._lock:
+            self.n_corner_sims += 1
+        # the input common mode stays at the netlist value (0.6 V) in every corner: the task only
+        # varies P, V and T (VCM = VDD/2 = 0.5 V at 1.0 V halved the UGBW of the NMOS input pair)
+        vcm = None
         try:
             netlist_path = engine.create_new_netlist(
                 params,
-                process=self.pvt_corner['process'],
-                temp_pvt=self.pvt_corner['temp'],
-                vdd=self.pvt_corner['voltage'],
+                process=corner['process'],
+                temp_pvt=corner['temp'],
+                vdd=corner['voltage'],
+                vcm=vcm,
             )
             info = engine.simulate(netlist_path)
             if info != 0:
                 raise RuntimeError("ngspice exited with an error")
             specs = engine.measure_metrics()
         except Exception as err:
-            self.n_failed_sims += 1
-            print(f"[simulate] simulation failed ({type(err).__name__}: {err}) "
-                  f"-> worst-case specs (failed so far: {self.n_failed_sims})")
+            with self._lock:
+                self.n_failed_sims += 1
+                n_failed = self.n_failed_sims
+            print(f"[simulate] {corner} failed ({type(err).__name__}: {err}) "
+                  f"-> worst-case specs (failed so far: {n_failed})")
             return self._failed_specs(params)
 
         # plain Python floats (numpy scalars print badly in the solutions CSV)
         return {name: float(specs[name]) for name in self.dict_targets}
+
+    def _worst_case(self, corner_specs):
+        """
+        Worst value of every spec over the corners: max for 'lower is better' specs
+        (noise, current, area), min for the others (gain, phm, slewRate, ugbw).
+        A NaN in any corner (failed simulation) makes that spec NaN -> worst normalized value.
+        Since the normalization is monotonic, this equals the worst normalized spec, so
+        reward_computation is unchanged and 'hard constraints met' means 'met in ALL corners'.
+        """
+        worst = {}
+        for name in self.dict_targets:
+            values = np.array([s[name] for s in corner_specs], dtype=float)
+            if not np.all(np.isfinite(values)):
+                worst[name] = float('nan')
+            elif name in self.LOWER_IS_BETTER:
+                worst[name] = float(values.max())
+            else:
+                worst[name] = float(values.min())
+        return worst
 
     def _failed_specs(self, params):
         """Spec dict for a design whose simulation failed: real area, NaN for everything measured."""
@@ -274,7 +329,10 @@ class CircuitEnv(gym.Env):
         """
         # 1-3. evaluate, reward, observation
         self.evaluate(action)
-        reward, hard_satisfied = self.reward_computation(self.cur_norm_specs)
+        if self.pvt_robust:
+            reward, hard_satisfied = self.robust_reward_computation()
+        else:
+            reward, hard_satisfied = self.reward_computation(self.cur_norm_specs)
         ob = self._get_obs()
 
         # 4. bookkeeping
@@ -288,6 +346,8 @@ class CircuitEnv(gym.Env):
         # 6. goal reached: keep the solution and update the max-FoM plot
         if hard_satisfied:
             save_solutions_csv(self.run_id, self.env_steps, self.param_values, self.real_specs, reward)
+            if self.pvt_robust:
+                save_corner_specs_csv(self.run_id, self.env_steps, self.corners, self.corner_specs)
             new_best = reward > self.best_reward
             if new_best or self.env_steps % 100 == 0:
                 plot_running_maximum(self.reward_history, self.run_id)
@@ -314,9 +374,36 @@ class CircuitEnv(gym.Env):
             'env_steps': self.env_steps,
             'n_simulations': self.n_simulations,
             'n_failed_sims': self.n_failed_sims,
+            'n_corner_sims': self.n_corner_sims,
+            'corner_specs': self.corner_specs,
         }
         return ob, reward, bool(done), info
     
+    def robust_reward_computation(self, w_worst=0.5):
+        """
+        PVT-robust reward. Feasible only if every hard constraint is met in ALL corners
+        (= the worst-case specs pass). The plain worst-case FoM is a poor learning signal:
+        it only moves when the single worst corner of a spec improves. So the constraint
+        part blends the worst case with the average over the corners:
+            r_H = w_worst * r_H(worst-case specs) + (1 - w_worst) * mean_c r_H(specs of corner c)
+        Infeasible: FoM = r_H + 0.05 * r_T;  feasible: FoM = 0.3 + r_T (exactly as nominal),
+        with r_T computed on the worst-case area and current.
+        """
+        def hard_part(norm):
+            r = 0.0
+            for spec in self.hard_constraints:
+                z, w = norm[spec], self.spec_weights.get(spec, 1.0)
+                r += w * (-max(z, 0.0) if spec in self.LOWER_IS_BETTER else min(z, 0.0))
+            return r
+        worst_norm = self.cur_norm_specs
+        r_worst = hard_part(worst_norm)
+        r_mean = float(np.mean([hard_part(self.normalize_specs(s)) for s in self.corner_specs]))
+        r_T = sum(self.spec_weights.get(t, 1.0) * (-worst_norm[t]) for t in self.optimization_targets)
+        if r_worst >= self.success_threshold:
+            return float(0.3 + r_T), True
+        r_H = w_worst * r_worst + (1.0 - w_worst) * r_mean
+        return float(r_H + 0.05 * r_T), False
+
     def reward_computation(self, norm_specs):
         """
         Compute the Figure of Merit (reward) from the normalized specifications.

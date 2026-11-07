@@ -1,0 +1,131 @@
+
+ Initialized TwoStage with simulator ngspice 
+
+ PVT-robust mode: 12 corners, 8 parallel ngspice runs
+
+[warmup] step     0 | sims     2 | FoM -3.8963 | best -3.8963 | failed sims 0
+[warmup] step    50 | sims    57 | FoM -2.8691 | best -1.0460 | failed sims 0
+[warmup] step   100 | sims   112 | FoM -3.5771 | best -1.0460 | failed sims 0
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'TT', 'voltage': 1.2, 'temp': 100} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 1)
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'TT', 'voltage': 1.2, 'temp': 0} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 2)
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'SS', 'voltage': 1.2, 'temp': 100} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 3)
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'SS', 'voltage': 1.2, 'temp': 0} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 4)
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'FF', 'voltage': 1.2, 'temp': 100} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 5)
+[warmup] step   150 | sims   167 | FoM -3.8357 | best -0.9865 | failed sims 5
+[warmup] step   200 | sims   222 | FoM -3.8917 | best -0.4373 | failed sims 5
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'TT', 'voltage': 1.2, 'temp': 0} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 6)
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'TT', 'voltage': 1.2, 'temp': 100} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 7)
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'TT', 'voltage': 1.0, 'temp': 0} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 8)
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'SS', 'voltage': 1.2, 'temp': 0} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 9)
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'SS', 'voltage': 1.0, 'temp': 0} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 10)
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'TT', 'voltage': 1.0, 'temp': 100} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 11)
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'FF', 'voltage': 1.2, 'temp': 0} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 12)
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'FF', 'voltage': 1.0, 'temp': 0} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 13)
+[warmup] step   250 | sims   277 | FoM -2.2305 | best -0.4373 | failed sims 13
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'SS', 'voltage': 1.0, 'temp': 0} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 14)
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'SS', 'voltage': 1.2, 'temp': 0} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 15)
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'TT', 'voltage': 1.2, 'temp': 0} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 16)
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'SS', 'voltage': 1.2, 'temp': 100} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 17)
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'TT', 'voltage': 1.0, 'temp': 0} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 18)
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'TT', 'voltage': 1.2, 'temp': 100} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 19)
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'SS', 'voltage': 1.0, 'temp': 100} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 20)
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'FF', 'voltage': 1.2, 'temp': 0} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 21)
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'FF', 'voltage': 1.0, 'temp': 0} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 22)
+[td3] step   300 | sims   332 | FoM -2.4150 | best -0.4373 | failed sims 22
+[td3] step   350 | sims   387 | FoM -2.4238 | best -0.4373 | failed sims 22
+[td3] step   400 | sims   442 | FoM -2.3824 | best -0.4373 | failed sims 22
+[td3] step   450 | sims   497 | FoM -1.4872 | best -0.4373 | failed sims 22
+[td3] step   500 | sims   552 | FoM -1.7055 | best -0.4373 | failed sims 22
+[td3] step   550 | sims   607 | FoM -1.0706 | best -0.4373 | failed sims 22
+[td3] step   600 | sims   662 | FoM -0.9756 | best -0.4373 | failed sims 22
+[td3] step   650 | sims   717 | FoM -0.9934 | best -0.4373 | failed sims 22
+[td3] step   700 | sims   772 | FoM -0.7891 | best -0.3175 | failed sims 22
+[td3] step   750 | sims   827 | FoM -1.5853 | best -0.2884 | failed sims 22
+[td3] step   800 | sims   882 | FoM -0.7800 | best -0.2884 | failed sims 22
+[ngspice] timeout after 20 s -> design treated as failed[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'TT', 'voltage': 1.2, 'temp': 0} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 23)
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'SS', 'voltage': 1.2, 'temp': 0} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 24)
+
+[simulate] {'process': 'TT', 'voltage': 1.0, 'temp': 0} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 25)
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'FF', 'voltage': 1.2, 'temp': 0} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 26)
+[ngspice] timeout after 20 s -> design treated as failed
+[simulate] {'process': 'FF', 'voltage': 1.0, 'temp': 0} failed (RuntimeError: ngspice exited with an error) -> worst-case specs (failed so far: 27)
+[td3] step   850 | sims   937 | FoM -1.4372 | best -0.2884 | failed sims 27
+[td3] step   900 | sims   992 | FoM -1.4314 | best -0.2884 | failed sims 27
+[td3] step   950 | sims  1047 | FoM -0.5271 | best -0.1860 | failed sims 27
+[td3] step  1000 | sims  1102 | FoM -0.7247 | best -0.1860 | failed sims 27
+[td3] step  1050 | sims  1157 | FoM -0.4541 | best -0.1860 | failed sims 27
+[simulate] {'process': 'FF', 'voltage': 1.2, 'temp': 0} failed (FileNotFoundError: /Users/afonsodemello/Documents/University/Masters/KU_Leuven/MSc_Electrical_Engineering/Year_2/Semester_1/Computer-Aided_IC_Design/Project/code/CAD/no_backup/output_files/dc_TwoStage_1793989205_kquxkpswrw.csv not found.) -> worst-case specs (failed so far: 28)
+rm: no_backup/output_files: Directory not empty
+mkdir: no_backup/output_files: File exists
+[td3] step  1100 | sims  1212 | FoM -0.7574 | best -0.1860 | failed sims 28
+[simulate] {'process': 'SS', 'voltage': 1.2, 'temp': 0} failed (FileNotFoundError: /Users/afonsodemello/Documents/University/Masters/KU_Leuven/MSc_Electrical_Engineering/Year_2/Semester_1/Computer-Aided_IC_Design/Project/code/CAD/no_backup/output_files/ac_TwoStage_1793989278_cnzrbbpjrc.csv not found.) -> worst-case specs (failed so far: 29)
+[simulate] {'process': 'TT', 'voltage': 1.0, 'temp': 0} failed (FileNotFoundError: /Users/afonsodemello/Documents/University/Masters/KU_Leuven/MSc_Electrical_Engineering/Year_2/Semester_1/Computer-Aided_IC_Design/Project/code/CAD/no_backup/output_files/ac_TwoStage_1793989278_yyqjlxlaoz.csv not found.) -> worst-case specs (failed so far: 30)
+[simulate] {'process': 'TT', 'voltage': 1.2, 'temp': 100} failed (FileNotFoundError: /Users/afonsodemello/Documents/University/Masters/KU_Leuven/MSc_Electrical_Engineering/Year_2/Semester_1/Computer-Aided_IC_Design/Project/code/CAD/no_backup/output_files/ac_TwoStage_1793989278_dvxlnrbkab.csv not found.) -> worst-case specs (failed so far: 31)
+[simulate] {'process': 'SS', 'voltage': 1.0, 'temp': 0} failed (FileNotFoundError: /Users/afonsodemello/Documents/University/Masters/KU_Leuven/MSc_Electrical_Engineering/Year_2/Semester_1/Computer-Aided_IC_Design/Project/code/CAD/no_backup/output_files/ac_TwoStage_1793989278_tvstbrtmhu.csv not found.) -> worst-case specs (failed so far: 32)
+[simulate] {'process': 'TT', 'voltage': 1.0, 'temp': 100} failed (FileNotFoundError: /Users/afonsodemello/Documents/University/Masters/KU_Leuven/MSc_Electrical_Engineering/Year_2/Semester_1/Computer-Aided_IC_Design/Project/code/CAD/no_backup/output_files/ac_TwoStage_1793989278_wmaeglyert.csv not found.) -> worst-case specs (failed so far: 33)
+[td3] step  1150 | sims  1267 | FoM -2.2011 | best -0.1860 | failed sims 33
+/Users/afonsodemello/Documents/University/Masters/KU_Leuven/MSc_Electrical_Engineering/Year_2/Semester_1/Computer-Aided_IC_Design/Project/code/CAD/no_backup/output_files/tran_TwoStage_1793989420_zdyepblltd.csv doesn't exist
+/Users/afonsodemello/Documents/University/Masters/KU_Leuven/MSc_Electrical_Engineering/Year_2/Semester_1/Computer-Aided_IC_Design/Project/code/CAD/no_backup/output_files/ac_TwoStage_1793989420_zdyepblltd.csv doesn't exist
+/Users/afonsodemello/Documents/University/Masters/KU_Leuven/MSc_Electrical_Engineering/Year_2/Semester_1/Computer-Aided_IC_Design/Project/code/CAD/no_backup/output_files/dc_TwoStage_1793989420_zdyepblltd.csv doesn't exist
+/Users/afonsodemello/Documents/University/Masters/KU_Leuven/MSc_Electrical_Engineering/Year_2/Semester_1/Computer-Aided_IC_Design/Project/code/CAD/no_backup/output_files/noise_TwoStage_1793989420_zdyepblltd.csv doesn't exist
+[simulate] {'process': 'FF', 'voltage': 1.2, 'temp': 0} failed (FileNotFoundError: /Users/afonsodemello/Documents/University/Masters/KU_Leuven/MSc_Electrical_Engineering/Year_2/Semester_1/Computer-Aided_IC_Design/Project/code/CAD/no_backup/output_files/tran_TwoStage_1793989420_zdyepblltd.csv not found.) -> worst-case specs (failed so far: 34)
+[td3] step  1200 | sims  1322 | FoM -2.0656 | best -0.1860 | failed sims 34
+[td3] step  1250 | sims  1377 | FoM -1.1502 | best -0.1860 | failed sims 34
+[simulate] {'process': 'TT', 'voltage': 1.2, 'temp': 100} failed (FileNotFoundError: /Users/afonsodemello/Documents/University/Masters/KU_Leuven/MSc_Electrical_Engineering/Year_2/Semester_1/Computer-Aided_IC_Design/Project/code/CAD/no_backup/output_files/noise_TwoStage_1793989565_ythcunlcmt.csv not found.) -> worst-case specs (failed so far: 35)
+rm: no_backup/output_files: Directory not empty
+rm: no_backup/output_netlists: Directory not empty
+mkdir: no_backup/output_files: File exists
+mkdir: no_backup/output_netlists: File exists
+[td3] step  1300 | sims  1432 | FoM -0.5597 | best -0.1860 | failed sims 35
+/Users/afonsodemello/Documents/University/Masters/KU_Leuven/MSc_Electrical_Engineering/Year_2/Semester_1/Computer-Aided_IC_Design/Project/code/CAD/no_backup/output_files/tran_TwoStage_1793989713_tlkapvqjvo.csv doesn't exist
+/Users/afonsodemello/Documents/University/Masters/KU_Leuven/MSc_Electrical_Engineering/Year_2/Semester_1/Computer-Aided_IC_Design/Project/code/CAD/no_backup/output_files/ac_TwoStage_1793989713_tlkapvqjvo.csv doesn't exist
+/Users/afonsodemello/Documents/University/Masters/KU_Leuven/MSc_Electrical_Engineering/Year_2/Semester_1/Computer-Aided_IC_Design/Project/code/CAD/no_backup/output_files/dc_TwoStage_1793989713_tlkapvqjvo.csv doesn't exist
+/Users/afonsodemello/Documents/University/Masters/KU_Leuven/MSc_Electrical_Engineering/Year_2/Semester_1/Computer-Aided_IC_Design/Project/code/CAD/no_backup/output_files/noise_TwoStage_1793989713_tlkapvqjvo.csv doesn't exist
+[simulate] {'process': 'SS', 'voltage': 1.2, 'temp': 0} failed (FileNotFoundError: /Users/afonsodemello/Documents/University/Masters/KU_Leuven/MSc_Electrical_Engineering/Year_2/Semester_1/Computer-Aided_IC_Design/Project/code/CAD/no_backup/output_files/tran_TwoStage_1793989713_tlkapvqjvo.csv not found.) -> worst-case specs (failed so far: 36)
+/Users/afonsodemello/Documents/University/Masters/KU_Leuven/MSc_Electrical_Engineering/Year_2/Semester_1/Computer-Aided_IC_Design/Project/code/CAD/no_backup/output_files/tran_TwoStage_1793989713_wbwefbakbl.csv doesn't exist
+/Users/afonsodemello/Documents/University/Masters/KU_Leuven/MSc_Electrical_Engineering/Year_2/Semester_1/Computer-Aided_IC_Design/Project/code/CAD/no_backup/output_files/ac_TwoStage_1793989713_wbwefbakbl.csv doesn't exist
+/Users/afonsodemello/Documents/University/Masters/KU_Leuven/MSc_Electrical_Engineering/Year_2/Semester_1/Computer-Aided_IC_Design/Project/code/CAD/no_backup/output_files/dc_TwoStage_1793989713_wbwefbakbl.csv doesn't exist
+/Users/afonsodemello/Documents/University/Masters/KU_Leuven/MSc_Electrical_Engineering/Year_2/Semester_1/Computer-Aided_IC_Design/Project/code/CAD/no_backup/output_files/noise_TwoStage_1793989713_wbwefbakbl.csv doesn't exist
+[simulate] {'process': 'TT', 'voltage': 1.0, 'temp': 100} failed (FileNotFoundError: /Users/afonsodemello/Documents/University/Masters/KU_Leuven/MSc_Electrical_Engineering/Year_2/Semester_1/Computer-Aided_IC_Design/Project/code/CAD/no_backup/output_files/tran_TwoStage_1793989713_wbwefbakbl.csv not found.) -> worst-case specs (failed so far: 37)
+[td3] step  1350 | sims  1487 | FoM -0.7202 | best -0.1860 | failed sims 37
+[td3] step  1400 | sims  1542 | FoM -1.2766 | best -0.1440 | failed sims 37
+[simulate] {'process': 'FF', 'voltage': 1.2, 'temp': 0} failed (FileNotFoundError: /Users/afonsodemello/Documents/University/Masters/KU_Leuven/MSc_Electrical_Engineering/Year_2/Semester_1/Computer-Aided_IC_Design/Project/code/CAD/no_backup/output_files/ac_TwoStage_1793989882_cnuhhdhahv.csv not found.) -> worst-case specs (failed so far: 38)
+/Users/afonsodemello/Documents/University/Masters/KU_Leuven/MSc_Electrical_Engineering/Year_2/Semester_1/Computer-Aided_IC_Design/Project/code/CAD/no_backup/output_files/tran_TwoStage_1793989883_bgrdryekzm.csv doesn't exist
+/Users/afonsodemello/Documents/University/Masters/KU_Leuven/MSc_Electrical_Engineering/Year_2/Semester_1/Computer-Aided_IC_Design/Project/code/CAD/no_backup/output_files/ac_TwoStage_1793989883_bgrdryekzm.csv doesn't exist
+/Users/afonsodemello/Documents/University/Masters/KU_Leuven/MSc_Electrical_Engineering/Year_2/Semester_1/Computer-Aided_IC_Design/Project/code/CAD/no_backup/output_files/dc_TwoStage_1793989883_bgrdryekzm.csv doesn't exist
+/Users/afonsodemello/Documents/University/Masters/KU_Leuven/MSc_Electrical_Engineering/Year_2/Semester_1/Computer-Aided_IC_Design/Project/code/CAD/no_backup/output_files/noise_TwoStage_1793989883_bgrdryekzm.csv doesn't exist
+/Users/afonsodemello/Documents/University/Masters/KU_Leuven/MSc_Electrical_Engineering/Year_2/Semester_1/Computer-Aided_IC_Design/Project/code/CAD/no_backup/output_files/tran_TwoStage_1793989883_qngwqyupvg.csv doesn't exist
+/Users/afonsodemello/Documents/University/Masters/KU_Leuven/MSc_Electrical_Engineering/Year_2/Semester_1/Computer-Aided_IC_Design/Project/code/CAD/no_backup/output_files/ac_TwoStage_1793989883_qngwqyupvg.csv doesn't exist
+/Users/afonsodemello/Documents/University/Masters/KU_Leuven/MSc_Electrical_Engineering/Year_2/Semester_1/Computer-Aided_IC_Design/Project/code/CAD/no_backup/output_files/dc_TwoStage_1793989883_qngwqyupvg.csv doesn't exist
+/Users/afonsodemello/Documents/University/Masters/KU_Leuven/MSc_Electrical_Engineering/Year_2/Semester_1/Computer-Aided_IC_Design/Project/code/CAD/no_backup/output_files/noise_TwoStage_1793989883_qngwqyupvg.csv doesn't exist
+[simulate] {'process': 'TT', 'voltage': 1.0, 'temp': 0} failed (FileNotFoundError: /Users/afonsodemello/Documents/University/Masters/KU_Leuven/MSc_Electrical_Engineering/Year_2/Semester_1/Computer-Aided_IC_Design/Project/code/CAD/no_backup/output_files/tran_TwoStage_1793989883_bgrdryekzm.csv not found.) -> worst-case specs (failed so far: 39)
+[simulate] {'process': 'TT', 'voltage': 1.2, 'temp': 0} failed (FileNotFoundError: /Users/afonsodemello/Documents/University/Masters/KU_Leuven/MSc_Electrical_Engineering/Year_2/Semester_1/Computer-Aided_IC_Design/Project/code/CAD/no_backup/output_files/tran_TwoStage_1793989883_qngwqyupvg.csv not found.) -> worst-case specs (failed so far: 40)
+[td3] step  1450 | sims  1597 | FoM -1.2421 | best -0.1440 | failed sims 40
+[td3] step  1500 | sims  1652 | FoM -0.8784 | best -0.1440 | failed sims 40
+[td3] step  1550 | sims  1707 | FoM -0.4982 | best -0.1440 | failed sims 40
+[td3] step  1600 | sims  1762 | FoM -1.0661 | best -0.1440 | failed sims 40

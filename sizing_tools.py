@@ -23,6 +23,7 @@ import math
 import os
 import subprocess
 import time
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from numbers import Real
 from pathlib import Path
@@ -136,6 +137,7 @@ class SizingExperiment:
         self.quick_calls = 0      # quick_analysis tool calls
         self.quick_runs = 0       # cheap ngspice runs of quick_analysis (not simulator calls)
         self.quick_cache = {}     # (parameters, corner, analyses) -> result
+        self.corner_checks = 0    # corner_check calls (12 quick runs each, 0 simulator calls)
 
         # Parameter grids, identical to CircuitEnv.action_refine.
         self.grids, self.is_int = {}, {}
@@ -161,6 +163,12 @@ class SizingExperiment:
         self.quick_engine = QuickDUT(
             str(project / "ngspice_interface" / "files" / "yaml_files" / f"{self.env.circuit_name}.yaml"),
             str(project / "no_backup" / "quick_netlists"))
+        # corner_check: one engine per PVT corner of optional task 1 (own template folder, so
+        # the parallel runs never share a netlist file), created at the first check
+        self.corner_engines = None
+        self._quick_yaml = str(project / "ngspice_interface" / "files" / "yaml_files"
+                               / f"{self.env.circuit_name}.yaml")
+        self._quick_dir = project / "no_backup" / "quick_netlists"
         self.processes = model_processes(str(project / "ngspice_interface" / "files" / "spice_models"))
 
     def tick(self):
@@ -359,6 +367,7 @@ class SizingExperiment:
             "model_versions": self.model_versions,
             "quick_calls": self.quick_calls,
             "quick_runs": self.quick_runs,
+            "corner_checks": self.corner_checks,
             "best": [self._compact(c) for c in ranked[:k]],
             "best_feasible_id": feasible[0]["id"] if feasible else None,
         }
@@ -456,6 +465,80 @@ class SizingExperiment:
             out["tran"] = f"short transient ({SHORT_TRAN_STOP}s): slew rate of the first rising edge"
         return out
 
+    def corner_check(self, rationale: str, agent: str = "", candidate_id: int = None,
+                     variant: dict = None, analyses: list = ANALYSES) -> dict:
+        """Robustness of one design over the 12 PVT corners of optional task 1
+        ({TT,SS,FF} x {1.2,1.0 V} x {0,100 C}, input common mode kept at 0.6 V), with the cheap
+        analyses, run in parallel (~1 s). Not a simulator call, not a candidate: 12 quick runs.
+        The design is a simulated candidate (default: the best), optionally with a partial
+        `variant` applied to it. Returns per corner the specs and violated constraints, the
+        worst case of every spec with the corner that sets it, and the worst-case FoM, i.e.
+        the FoM of the PVT-robust mode (feasible only if every corner passes)."""
+        if not rationale.strip():
+            raise ValueError("Give a rationale: what do you want to learn from this check?")
+        analyses = list(analyses) if isinstance(analyses, (list, tuple)) else []
+        if not analyses or set(analyses) - set(ANALYSES):
+            raise ValueError(f"analyses must be a non-empty subset of {list(ANALYSES)}.")
+        analyses = tuple(a for a in ANALYSES if a in analyses)
+        base = self._get_candidate(candidate_id)
+        if variant is not None and not isinstance(variant, dict):
+            raise ValueError("variant must be a dict of parameter changes.")
+        params = self._validate_parameters({**base["parameters"], **(variant or {})})
+        corners = [self._validate_corner(c) for c in CircuitEnv.PVT_CORNERS]
+        if self.corner_engines is None:
+            self.corner_engines = [QuickDUT(self._quick_yaml, str(self._quick_dir / f"corner_{i}"))
+                                   for i in range(len(corners))]
+
+        keys = [(tuple(params[n] for n in self.param_names), tuple(sorted(c.items())), analyses)
+                for c in corners]
+        todo = [i for i, key in enumerate(keys) if key not in self.quick_cache]
+        with ThreadPoolExecutor(max_workers=min(len(todo), os.cpu_count() or 1) or 1) as pool:
+            jobs = {i: pool.submit(self._quick_exec, self.corner_engines[i], params, analyses, corners[i])
+                    for i in todo}
+            for i in todo:                     # logged in corner order, in this thread
+                self.quick_cache[keys[i]] = self._quick_log(params, analyses, corners[i], rationale,
+                                                            agent, *jobs[i].result())
+        results = [self.quick_cache[key] for key in keys]
+
+        env = self.evaluation_env
+        label = lambda c: f"{c['process']} {c['voltage']:g}V {c['temp']:g}C"
+        rows, full = [], []
+        for c, res in zip(corners, results):
+            measured = {k: v for k, v in res["specs"].items() if k in env.dict_targets}
+            if res["error"]:
+                rows.append({"corner": label(c), "error": res["error"]})
+                full.append({k: float("nan") for k in env.dict_targets})
+                continue
+            spec = {**env.dict_targets, **measured}    # unmeasured specs count as on target
+            norm = env.normalize_specs(spec)
+            rows.append({"corner": label(c), "specs": {k: sig(v) for k, v in measured.items()},
+                         "violated": [h for h in env.hard_constraints if h in measured and
+                                      (norm[h] > 0 if h in env.LOWER_IS_BETTER else norm[h] < 0)]})
+            full.append(spec)
+        worst = env._worst_case(full)
+        reward, feasible = env.reward_computation(env.normalize_specs(worst))
+        worst_corner = {}
+        for k in env.dict_targets:
+            values = [s[k] for s in full]
+            if all(math.isfinite(v) for v in values):
+                pick = max if k in env.LOWER_IS_BETTER else min
+                i = values.index(pick(values))
+                worst_corner[k] = {"value": sig(values[i]), "corner": label(corners[i])}
+            else:
+                worst_corner[k] = {"value": None, "corner": "failed run"}
+        self.quick_calls += 1
+        self.corner_checks += 1
+        self._write_summary()
+        return {"id": base["id"], "variant": variant or {}, "analyses": list(analyses),
+                "nominal": {"reward": sig(base["reward"]), "feasible": base["feasible"]} if not variant else None,
+                "worst_case": worst_corner,
+                "worst_case_fom": sig(reward), "feasible_in_all_corners": bool(feasible),
+                "failing_corners": [r["corner"] for r in rows if r.get("error") or r.get("violated")],
+                "corners": rows, "quick_runs_total": self.quick_runs,
+                "not_measured": [k for k in env.dict_targets if k != "area" and
+                                 not any(k in r["specs"] for r in results)],
+                "note": "12 cheap corner runs (5 us transient), not simulator calls."}
+
     def write_memory(self, agent: str, kind: str, content: str) -> dict:
         """Append a short note for the other agents (context passing)."""
         if kind not in MEMORY_KINDS:
@@ -547,12 +630,21 @@ class SizingExperiment:
 
     def _quick_run(self, params, analyses, corner, rationale, agent):
         """One cheap ngspice run, counted in quick_runs and logged (never a candidate)."""
-        error, specs, op, seconds = None, {}, None, None
+        return self._quick_log(params, analyses, corner, rationale, agent,
+                               *self._quick_exec(self.quick_engine, params, analyses, corner))
+
+    @staticmethod
+    def _quick_exec(engine, params, analyses, corner):
+        """ngspice part of a quick run: (specs, op, seconds, error). Thread-safe per engine."""
         try:
-            specs, op, seconds = self.quick_engine.run(params, analyses, process=corner["process"],
-                                                       temp=corner["temp"], vdd=corner["voltage"])
+            specs, op, seconds = engine.run(params, analyses, process=corner["process"],
+                                            temp=corner["temp"], vdd=corner["voltage"])
+            return specs, op, seconds, None
         except Exception as err:          # a failed quick run must not stop the harness
-            error = f"{type(err).__name__}: {err}"
+            return {}, None, None, f"{type(err).__name__}: {err}"
+
+    def _quick_log(self, params, analyses, corner, rationale, agent, specs, op, seconds, error):
+        """Count and log one quick run (main thread only)."""
         self.quick_runs += 1
         result = {"quick_id": self.quick_runs, "specs": specs, "op": op, "error": error}
         entry = {"quick_id": self.quick_runs, "t": round(time.time() - self.t0, 2),
@@ -715,6 +807,7 @@ class SizingExperiment:
                    "seeded_transitions": self.seeded, "op_lookups": self.op_lookups,
                    "model_versions": self.model_versions,
                    "quick_calls": self.quick_calls, "quick_runs": self.quick_runs,
+                   "corner_checks": self.corner_checks,
                    "best": None if self.best is None else {
                        k: self.best[k] for k in ("id", "source", "reward", "feasible",
                                                  "specs", "parameters")}}
