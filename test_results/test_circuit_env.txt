@@ -1,0 +1,45 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.16, pytest-9.2.0, pluggy-1.7.0 -- /home/zyumeng016/CAD_prj/.venv/bin/python
+cachedir: .pytest_cache
+rootdir: /home/zyumeng016/CAD_prj
+configfile: pytest.ini
+plugins: anyio-4.16.0, platformdirs-4.14.5
+collecting ... collected 28 items
+
+test_circuit_env.py::TestActionRefine::test_1a_reference_actions_give_reference_sizes 
+test_circuit_env.py::TestActionRefine::test_1a_reference_actions_give_reference_sizes PASSED [  3%]
+test_circuit_env.py::TestActionRefine::test_1b_minus_one_gives_minimum 
+test_circuit_env.py::TestActionRefine::test_1b_minus_one_gives_minimum PASSED [  7%]
+test_circuit_env.py::TestActionRefine::test_1c_plus_one_gives_last_grid_value 
+test_circuit_env.py::TestActionRefine::test_1c_plus_one_gives_last_grid_value PASSED [ 10%]
+test_circuit_env.py::TestActionRefine::test_1d_zero_gives_middle_values PASSED [ 14%]
+test_circuit_env.py::TestActionRefine::test_1e_out_of_range_actions_are_clipped PASSED [ 17%]
+test_circuit_env.py::TestActionRefine::test_1f_random_actions_stay_on_the_grid PASSED [ 21%]
+test_circuit_env.py::TestActionRefine::test_1g_parameter_order_is_the_yaml_order PASSED [ 25%]
+test_circuit_env.py::TestActionRefine::test_1h_wrong_action_length_raises PASSED [ 28%]
+test_circuit_env.py::TestNormalizeSpecs::test_2a_reference_specs_give_reference_norms 
+test_circuit_env.py::TestNormalizeSpecs::test_2a_reference_specs_give_reference_norms PASSED [ 32%]
+test_circuit_env.py::TestNormalizeSpecs::test_2b_hand_calculations PASSED [ 35%]
+test_circuit_env.py::TestNormalizeSpecs::test_2c_output_order_is_the_yaml_order PASSED [ 39%]
+test_circuit_env.py::TestNormalizeSpecs::test_2d_broken_specs_get_the_worst_value PASSED [ 42%]
+test_circuit_env.py::TestNormalizeSpecs::test_2e_values_stay_in_minus_one_one PASSED [ 46%]
+test_circuit_env.py::TestRewardComputation::test_3a_reference_norms_give_reference_rewards 
+test_circuit_env.py::TestRewardComputation::test_3a_reference_norms_give_reference_rewards PASSED [ 50%]
+test_circuit_env.py::TestRewardComputation::test_3b_example_A_one_constraint_fails PASSED [ 53%]
+test_circuit_env.py::TestRewardComputation::test_3c_example_B_all_constraints_met PASSED [ 57%]
+test_circuit_env.py::TestRewardComputation::test_3d_example_C_exactly_on_target_is_feasible PASSED [ 60%]
+test_circuit_env.py::TestRewardComputation::test_3e_example_D_noise_is_an_upper_bound PASSED [ 64%]
+test_circuit_env.py::TestRewardComputation::test_3f_example_E_no_reward_for_over_satisfying PASSED [ 67%]
+test_circuit_env.py::TestRewardComputation::test_3g_returns_plain_types PASSED [ 71%]
+test_circuit_env.py::TestSimulate::test_4a_netlist_contains_the_refined_parameters 
+test_circuit_env.py::TestSimulate::test_4a_netlist_contains_the_refined_parameters PASSED [ 75%]
+test_circuit_env.py::TestSimulate::test_4b_crash_while_measuring_gives_worst_case_specs PASSED [ 78%]
+test_circuit_env.py::TestSimulate::test_4c_ngspice_error_code_gives_worst_case_specs PASSED [ 82%]
+test_circuit_env.py::TestSimulate::test_4d_every_simulation_is_counted PASSED [ 85%]
+test_circuit_env.py::TestEpisode::test_5a_reset_returns_the_observation PASSED [ 89%]
+test_circuit_env.py::TestEpisode::test_5b_reset_with_seed_is_reproducible PASSED [ 92%]
+test_circuit_env.py::TestEpisode::test_5c_two_episodes PASSED            [ 96%]
+test_circuit_env.py::TestEndToEnd::test_6a_reference_designs_from_action_to_reward 
+test_circuit_env.py::TestEndToEnd::test_6a_reference_designs_from_action_to_reward PASSED [100%]
+
+=================== 28 passed, 240 subtests passed in 5.61s ====================

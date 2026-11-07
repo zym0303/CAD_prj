@@ -1,0 +1,32 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.16, pytest-9.2.0, pluggy-1.7.0 -- /home/zyumeng016/CAD_prj/.venv/bin/python
+cachedir: .pytest_cache
+rootdir: /home/zyumeng016/CAD_prj
+configfile: pytest.ini
+plugins: anyio-4.16.0, platformdirs-4.14.5
+collecting ... collected 17 items
+
+test_quick_analysis.py::TestQuickNetlist::test_1a_circuit_part_unchanged PASSED [  5%]
+test_quick_analysis.py::TestQuickNetlist::test_1b_only_selected_analyses 
+test_quick_analysis.py::TestQuickNetlist::test_1b_only_selected_analyses PASSED [ 11%]
+test_quick_analysis.py::TestQuickNetlist::test_1c_wrdata_follows_its_analysis PASSED [ 17%]
+test_quick_analysis.py::TestQuickNetlist::test_1d_short_transient PASSED [ 23%]
+test_quick_analysis.py::TestQuickNetlist::test_1e_bad_input PASSED       [ 29%]
+test_quick_analysis.py::TestQuickResults::test_2a_each_analysis_gives_the_full_simulation_spec 
+test_quick_analysis.py::TestQuickResults::test_2a_each_analysis_gives_the_full_simulation_spec PASSED [ 35%]
+test_quick_analysis.py::TestQuickResults::test_2b_all_quick_analyses_equal_full_simulation 
+test_quick_analysis.py::TestQuickResults::test_2b_all_quick_analyses_equal_full_simulation PASSED [ 41%]
+test_quick_analysis.py::TestQuickResults::test_3a_op_only_equals_full_operating_point PASSED [ 47%]
+test_quick_analysis.py::TestQuickResults::test_3b_op_only_detects_broken_bias PASSED [ 52%]
+test_quick_analysis.py::TestQuickResults::test_4_corners PASSED          [ 58%]
+test_quick_analysis.py::TestQuickTool::test_5a_no_candidate_no_simulator_call PASSED [ 64%]
+test_quick_analysis.py::TestQuickTool::test_5b_full_set_scores_like_simulate PASSED [ 70%]
+test_quick_analysis.py::TestQuickTool::test_5c_cache_and_log PASSED      [ 76%]
+test_quick_analysis.py::TestQuickTool::test_5d_corner_and_warnings PASSED [ 82%]
+test_quick_analysis.py::TestQuickTool::test_5e_bad_input 
+test_quick_analysis.py::TestQuickTool::test_5e_bad_input PASSED          [ 88%]
+test_quick_analysis.py::TestQuickTool::test_6a_corner_check_twelve_corners PASSED [ 94%]
+test_quick_analysis.py::TestQuickTool::test_6b_corner_check_variant_and_bad_input 
+test_quick_analysis.py::TestQuickTool::test_6b_corner_check_variant_and_bad_input PASSED [100%]
+
+==================== 17 passed, 34 subtests passed in 6.08s ====================

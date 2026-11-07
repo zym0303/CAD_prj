@@ -1,0 +1,19 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.16, pytest-9.2.0, pluggy-1.7.0 -- /home/zyumeng016/CAD_prj/.venv/bin/python
+cachedir: .pytest_cache
+rootdir: /home/zyumeng016/CAD_prj
+configfile: pytest.ini
+plugins: anyio-4.16.0, platformdirs-4.14.5
+collecting ... collected 9 items
+
+test_td3_agent.py::test_select_action_shape_and_range PASSED             [ 11%]
+test_td3_agent.py::test_select_action_accepts_tensor PASSED              [ 22%]
+test_td3_agent.py::test_select_action_deterministic_part_and_noise_std PASSED [ 33%]
+test_td3_agent.py::test_critic_loss_matches_hand_computed_td_target PASSED [ 44%]
+test_td3_agent.py::test_done_means_no_bootstrap PASSED                   [ 55%]
+test_td3_agent.py::test_delayed_actor_and_target_updates PASSED          [ 66%]
+test_td3_agent.py::test_soft_update_formula PASSED                       [ 77%]
+test_td3_agent.py::test_td3_learns_toy_design_problem PASSED             [ 88%]
+test_td3_agent.py::test_runner_end_to_end_mocked PASSED                  [100%]
+
+========================= 9 passed in 77.50s (0:01:17) =========================

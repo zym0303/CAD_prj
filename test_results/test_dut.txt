@@ -1,0 +1,24 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.16, pytest-9.2.0, pluggy-1.7.0 -- /home/zyumeng016/CAD_prj/.venv/bin/python
+cachedir: .pytest_cache
+rootdir: /home/zyumeng016/CAD_prj
+configfile: pytest.ini
+plugins: anyio-4.16.0, platformdirs-4.14.5
+collecting ... collected 11 items
+
+test_dut.py::TestDUT::test_0_path_has_no_spaces PASSED                   [  9%]
+test_dut.py::TestDUT::test_1_netlist_is_created_with_new_params PASSED   [ 18%]
+test_dut.py::TestDUT::test_2_simulation_runs PASSED                      [ 27%]
+test_dut.py::TestDUT::test_3_output_files_exist PASSED                   [ 36%]
+test_dut.py::TestDUT::test_4_all_metrics_are_measured 
+test_dut.py::TestDUT::test_4_all_metrics_are_measured PASSED             [ 45%]
+test_dut.py::TestDUT::test_5_matches_reference_designs 
+test_dut.py::TestDUT::test_5_matches_reference_designs PASSED            [ 54%]
+test_dut.py::TestCorrectness::test_6_measurements_match_ngspice_reference 
+test_dut.py::TestCorrectness::test_6_measurements_match_ngspice_reference PASSED [ 63%]
+test_dut.py::TestSlewRateDefinition::test_7a_returns_rising_edge_when_falling_is_slower PASSED [ 72%]
+test_dut.py::TestSlewRateDefinition::test_7b_returns_rising_edge_when_falling_is_faster PASSED [ 81%]
+test_dut.py::TestSlewRateDefinition::test_7c_uses_10_to_90_percent_of_the_swing PASSED [ 90%]
+test_dut.py::TestSlewRateDefinition::test_7d_no_rising_edge_gives_zero PASSED [100%]
+
+=================== 11 passed, 96 subtests passed in 17.39s ====================

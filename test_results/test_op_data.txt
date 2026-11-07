@@ -1,0 +1,28 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.16, pytest-9.2.0, pluggy-1.7.0 -- /home/zyumeng016/CAD_prj/.venv/bin/python
+cachedir: .pytest_cache
+rootdir: /home/zyumeng016/CAD_prj
+configfile: pytest.ini
+plugins: anyio-4.16.0, platformdirs-4.14.5
+collecting ... collected 15 items
+
+test_op_data.py::TestOperatingPoint::test_1_all_devices_and_nodes_are_read 
+test_op_data.py::TestOperatingPoint::test_1_all_devices_and_nodes_are_read PASSED [  6%]
+test_op_data.py::TestOperatingPoint::test_2_specs_are_unchanged 
+test_op_data.py::TestOperatingPoint::test_2_specs_are_unchanged PASSED   [ 13%]
+test_op_data.py::TestOperatingPoint::test_3a_kcl_total_current PASSED    [ 20%]
+test_op_data.py::TestOperatingPoint::test_3b_tail_current_splits_over_the_input_pair PASSED [ 26%]
+test_op_data.py::TestOperatingPoint::test_3c_series_devices_carry_the_same_current 
+test_op_data.py::TestOperatingPoint::test_3c_series_devices_carry_the_same_current PASSED [ 33%]
+test_op_data.py::TestOperatingPoint::test_3d_bias_diode_carries_ibias PASSED [ 40%]
+test_op_data.py::TestOperatingPoint::test_4a_gain_estimate_matches_simulation PASSED [ 46%]
+test_op_data.py::TestOperatingPoint::test_4b_good_design_has_no_warnings PASSED [ 53%]
+test_op_data.py::TestOperatingPoint::test_4c_pole_and_zero_notes PASSED  [ 60%]
+test_op_data.py::TestOperatingPoint::test_5a_device_in_triode_is_reported PASSED [ 66%]
+test_op_data.py::TestOperatingPoint::test_5b_output_at_ground_points_to_the_right_side PASSED [ 73%]
+test_op_data.py::TestOperatingPoint::test_6a_missing_file_gives_none PASSED [ 80%]
+test_op_data.py::TestOperatingPoint::test_6b_incomplete_file_gives_none PASSED [ 86%]
+test_op_data.py::TestOperatingPoint::test_7a_compare_identical_is_empty PASSED [ 93%]
+test_op_data.py::TestOperatingPoint::test_7b_compare_reports_region_and_warning_changes PASSED [100%]
+
+==================== 15 passed, 66 subtests passed in 2.12s ====================

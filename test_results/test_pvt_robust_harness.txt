@@ -1,0 +1,16 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.16, pytest-9.2.0, pluggy-1.7.0 -- /home/zyumeng016/CAD_prj/.venv/bin/python
+cachedir: .pytest_cache
+rootdir: /home/zyumeng016/CAD_prj
+configfile: pytest.ini
+plugins: anyio-4.16.0, platformdirs-4.14.5
+collecting ... collected 6 items
+
+test_pvt_robust_harness.py::test_nominal_is_default_and_switch_refused_after_a_simulation PASSED [ 16%]
+test_pvt_robust_harness.py::test_robust_simulate_is_worst_case_over_12_corners PASSED [ 33%]
+test_pvt_robust_harness.py::test_robust_fom_matches_the_environment PASSED [ 50%]
+test_pvt_robust_harness.py::test_operating_point_and_corner_check_in_robust_mode PASSED [ 66%]
+test_pvt_robust_harness.py::test_rl_tools_in_robust_mode PASSED          [ 83%]
+test_pvt_robust_harness.py::test_mcp_server_exposes_the_switch PASSED    [100%]
+
+============================== 6 passed in 24.45s ==============================
