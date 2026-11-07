@@ -1,0 +1,62 @@
+{
+  "run_id": "test_pvt_robust",
+  "mode": "pvt_robust",
+  "elapsed_s": 10.6,
+  "simulator_calls": 5,
+  "warmup_steps": 2,
+  "training_steps": 2,
+  "updates": 2,
+  "seeded_transitions": 8,
+  "op_lookups": 1,
+  "model_versions": 0,
+  "quick_calls": 1,
+  "quick_runs": 12,
+  "corner_checks": 1,
+  "best": {
+    "id": 1,
+    "source": "llm",
+    "reward": -0.15873272732472996,
+    "feasible": false,
+    "specs": {
+      "area": 6.880364285714285e-10,
+      "current": 0.00023290943,
+      "gain": 502.94764000509343,
+      "noise": 0.018766241,
+      "phm": 56.882992975864084,
+      "slewRate": 33.509327605956656,
+      "ugbw": 62256352.15603293
+    },
+    "parameters": {
+      "mp1": 5,
+      "wp1": 2.5e-06,
+      "lp1": 9e-08,
+      "mn1": 11,
+      "wn1": 2.5e-06,
+      "ln1": 9e-08,
+      "mp3": 16,
+      "wp3": 2.5e-06,
+      "lp3": 9e-08,
+      "mn3": 3,
+      "wn3": 1e-06,
+      "ln3": 9e-08,
+      "mn4": 6,
+      "wn4": 1.25e-06,
+      "ln4": 9e-08,
+      "mn5": 13,
+      "wn5": 1e-06,
+      "ln5": 9e-08,
+      "cap": 6e-13,
+      "res": 6000.0
+    },
+    "failing_corners": [
+      "TT 1.2V 100C",
+      "TT 1V 100C",
+      "SS 1.2V 100C",
+      "SS 1V 100C",
+      "FF 1.2V 100C",
+      "FF 1V 100C"
+    ]
+  },
+  "corner_ngspice_runs": 72,
+  "n_failed_corner_runs": 0
+}
