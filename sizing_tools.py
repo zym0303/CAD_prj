@@ -9,6 +9,12 @@ Explainability / bookkeeping written to harness_runs/<run_id>/:
                    changed parameters, rationale, specs, reward, running best.
     memory.jsonl   short notes the agents write for each other (context passing).
     summary.json   counters and best design, rewritten after every tool call.
+    op_data.jsonl  transistor operating point (Id, gm, gds, Vgs, Vth, Vds, Vdsat, node
+                   voltages) of every simulated design, saved by the same simulation
+                   (optional task 2; read through operating_point / compare_operating_points).
+    quick_analyses.jsonl  every cheap analysis run by quick_analysis (subset of op/ac/noise/
+                   short tran, optional PVT corner): parameters, corner, specs, operating
+                   point. These are NOT candidates and NOT simulator calls (optional task 2).
 """
 
 import csv
@@ -17,6 +23,7 @@ import math
 import os
 import subprocess
 import time
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from numbers import Real
 from pathlib import Path
@@ -27,6 +34,9 @@ import torch
 
 os.environ.setdefault("MPLBACKEND", "Agg")
 from circuit_env import CircuitEnv
+from ngspice_interface.op_data import compare as compare_op, derive as derive_op, read_op_data
+from ngspice_interface.quick_analysis import (ANALYSES, SHORT_TRAN_STOP, SPECS_BY_ANALYSIS,
+                                              QuickDUT, model_processes)
 from td3 import ReplayBuffer, TD3
 
 
@@ -35,7 +45,16 @@ SPEC_UNITS = {
     "phm": "deg", "slewRate": "V/us", "ugbw": "Hz",
 }
 MAX_STEPS_PER_CALL = 1000
-MEMORY_KINDS = ("plan", "observation", "decision", "result", "lesson")
+MEMORY_KINDS = ("plan", "observation", "decision", "result", "lesson", "model")
+# "model": the modeler's complete design model of this run, rewritten as a new version on evidence
+MEMORY_MAX_CHARS = {"model": 4000}   # every other kind: 2000
+MAX_QUICK_VARIANTS = 10
+QUICK_TEMP_RANGE = (-40.0, 125.0)    # degC
+QUICK_VDD_RANGE = (0.9, 1.5)         # V
+# circuit quantities returned per quick variant (the full table: include_devices=True)
+QUICK_CIRCUIT_KEYS = ("I_total_uA", "I_tail_uA", "I_2_uA", "A1_stage1", "A2_stage2", "gain_estimate",
+                      "gm1_over_2piCc_MHz", "p2_gm6_over_2piCL_MHz", "zero_MHz", "zero_type",
+                      "balance_ratio_sizes", "v_out_dc_V")
 LOG_FIELDS = ["sim_call", "elapsed_s", "candidate_id", "source", "agent", "parent_id",
               "changes", "rationale", "reward", "best_reward", "feasible", "violated",
               "failed", "specs", "parameters"]
@@ -113,6 +132,12 @@ class SizingExperiment:
         self.next_id = 1
         self.best = None
         self._last_clean = 0
+        self.op_lookups = 0       # operating_point / compare_operating_points calls (0 simulations)
+        self.model_versions = 0   # write_memory(kind="model") calls of the modeler
+        self.quick_calls = 0      # quick_analysis tool calls
+        self.quick_runs = 0       # cheap ngspice runs of quick_analysis (not simulator calls)
+        self.quick_cache = {}     # (parameters, corner, analyses) -> result
+        self.corner_checks = 0    # corner_check calls (12 quick runs each, 0 simulator calls)
 
         # Parameter grids, identical to CircuitEnv.action_refine.
         self.grids, self.is_int = {}, {}
@@ -125,9 +150,26 @@ class SizingExperiment:
         self.out_dir.mkdir(parents=True, exist_ok=True)
         self.log_path = self.out_dir / "log.csv"
         self.memory_path = self.out_dir / "memory.jsonl"
+        self.op_path = self.out_dir / "op_data.jsonl"
+        self.quick_path = self.out_dir / "quick_analyses.jsonl"
         with open(self.log_path, "w", newline="") as f:
             csv.writer(f).writerow(LOG_FIELDS)
         self.memory_path.touch()
+        self.op_path.write_text("")
+        self.quick_path.write_text("")
+
+        # Cheap analyses (optional task 2): own DUT, same circuit, yaml and output folders.
+        project = Path(os.getcwd())
+        self.quick_engine = QuickDUT(
+            str(project / "ngspice_interface" / "files" / "yaml_files" / f"{self.env.circuit_name}.yaml"),
+            str(project / "no_backup" / "quick_netlists"))
+        # corner_check: one engine per PVT corner of optional task 1 (own template folder, so
+        # the parallel runs never share a netlist file), created at the first check
+        self.corner_engines = None
+        self._quick_yaml = str(project / "ngspice_interface" / "files" / "yaml_files"
+                               / f"{self.env.circuit_name}.yaml")
+        self._quick_dir = project / "no_backup" / "quick_netlists"
+        self.processes = model_processes(str(project / "ngspice_interface" / "files" / "spice_models"))
 
     def tick(self):
         """Start the runtime clock at the first tool call (not at server start)."""
@@ -184,14 +226,19 @@ class SizingExperiment:
         specs = self.evaluation_env.simulate(params)
         self.simulator_calls += 1
         failed = self.evaluation_env.n_failed_sims > failed_before
+        op = read_op_data(self.evaluation_env.simulation_engine)  # same simulation, no extra call
         changes = {} if base is None else {n: params[n] for n in self.param_names
                                            if params[n] != base["parameters"][n]}
         cand = self._record(self.evaluation_env, params, specs, "llm", failed,
                             agent=agent, rationale=rationale,
-                            parent=None if base is None else base["id"], changes=changes)
+                            parent=None if base is None else base["id"], changes=changes, op=op)
         self._maybe_clean()
         self._write_summary()
-        return self._compact(cand, with_params=False)
+        out = self._compact(cand, with_params=False)
+        warnings = self._derive(cand)["warnings"] if cand["op"] else []
+        if warnings:
+            out["op_warnings"] = warnings
+        return out
 
     def warmup(self, n_steps: int, around_best: bool = False, n_params: int = 3,
                max_steps: int = 2, top_k: int = 3) -> dict:
@@ -243,6 +290,8 @@ class SizingExperiment:
             rows.append({"value": v, "id": r["id"], "reward": r["reward"], "feasible": r["feasible"],
                          "violated": r["violated"],
                          "specs": {k: r["specs"][k] for k in ("current", "area", "phm", "ugbw", "slewRate")}})
+            if r.get("op_warnings"):
+                rows[-1]["op_warnings"] = r["op_warnings"]
         best = max(rows, key=lambda x: x["reward"])
         return {"base_id": base["id"], "parameter": parameter, "results": rows,
                 "best_in_sweep": {"id": best["id"], "value": best["value"], "reward": best["reward"]}}
@@ -314,6 +363,11 @@ class SizingExperiment:
             "rl_updates": self.updates,
             "replay_size": int(self.replay.size),
             "n_feasible": len(feasible),
+            "op_lookups": self.op_lookups,
+            "model_versions": self.model_versions,
+            "quick_calls": self.quick_calls,
+            "quick_runs": self.quick_runs,
+            "corner_checks": self.corner_checks,
             "best": [self._compact(c) for c in ranked[:k]],
             "best_feasible_id": feasible[0]["id"] if feasible else None,
         }
@@ -331,16 +385,174 @@ class SizingExperiment:
             cand = self.by_id.get(cand["parent"])
         return {"lineage_oldest_first": chain[::-1]}
 
+    def operating_point(self, candidate_id: int = None) -> dict:
+        """Transistor-level operating point of a simulated design (default: the best).
+        0 simulator calls: the data was saved by the design's own simulation."""
+        cand = self._get_candidate(candidate_id)
+        self.op_lookups += 1
+        self._write_summary()
+        d = self._derive(cand)
+        # conclusions first, the full device table last
+        return {"id": cand["id"], "source": cand["source"], "reward": sig(cand["reward"]),
+                "feasible": cand["feasible"], "violated": cand["violated"],
+                "warnings": d["warnings"], "notes": d["notes"], "circuit": d["circuit"],
+                "devices": d["devices"]}
+
+    def compare_operating_points(self, id_a: int, id_b: int) -> dict:
+        """What changed between two simulated designs: parameters, specs, and the device and
+        circuit quantities that moved by more than 5 % (0 simulator calls)."""
+        a, b = self._get_candidate(id_a), self._get_candidate(id_b)
+        self.op_lookups += 1
+        self._write_summary()
+        diff = compare_op(self._derive(a), self._derive(b))
+        return {
+            "a": {"id": a["id"], "source": a["source"], "reward": sig(a["reward"]), "feasible": a["feasible"]},
+            "b": {"id": b["id"], "source": b["source"], "reward": sig(b["reward"]), "feasible": b["feasible"]},
+            "parameter_changes": {n: [a["parameters"][n], b["parameters"][n]] for n in self.param_names
+                                  if a["parameters"][n] != b["parameters"][n]},
+            "spec_changes": {k: [sig(a["specs"][k]), sig(b["specs"][k])] for k in a["specs"]},
+            "device_changes": diff["devices"], "circuit_changes": diff["circuit"],
+            "warnings_only_in_a": diff["warnings_only_in_a"], "warnings_only_in_b": diff["warnings_only_in_b"],
+        }
+
+    def quick_analysis(self, variants: list, analyses: list = ("op",), rationale: str = "",
+                       agent: str = "", base_id=None, corner: dict = None,
+                       include_devices: bool = False) -> dict:
+        """Cheap screening of 1..10 design variants (optional task 2): ngspice runs only the
+        selected analyses (op, ac, noise, short 5 us tran), optionally at another PVT corner.
+        The results are NOT candidates (never best, Pareto front or RL data) and do NOT count
+        as simulator calls; they are counted in quick_runs and logged in quick_analyses.jsonl.
+        A variant is a partial parameter dict applied to the base design (default: the best);
+        {} analyses the base design itself (e.g. at another corner)."""
+        if not rationale.strip():
+            raise ValueError("Give a rationale: what do you want to learn from this analysis?")
+        if not isinstance(variants, list) or not 1 <= len(variants) <= MAX_QUICK_VARIANTS:
+            raise ValueError(f"Give 1..{MAX_QUICK_VARIANTS} variants (partial parameter dicts).")
+        analyses = list(analyses) if isinstance(analyses, (list, tuple)) else []
+        if not analyses or set(analyses) - set(ANALYSES):
+            raise ValueError(f"analyses must be a non-empty subset of {list(ANALYSES)}.")
+        analyses = tuple(a for a in ANALYSES if a in analyses)
+        corner = self._validate_corner(corner)
+        base = self.best if base_id is None else self.by_id.get(base_id)
+        if base_id is not None and base is None:
+            raise ValueError(f"Unknown base_id {base_id}.")
+        designs = []                       # validate everything before running anything
+        for v in variants:
+            if not isinstance(v, dict):
+                raise ValueError("Each variant must be a dict of parameter changes.")
+            if len(v) < len(self.param_names) and base is None:
+                raise ValueError("No base design yet: give all 20 parameters in each variant.")
+            params = self._validate_parameters(v if base is None else {**base["parameters"], **v})
+            designs.append(params)
+
+        results = []
+        for params in designs:
+            key = (tuple(params[n] for n in self.param_names), tuple(sorted(corner.items())), analyses)
+            cached = key in self.quick_cache
+            if not cached:
+                self.quick_cache[key] = self._quick_run(params, analyses, corner, rationale, agent)
+            row = self._quick_view(self.quick_cache[key], params, base, corner, include_devices)
+            if cached:
+                row["cached"] = True
+            results.append(row)
+        self.quick_calls += 1
+        self._write_summary()
+        out = {"base_id": None if base is None else base["id"], "corner": corner,
+               "analyses": list(analyses), "results": results,
+               "quick_runs_total": self.quick_runs,
+               "note": "Cheap analyses, not candidates: confirm a chosen variant with simulate."}
+        if "tran" in analyses:
+            out["tran"] = f"short transient ({SHORT_TRAN_STOP}s): slew rate of the first rising edge"
+        return out
+
+    def corner_check(self, rationale: str, agent: str = "", candidate_id: int = None,
+                     variant: dict = None, analyses: list = ANALYSES) -> dict:
+        """Robustness of one design over the 12 PVT corners of optional task 1
+        ({TT,SS,FF} x {1.2,1.0 V} x {0,100 C}, input common mode kept at 0.6 V), with the cheap
+        analyses, run in parallel (~1 s). Not a simulator call, not a candidate: 12 quick runs.
+        The design is a simulated candidate (default: the best), optionally with a partial
+        `variant` applied to it. Returns per corner the specs and violated constraints, the
+        worst case of every spec with the corner that sets it, and the worst-case FoM, i.e.
+        the FoM of the PVT-robust mode (feasible only if every corner passes)."""
+        if not rationale.strip():
+            raise ValueError("Give a rationale: what do you want to learn from this check?")
+        analyses = list(analyses) if isinstance(analyses, (list, tuple)) else []
+        if not analyses or set(analyses) - set(ANALYSES):
+            raise ValueError(f"analyses must be a non-empty subset of {list(ANALYSES)}.")
+        analyses = tuple(a for a in ANALYSES if a in analyses)
+        base = self._get_candidate(candidate_id)
+        if variant is not None and not isinstance(variant, dict):
+            raise ValueError("variant must be a dict of parameter changes.")
+        params = self._validate_parameters({**base["parameters"], **(variant or {})})
+        corners = [self._validate_corner(c) for c in CircuitEnv.PVT_CORNERS]
+        if self.corner_engines is None:
+            self.corner_engines = [QuickDUT(self._quick_yaml, str(self._quick_dir / f"corner_{i}"))
+                                   for i in range(len(corners))]
+
+        keys = [(tuple(params[n] for n in self.param_names), tuple(sorted(c.items())), analyses)
+                for c in corners]
+        todo = [i for i, key in enumerate(keys) if key not in self.quick_cache]
+        with ThreadPoolExecutor(max_workers=min(len(todo), os.cpu_count() or 1) or 1) as pool:
+            jobs = {i: pool.submit(self._quick_exec, self.corner_engines[i], params, analyses, corners[i])
+                    for i in todo}
+            for i in todo:                     # logged in corner order, in this thread
+                self.quick_cache[keys[i]] = self._quick_log(params, analyses, corners[i], rationale,
+                                                            agent, *jobs[i].result())
+        results = [self.quick_cache[key] for key in keys]
+
+        env = self.evaluation_env
+        label = lambda c: f"{c['process']} {c['voltage']:g}V {c['temp']:g}C"
+        rows, full = [], []
+        for c, res in zip(corners, results):
+            measured = {k: v for k, v in res["specs"].items() if k in env.dict_targets}
+            if res["error"]:
+                rows.append({"corner": label(c), "error": res["error"]})
+                full.append({k: float("nan") for k in env.dict_targets})
+                continue
+            spec = {**env.dict_targets, **measured}    # unmeasured specs count as on target
+            norm = env.normalize_specs(spec)
+            rows.append({"corner": label(c), "specs": {k: sig(v) for k, v in measured.items()},
+                         "violated": [h for h in env.hard_constraints if h in measured and
+                                      (norm[h] > 0 if h in env.LOWER_IS_BETTER else norm[h] < 0)]})
+            full.append(spec)
+        worst = env._worst_case(full)
+        reward, feasible = env.reward_computation(env.normalize_specs(worst))
+        worst_corner = {}
+        for k in env.dict_targets:
+            values = [s[k] for s in full]
+            if all(math.isfinite(v) for v in values):
+                pick = max if k in env.LOWER_IS_BETTER else min
+                i = values.index(pick(values))
+                worst_corner[k] = {"value": sig(values[i]), "corner": label(corners[i])}
+            else:
+                worst_corner[k] = {"value": None, "corner": "failed run"}
+        self.quick_calls += 1
+        self.corner_checks += 1
+        self._write_summary()
+        return {"id": base["id"], "variant": variant or {}, "analyses": list(analyses),
+                "nominal": {"reward": sig(base["reward"]), "feasible": base["feasible"]} if not variant else None,
+                "worst_case": worst_corner,
+                "worst_case_fom": sig(reward), "feasible_in_all_corners": bool(feasible),
+                "failing_corners": [r["corner"] for r in rows if r.get("error") or r.get("violated")],
+                "corners": rows, "quick_runs_total": self.quick_runs,
+                "not_measured": [k for k in env.dict_targets if k != "area" and
+                                 not any(k in r["specs"] for r in results)],
+                "note": "12 cheap corner runs (5 us transient), not simulator calls."}
+
     def write_memory(self, agent: str, kind: str, content: str) -> dict:
         """Append a short note for the other agents (context passing)."""
         if kind not in MEMORY_KINDS:
             raise ValueError(f"kind must be one of {MEMORY_KINDS}.")
-        if not content.strip() or len(content) > 2000:
-            raise ValueError("content must be 1..2000 characters; summarize.")
+        limit = MEMORY_MAX_CHARS.get(kind, 2000)
+        if not content.strip() or len(content) > limit:
+            raise ValueError(f"content must be 1..{limit} characters for kind '{kind}'; summarize.")
         entry = {"t": round(time.time() - self.t0, 1), "sim_calls": self.simulator_calls,
                  "agent": agent, "kind": kind, "content": content.strip()}
         with open(self.memory_path, "a") as f:
             f.write(json.dumps(entry) + "\n")
+        if kind == "model":
+            self.model_versions += 1
+            self._write_summary()
         return {"ok": True, "n_entries": sum(1 for _ in open(self.memory_path))}
 
     def read_memory(self, agent: str = "", kind: str = "", last_n: int = 10) -> dict:
@@ -385,9 +597,103 @@ class SizingExperiment:
             clean[name] = int(grid[k]) if self.is_int[name] else float(f"{grid[k]:.6e}")
         return clean
 
+    def _get_candidate(self, candidate_id):
+        """A simulated design that has operating-point data (default: the best)."""
+        cand = self.best if candidate_id is None else self.by_id.get(candidate_id)
+        if cand is None:
+            raise ValueError("No design yet." if candidate_id is None else f"Unknown candidate_id {candidate_id}.")
+        if cand.get("op") is None:
+            raise ValueError(f"No operating-point data for design {cand['id']} (its simulation failed).")
+        return cand
+
+    def _derive(self, cand):
+        """Derived operating-point quantities of a candidate (see ngspice_interface/op_data.py)."""
+        ugbw = cand["specs"].get("ugbw")
+        return derive_op(cand["op"], cand["parameters"],
+                         ugbw if ugbw is not None and math.isfinite(ugbw) and ugbw > 0 else None)
+
+    def _validate_corner(self, corner):
+        """Full PVT corner dict; missing keys come from the evaluation corner (TT, 27 C, 1.2 V)."""
+        default = dict(self.evaluation_env.pvt_corner)    # {'process', 'voltage', 'temp'}
+        corner = {} if corner is None else corner
+        if not isinstance(corner, dict) or set(corner) - set(default):
+            raise ValueError(f"corner keys: {sorted(default)}, e.g. {{'process': 'SS', 'temp': 80}}.")
+        out = {**default, **corner}
+        if out["process"] not in self.processes:
+            raise ValueError(f"process must be one of {list(self.processes)}.")
+        for name, (lo, hi) in (("temp", QUICK_TEMP_RANGE), ("voltage", QUICK_VDD_RANGE)):
+            value = out[name]
+            if isinstance(value, bool) or not isinstance(value, Real) or not lo <= value <= hi:
+                raise ValueError(f"corner {name} must be a number in [{lo}, {hi}].")
+            out[name] = float(value)
+        return out
+
+    def _quick_run(self, params, analyses, corner, rationale, agent):
+        """One cheap ngspice run, counted in quick_runs and logged (never a candidate)."""
+        return self._quick_log(params, analyses, corner, rationale, agent,
+                               *self._quick_exec(self.quick_engine, params, analyses, corner))
+
+    @staticmethod
+    def _quick_exec(engine, params, analyses, corner):
+        """ngspice part of a quick run: (specs, op, seconds, error). Thread-safe per engine."""
+        try:
+            specs, op, seconds = engine.run(params, analyses, process=corner["process"],
+                                            temp=corner["temp"], vdd=corner["voltage"])
+            return specs, op, seconds, None
+        except Exception as err:          # a failed quick run must not stop the harness
+            return {}, None, None, f"{type(err).__name__}: {err}"
+
+    def _quick_log(self, params, analyses, corner, rationale, agent, specs, op, seconds, error):
+        """Count and log one quick run (main thread only)."""
+        self.quick_runs += 1
+        result = {"quick_id": self.quick_runs, "specs": specs, "op": op, "error": error}
+        entry = {"quick_id": self.quick_runs, "t": round(time.time() - self.t0, 2),
+                 "sim_calls": self.simulator_calls, "agent": agent, "rationale": rationale,
+                 "analyses": list(analyses), "corner": corner, "ngspice_s": seconds,
+                 "parameters": params, "specs": specs, "error": error, "op": op}
+        with open(self.quick_path, "a") as f:
+            f.write(json.dumps(to_builtin(entry)) + "\n")
+        return result
+
+    def _quick_view(self, result, params, base, corner, include_devices):
+        """Short view of a quick run: measured specs, hard-constraint check, FoM, bias."""
+        env = self.evaluation_env
+        row = {"quick_id": result["quick_id"],
+               "changes": {} if base is None else {n: params[n] for n in self.param_names
+                                                   if params[n] != base["parameters"][n]}}
+        if result["error"]:
+            row["error"] = result["error"]
+            return row
+        specs = result["specs"]
+        row["specs"] = {k: sig(v) for k, v in specs.items()}
+        row["not_measured"] = [k for k in env.dict_targets if k not in specs]
+        # only the measured specs are checked; unmeasured ones count as on target
+        norm = env.normalize_specs({**env.dict_targets, **specs})
+        row["violated"] = [h for h in env.hard_constraints if h in specs and
+                           (norm[h] > 0 if h in env.LOWER_IS_BETTER else norm[h] < 0)]
+        reward, feasible = env.reward_computation(norm)
+        if not row["not_measured"]:
+            row["reward"], row["feasible"] = sig(reward), bool(feasible)
+        elif "current" in specs and not row["violated"]:
+            # area and current are exact, so this is the FoM IF the unmeasured specs pass
+            row["fom_if_feasible"] = sig(reward)
+        if result["op"] is not None:
+            ugbw = specs.get("ugbw")
+            d = derive_op(result["op"], params,
+                          ugbw if ugbw is not None and math.isfinite(ugbw) and ugbw > 0 else None,
+                          vdd=corner["voltage"])
+            if d["warnings"]:
+                row["op_warnings"] = d["warnings"]
+            row["op_notes"] = d["notes"]
+            row["circuit"] = {k: d["circuit"][k] for k in QUICK_CIRCUIT_KEYS}
+            if include_devices:
+                row["devices"] = d["devices"]
+        return row
+
     def _record(self, env, parameters, specs, source, failed, agent="", rationale="",
-                parent=None, changes=None):
-        """Score one measurement with the environment's own methods, store and log it."""
+                parent=None, changes=None, op=None):
+        """Score one measurement with the environment's own methods, store and log it.
+        op: operating-point data of the same simulation (read_op_data), or None."""
         norm = env.normalize_specs(specs)
         reward, feasible = env.reward_computation(norm)
         violated = [s for s in env.hard_constraints
@@ -397,8 +703,11 @@ class SizingExperiment:
                 "specs": {k: float(v) for k, v in specs.items()}, "normalized_specs": norm,
                 "reward": float(reward), "feasible": bool(feasible), "violated": violated,
                 "failed": bool(failed), "sim_call": self.simulator_calls,
-                "elapsed_s": round(time.time() - self.t0, 2)}
+                "elapsed_s": round(time.time() - self.t0, 2), "op": op}
         self.next_id += 1
+        if op is not None:
+            with open(self.op_path, "a") as f:
+                f.write(json.dumps({"id": cand["id"], "source": source, **op}) + "\n")
         self.by_id[cand["id"]] = cand
         if not failed and all(math.isfinite(v) for v in cand["specs"].values()):
             self.candidates[tuple(parameters[n] for n in self.param_names)] = cand
@@ -445,7 +754,8 @@ class SizingExperiment:
                     self.observation = self.env.reset()
                     self.simulator_calls += self.env.n_simulations - s0
                     self._record(self.env, self.env.param_values, self.env.real_specs,
-                                 "rl_reset", self.env.n_failed_sims > f0, agent="td3")
+                                 "rl_reset", self.env.n_failed_sims > f0, agent="td3",
+                                 op=read_op_data(self.env.simulation_engine))
                 if training:
                     action = self.agent.select_action(self.observation)
                 elif getattr(self, "_local", None) is not None:
@@ -456,7 +766,8 @@ class SizingExperiment:
                 next_obs, reward, done, info = self.env.step(action)
                 self.simulator_calls += self.env.n_simulations - s0
                 failed = self.env.n_failed_sims > f0
-                self._record(self.env, info["params"], info["specs"], phase, failed, agent="td3")
+                self._record(self.env, info["params"], info["specs"], phase, failed, agent="td3",
+                             op=read_op_data(self.env.simulation_engine))
                 if not failed:
                     self.replay.push(self.observation, action, reward, next_obs, float(done))
                 if training and self.replay.size >= self.batch_size:
@@ -493,7 +804,10 @@ class SizingExperiment:
         summary = {"run_id": self.run_id, "elapsed_s": round(time.time() - self.t0, 1),
                    "simulator_calls": self.simulator_calls, "warmup_steps": self.warmup_steps,
                    "training_steps": self.training_steps, "updates": self.updates,
-                   "seeded_transitions": self.seeded,
+                   "seeded_transitions": self.seeded, "op_lookups": self.op_lookups,
+                   "model_versions": self.model_versions,
+                   "quick_calls": self.quick_calls, "quick_runs": self.quick_runs,
+                   "corner_checks": self.corner_checks,
                    "best": None if self.best is None else {
                        k: self.best[k] for k in ("id", "source", "reward", "feasible",
                                                  "specs", "parameters")}}

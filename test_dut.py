@@ -157,6 +157,9 @@ meas tran t_rise trig v(net6) val=vlo rise=1 targ v(net6) val=vhi rise=1
 let sr_rise = (vhi - vlo) / t_rise / 1e6
 print sr_rise
 
+* 'reset' so the AC operating point is not seeded by the end of the transient (needed on ngspice-36)
+reset
+
 * --- AC with 1000 points/decade (100x finer than TwoStage.cir) ---
 ac dec 1000 1 1T
 meas ac ref_gain find vm(net6) at=1
@@ -169,6 +172,7 @@ noise v(net6) vinput dec 20 1 1T
 print onoise_total
 
 * --- operating point ---
+reset
 op
 let ref_current = -i(vdd)
 print ref_current

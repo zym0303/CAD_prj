@@ -25,7 +25,9 @@ def create_server(experiment):
     """Register tools for one experiment; serialize calls that share its state."""
     server = MCPServer(
         "CAD sizing",
-        description="Two-stage Miller opamp sizing: simulation, TD3 RL sizer, trace and shared memory.",
+        description="Two-stage Miller opamp sizing: simulation, cheap analyses (op/ac/noise/"
+                    "short tran, PVT corners), transistor operating point, TD3 RL sizer, "
+                    "trace and shared memory.",
     )
     lock = Lock()
 
@@ -52,10 +54,11 @@ def create_server(experiment):
         lengths in meters, cap in farads, res in ohms). It may be PARTIAL: only give the
         parameters you change; the others are copied from base_id (default: current best).
         rationale: required. Which spec you expect to change, in which direction, and the
-        circuit reason (e.g. "raise Cc 1p->2p: moves the 2nd pole/zero, PM 48->60 deg, UGBW drops").
+        circuit reason (e.g. "raise Cc: moves the 2nd pole/zero, expect PM up, UGBW down").
         agent: your role name (e.g. "sizer"). Off-grid values are rejected with the nearest
         allowed values. Repeated designs are not re-simulated. Returns id, specs,
-        normalized specs, reward (FoM), feasible, violated constraints and the changes.
+        normalized specs, reward (FoM), feasible, violated constraints and the changes,
+        plus op_warnings when the bias is broken (a device in triode, output at a rail).
         """
         return call("simulate", parameters=parameters, rationale=rationale, agent=agent, base_id=base_id)
 
@@ -111,15 +114,78 @@ def create_server(experiment):
         return call("get_lineage", candidate_id=candidate_id)
 
     @server.tool()
+    def operating_point(candidate_id: Optional[StrictInt] = None) -> dict[str, Any]:
+        """Transistor-level DC operating point of an ALREADY SIMULATED design (default: the
+        best). 0 simulator calls: the data was saved by that design's own simulation.
+
+        Returns warnings (devices in triode or close to it; output at a rail = balance
+        condition broken, with the side to fix), notes (2nd pole vs UGBW, Rc zero, gain
+        estimate), circuit values (I_bias, I_tail, I_2, stage gains A1/A2, gm1/(2pi Cc),
+        p2 = gm6/(2pi CL), zero, balance ratio of the sizes, DC levels) and per device Id,
+        gm, gds, Vgs, Vth, Vov, Vds, Vdsat, saturation margin, region, inversion, gm/Id,
+        gm/gds. Use it to find WHY a spec fails before choosing a lever."""
+        return call("operating_point", candidate_id=candidate_id)
+
+    @server.tool()
+    def compare_operating_points(id_a: StrictInt, id_b: StrictInt) -> dict[str, Any]:
+        """What changed electrically between two simulated designs, e.g. parent -> child to
+        explain a failed prediction, or expert design -> RL best. 0 simulator calls.
+        Returns parameter changes, specs of both, device and circuit quantities that moved
+        by more than 5 % (with region/inversion changes) and warnings that appeared or
+        disappeared."""
+        return call("compare_operating_points", id_a=id_a, id_b=id_b)
+
+    @server.tool()
+    def quick_analysis(variants: list[dict[str, StrictFloat | StrictInt]], rationale: str,
+                       agent: str, analyses: list[str] = ["op"],
+                       base_id: Optional[StrictInt] = None,
+                       corner: Optional[dict[str, str | StrictFloat | StrictInt]] = None,
+                       include_devices: StrictBool = False) -> dict[str, Any]:
+        """CHEAP screening of 1..10 variants BEFORE spending simulator calls. NOT a simulator
+        call and NOT a candidate (never best, Pareto front or RL data): confirm the variant you
+        choose with simulate. Each run is counted in quick_runs.
+
+        variants: partial parameter dicts applied to base_id (default: the best), e.g.
+        [{"mn5": 10}, {"mn5": 12}]; {} = the base design itself.
+        analyses: any of "op" (~0.01 s: exact current, transistor operating point, bias
+        warnings), "ac" (~0.01 s: exact gain, UGBW, PM), "noise" (~0.01 s: exact noise),
+        "tran" (~0.1 s: slew rate from a short 5 us transient). Area is always given.
+        corner: optional PVT corner, e.g. {"process": "SS", "temp": 80, "voltage": 1.1};
+        default TT, 27 C, 1.2 V (the corner of simulate).
+        Per variant: measured specs, violated hard constraints among them, not_measured,
+        reward/feasible if all 7 specs were measured, otherwise fom_if_feasible (the FoM if
+        the unmeasured specs pass; area and current are exact), and with "op": op_warnings,
+        op_notes and key circuit values (full device table: include_devices=True)."""
+        return call("quick_analysis", variants=variants, analyses=analyses, rationale=rationale,
+                    agent=agent, base_id=base_id, corner=corner, include_devices=include_devices)
+
+    @server.tool()
+    def corner_check(rationale: str, agent: str, candidate_id: Optional[StrictInt] = None,
+                     variant: Optional[dict[str, StrictFloat | StrictInt]] = None,
+                     analyses: list[str] = ["op", "ac", "noise", "tran"]) -> dict[str, Any]:
+        """CHEAP robustness check of one design over the 12 PVT corners {TT,SS,FF} x
+        {1.2 V, 1.0 V} x {0 C, 100 C} (~1 s, 12 quick runs, 0 simulator calls, not a candidate).
+        candidate_id: a simulated design (default: the best); variant: optional partial
+        parameter dict applied to it, e.g. {"cap": 7e-13}.
+        Returns worst_case (worst value of every spec and the corner that sets it),
+        worst_case_fom and feasible_in_all_corners (the FoM of the PVT-robust mode),
+        failing_corners, and per corner the specs and violated hard constraints."""
+        return call("corner_check", rationale=rationale, agent=agent, candidate_id=candidate_id,
+                    variant=variant, analyses=analyses)
+
+    @server.tool()
     def write_memory(agent: str, kind: str, content: str) -> dict[str, Any]:
         """Leave a SHORT note (<= 2000 chars) for the other agents. kind is one of
-        plan, observation, decision, result, lesson. Write conclusions, not raw data."""
+        plan, observation, decision, result, lesson, model. Write conclusions, not raw data.
+        kind "model" (modeler only, <= 4000 chars): the COMPLETE current design model of
+        this run, written as a new version each time it changes."""
         return call("write_memory", agent=agent, kind=kind, content=content)
 
     @server.tool()
     def read_memory(agent: str = "", kind: str = "", last_n: StrictInt = 10) -> dict[str, Any]:
         """Read the most recent notes of the other agents, optionally filtered by agent
-        and/or kind. Read this before acting instead of asking for the full history."""
+        and/or kind. Read this before acting instead of asking for the full history.
+        read_memory(kind="model", last_n=1) gives the current design model."""
         return call("read_memory", agent=agent, kind=kind, last_n=last_n)
 
     return server

@@ -4,7 +4,7 @@
 
 Reads harness_runs/<id>/log.csv and output_figs/<rl>/history.csv. Writes
 output_figs/comparison/harness_vs_rl.png and harness_vs_rl.csv (time and simulations
-needed to reach FoM thresholds).
+needed to reach FoM thresholds, and the cheap quick_analysis runs of each harness run).
 """
 import argparse
 import ast
@@ -22,6 +22,15 @@ def load_harness(run_id):
     df = pd.read_csv(os.path.join("harness_runs", run_id, "log.csv"))
     return pd.DataFrame({"time": df["elapsed_s"], "sims": df["sim_call"],
                          "fom": df["reward"].cummax(), "source": df["source"]})
+
+
+def quick_runs(run_id):
+    """Cheap quick_analysis ngspice runs of a harness run (0 for runs before that tool)."""
+    try:
+        with open(os.path.join("harness_runs", run_id, "summary.json")) as f:
+            return int(json.load(f).get("quick_runs", 0))
+    except (OSError, ValueError):
+        return 0
 
 
 def load_rl(run_id):
@@ -48,13 +57,14 @@ def main():
     for label, df in curves.items():
         axes[0].step(df["time"].clip(lower=1), df["fom"], where="post", label=label)
         axes[1].step(df["sims"], df["fom"], where="post", label=label)
-    for ax, xl in zip(axes, ["runtime [s] (log)", "simulator calls"]):
+    for ax, xl in zip(axes, ["runtime [s] (log)", "simulator calls (log)"]):
         ax.axhline(0.3, color="grey", ls=":", lw=1)  # FoM > 0.3 <=> feasible
         ax.set_xlabel(xl)
         ax.set_ylabel("max FoM reached")
         ax.set_ylim(bottom=-1)
         ax.grid(alpha=0.3)
     axes[0].set_xscale("log")
+    axes[1].set_xscale("log")
     axes[0].legend()
     os.makedirs("output_figs/comparison", exist_ok=True)
     fig.tight_layout()
@@ -94,7 +104,9 @@ def main():
     rows = []
     for label, df in curves.items():
         row = {"method": label, "best_fom": round(df["fom"].iloc[-1], 4),
-               "total_time_s": round(df["time"].iloc[-1], 1), "total_sims": int(df["sims"].iloc[-1])}
+               "total_time_s": round(df["time"].iloc[-1], 1), "total_sims": int(df["sims"].iloc[-1]),
+               # cheap analyses are ngspice runs too: always reported next to the simulator calls
+               "quick_runs": quick_runs(label[len("LLM harness ("):-1]) if label.startswith("LLM harness") else 0}
         for t in thresholds:
             tt, ss = first_reach(df, t)
             row[f"time_to_{t}"], row[f"sims_to_{t}"] = tt, ss

@@ -29,6 +29,9 @@ I_tail = 30 uA * S4/S3, I_2 = 30 uA * S5/S3 (same L for the mirror devices keeps
   Whenever you change mn4, mn5, mp1 or mp3, change the partner so the ratio stays equal.
 - UGBW ~ gm1 / (2 pi Cc), gm1 = sqrt(2 k' S1 I_tail/2): larger S1, I_tail or smaller Cc.
 - Slew rate ~ min(I_tail / Cc, I_2 / (Cc + CL)), in V/us with I in uA and C in pF.
+  The I_2 / (Cc + CL) term is pessimistic for the slew-rate measurement of this testbench:
+  do NOT size I_2 from it alone (30 V/us x 11 pF would ask for 330 uA, far above the
+  current target). Measure the slew rate of the candidates with the short transient.
 - Gain ~ gm1 (ro2 || ro4) * gm6 (ro6 || ro7): longer L on mn1/mp1/mp3/mn5 raises ro and gain.
 - Phase margin: p2 ~ gm6 / CL must be well above UGBW (p2 > 2.2 UGBW for 60 deg with the
   zero removed). Rc ~ 1/gm6 cancels the RHP zero; slightly larger moves it to the LHP and helps PM.
@@ -45,6 +48,14 @@ I_tail = 30 uA * S4/S3, I_2 = 30 uA * S5/S3 (same L for the mirror devices keeps
 1. Call `design_space` once.
 2. Pick the current split first (e.g. I_tail ~ 40-60 uA, I_2 ~ 80-120 uA) from the SR and
    UGBW targets, then Cc from PM, then S1 from UGBW, then mp3 from p2 > 2.2 UGBW, then L for gain.
-3. Simulate at most 2 designs (full 20 parameters) with the equations in the rationale.
-4. `write_memory(agent="analyst", kind="plan", ...)`: the design intent (current split, Cc,
-   which device controls which spec) and the ids of the simulated designs.
+3. Screen first: write 3-5 first-cut variants (full 20 parameters each, e.g. two current
+   splits x two Cc values, all with I_tail + I_2 <= 170 uA and the balance condition) and
+   run ONE `quick_analysis(variants=[...], analyses=["op", "ac", "tran"])` (0 simulator
+   calls). Never fix a UGBW or PM shortfall by raising the current above the budget:
+   use S1, Cc, Rc and the mp3 width instead.
+4. Simulate at most 2 designs (full 20 parameters): the best screened variants (feasible
+   on the measured specs, else the smallest violation), with the equations and the
+   screened numbers in the rationale.
+5. `write_memory(agent="analyst", kind="plan", ...)`: the design intent (current split, Cc,
+   which device controls which spec), what the screen showed, and the ids of the
+   simulated designs.

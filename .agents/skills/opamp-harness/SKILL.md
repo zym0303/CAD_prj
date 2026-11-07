@@ -12,11 +12,11 @@ only the memory it needs. Otherwise play the roles one after another in this ses
 
 | Role (agent name) | Skill | Job | Tools |
 |---|---|---|---|
-| analyst | circuit-analyst | Explain topology, derive a first design from equations | design_space, simulate (1-2), write_memory |
-| diagnoser | diagnoser | Find the binding spec of the current best and pick the lever | get_status, read_memory, write_memory |
-| sizer | sizer | One targeted change per simulation, predicted then checked | simulate, read_memory, write_memory |
+| analyst | circuit-analyst | Explain topology, derive a first design from equations | design_space, quick_analysis, simulate (1-2), write_memory |
+| diagnoser | diagnoser | Find the binding spec of the current best and pick the lever | get_status, operating_point, read_memory, write_memory |
+| sizer | sizer | One targeted change per simulation, predicted then checked | quick_analysis, simulate, compare_operating_points, read_memory, write_memory |
 | rl | rl-strategist | Run TD3 anchored on the best expert design (local refinement) | seed_rl, warmup, train, get_status |
-| reviewer | reviewer | Verify and explain the final solution | get_status, get_lineage, read_memory |
+| reviewer | reviewer | Verify and explain the final solution | get_status, get_lineage, operating_point, corner_check, read_memory |
 
 ## Modes (pick from the user's words; default = full)
 
@@ -30,6 +30,10 @@ Budgets (the user may override them, e.g. "budget 1500 sims, 30 hand sims"):
 - total simulator calls: 1000 (default);
 - hand decisions: 40. Each simulate OR sweep call counts as one (a sweep of 6 values is
   one decision). Decisions cost LLM tokens; RL and sweep simulations barely do.
+- cheap analyses: at most 30 `quick_analysis` calls (<= 10 variants each), 20
+  operating-point lookups (`operating_point`, `compare_operating_points`) and 3
+  `corner_check` calls. They are NOT simulator calls and NOT hand decisions; their ngspice
+  runs are reported separately (quick_runs).
 Start by stating the mode and both budgets in one line. This skill is the full
 instruction; the user does not repeat the steps.
 
@@ -39,7 +43,8 @@ instruction; the user does not repeat the steps.
    until a design is feasible (FoM > 0.3).
 2. Optimization (diagnoser in feasible mode -> sizer), <= 15 simulations:
    trade the excess margins for less current and area. Ends after 4 sizer simulations in
-   a row that improve the best FoM by less than 0.005.
+   a row that improve the best FoM by less than 0.005. It does NOT end while the current
+   is above 1.5x its target and a current-lowering lever has not been screened yet.
 3. RL refinement (rl), <= 800 simulations or the remaining total budget: TD3 anchored on the best expert design,
    exploring its neighbourhood. Also produces the feasible designs for the Pareto front.
 4. Polish (diagnoser -> sizer), <= 6 simulations, on the RL best.
@@ -65,6 +70,22 @@ There is no target FoM: always keep improving until a budget is used.
 - Reaching feasibility is NOT a reason to stop: it starts phase 2.
 
 Narrate every decision for the user in 1-3 sentences: role, what, why, expected effect.
+
+## Cheap analyses (optional task 2): use them to save simulations
+
+A simulation costs ~1 s of ngspice and one simulator call; `quick_analysis` runs only the
+analyses you need (op/ac/noise ~0.01 s, a 5 us transient ~0.1 s) for up to 10 variants at
+once, and `operating_point` reads transistor data that every simulation already saved.
+- Screen, then simulate: whenever you would try several values or are unsure whether a
+  change breaks a spec, screen the variants with ONE `quick_analysis` and `simulate`
+  only the best one. Measure only the specs at risk (op = current, ac = gain/UGBW/PM,
+  noise, tran = slew rate).
+- Explain with data: before choosing a lever, and after a failed prediction, read the
+  operating point (gm, gm/Id, Vds - Vdsat, I_tail, I_2, p2 vs UGBW) instead of guessing.
+- A quick result is never a design result: only `simulate` creates candidates. Never
+  report, seed or compare a design that was only quick-analysed.
+- Do not screen what an equation already answers with confidence: cheap is not free
+  (each call is an LLM turn).
 
 ## Rules for every role
 
