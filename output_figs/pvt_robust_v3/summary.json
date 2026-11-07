@@ -1,0 +1,28 @@
+{
+  "args": {
+    "seed": 123456,
+    "noise_sigma": 0.1,
+    "batch_size": 128,
+    "w": 300,
+    "pi_lr": 0.0003,
+    "q_lr": 0.001,
+    "gamma": 0.99,
+    "tau": 0.005,
+    "target_update_interval": 1,
+    "actor_update_interval": 2,
+    "hidden_size": 256,
+    "T": 20000,
+    "max_sims": 10000,
+    "replay_size": 1000000,
+    "cuda": false,
+    "pvt_robust": true,
+    "run_id": "pvt_robust_v3"
+  },
+  "env_steps": 9090,
+  "n_simulations": 10000,
+  "n_failed_sims": 200,
+  "n_corner_sims": 120000,
+  "best_fom": -0.05057353956577181,
+  "first_feasible_step_and_sims": null,
+  "runtime_s": 15627.5
+}
