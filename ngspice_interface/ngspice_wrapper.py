@@ -11,7 +11,8 @@ _SERVER_NGSPICE = "/users/micas/mahmadza/public/bin/ngspice"
 NGSPICE_BIN = _SERVER_NGSPICE if os.path.exists(_SERVER_NGSPICE) else (shutil.which("ngspice") or "ngspice")
 
 # a normal simulation takes ~0.4 s; anything this slow is a pathological design
-NGSPICE_TIMEOUT_S = 20
+# (override with CAD_NGSPICE_TIMEOUT, e.g. for 12 parallel corner runs on a busy machine)
+NGSPICE_TIMEOUT_S = float(os.environ.get("CAD_NGSPICE_TIMEOUT", "") or 20)
 
 class NgspiceWrapper(object):
     

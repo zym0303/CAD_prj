@@ -174,18 +174,30 @@ class CircuitEnv(gym.Env):
         # the input common mode stays at the netlist value (0.6 V) in every corner: the task only
         # varies P, V and T (VCM = VDD/2 = 0.5 V at 1.0 V halved the UGBW of the NMOS input pair)
         vcm = None
+        # robust mode: one retry. A corner run that fails while 11 others share the CPU is
+        # usually a timeout from load, not a bad design; without the retry the whole design
+        # got worst-case specs (v1/v2: 109/68 failed corner runs).
+        attempts = 2 if self.pvt_robust else 1
         try:
-            netlist_path = engine.create_new_netlist(
-                params,
-                process=corner['process'],
-                temp_pvt=corner['temp'],
-                vdd=corner['voltage'],
-                vcm=vcm,
-            )
-            info = engine.simulate(netlist_path)
-            if info != 0:
-                raise RuntimeError("ngspice exited with an error")
-            specs = engine.measure_metrics()
+            for attempt in range(attempts):
+                try:
+                    netlist_path = engine.create_new_netlist(
+                        params,
+                        process=corner['process'],
+                        temp_pvt=corner['temp'],
+                        vdd=corner['voltage'],
+                        vcm=vcm,
+                    )
+                    info = engine.simulate(netlist_path)
+                    if info != 0:
+                        raise RuntimeError("ngspice exited with an error")
+                    specs = engine.measure_metrics()
+                    break
+                except Exception:
+                    if attempt + 1 == attempts:
+                        raise
+                    with self._lock:
+                        self.n_corner_retries = getattr(self, 'n_corner_retries', 0) + 1
         except Exception as err:
             with self._lock:
                 self.n_failed_sims += 1

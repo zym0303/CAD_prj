@@ -28,6 +28,12 @@ description: Diagnoses the current best opamp design, identifies the binding or 
    Prefer levers that fix the worst spec without breaking a spec with a small margin.
    Known couplings: Cc trades PM against UGBW/SR/area; I_2 trades PM/SR against current;
    longer L trades gain against UGBW/PM.
+   Robust mode (get_status mode "pvt_robust"): the specs are worst cases; use
+   `failing_corners` and `worst_corner` to say WHICH corner limits each spec, and name the
+   corner in the decision. Hot corners (100 C) lower mobility, so gm, UGBW and slew rate
+   drop there; cold corners (0 C) raise UGBW and squeeze the phase margin. A lever that
+   fixes a hot-corner spec must be checked against the cold-corner phase margin (and the
+   reverse); the operating point is that of the design's worst corner.
 4. Stall check: if the last 3 sizer results in memory did not improve the best reward,
    or the design is feasible with all margins small, decide "hand over to rl".
    Exception: while the current is above 1.5x its target, small margins are not a stall.

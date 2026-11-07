@@ -6,6 +6,8 @@
 #   bash run_harness_batch.sh                         (5 runs)
 #   N=3 bash run_harness_batch.sh                     (3 runs)
 #   MODEL=gemini-3.8-flash-high bash run_harness_batch.sh
+#   PVT-robust runs (optional task 1; every design = 12 corners, so allow more time):
+#   PROMPT="Use the opamp-harness skill to size the opamp in PVT-robust mode." RUN_TIMEOUT=120m N=1 bash run_harness_batch.sh
 #
 # Per run, in ~/CAD_prj_archive (or $CAD_ARCHIVE):
 #   harness_runs/<run_id>/, solutions/<run_id>.csv, output_figs/<run_id>/   (the usual outputs)

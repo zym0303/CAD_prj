@@ -21,6 +21,9 @@ onto the best expert design of THIS run, then it explores around it.
    batch check `improved_best`: stop after 2 batches in a row without improvement, after 800
    simulations in this phase, or at the total budget (size the last batch to fit).
    Episodes restart from the best design, so no simulations are spent on random resets.
+   Robust mode: each step simulates 12 corners (~1-3 s); use batches of 100 and stay within
+   the robust RL budget (400 simulations). The reward is the worst-case robust FoM, so
+   feasible RL designs are feasible in all corners.
 5. `write_memory(agent="rl", kind="result", ...)`: simulations used, best id and FoM
    before/after, how many feasible designs exist now, and which parameters of the RL
    best differ from the expert design (this is what the sizer polishes next).

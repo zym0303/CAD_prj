@@ -15,6 +15,17 @@ Explainability / bookkeeping written to harness_runs/<run_id>/:
     quick_analyses.jsonl  every cheap analysis run by quick_analysis (subset of op/ac/noise/
                    short tran, optional PVT corner): parameters, corner, specs, operating
                    point. These are NOT candidates and NOT simulator calls (optional task 2).
+
+Modes (optional task 1):
+    nominal (default)  every design is simulated at TT, 1.2 V, 27 C.
+    pvt_robust         every design is simulated in the 12 corners {TT,SS,FF} x {1.2,1.0 V}
+                       x {0,100 C} and scored on its WORST CASE (CircuitEnv(pvt_robust=True),
+                       the same environment as `td3_runner.py --pvt_robust`): feasible only if
+                       every corner passes. One simulator call = one design = 12 ngspice runs.
+                       Switched on before the first simulation by enable_pvt_robust_mode()
+                       (what the LLM calls when the prompt asks for it), or at server start
+                       with `mcp_server.py --pvt-robust` / CAD_PVT_ROBUST=1. Nothing changes
+                       in nominal mode.
 """
 
 import csv
@@ -79,6 +90,45 @@ def check_count(value, name, maximum):
         raise ValueError(f"{name} must be an integer from 1 to {maximum}.")
 
 
+def default_pvt_workers():
+    """Parallel ngspice runs per design in robust mode. Twelve at once on a busy laptop made
+    single runs exceed the 20 s ngspice timeout (good designs then scored as failed), so the
+    default is half the cores, at most 6. Override with CAD_PVT_WORKERS."""
+    env = os.environ.get("CAD_PVT_WORKERS", "").strip()
+    if env:
+        return max(1, int(env))
+    return max(1, min(6, (os.cpu_count() or 2) // 2))
+
+
+def corner_label(c):
+    return f"{c['process']} {c['voltage']:g}V {c['temp']:g}C"
+
+
+def corner_margin(env, norm):
+    """Smallest signed hard-constraint margin of one corner (normalized; < 0 = violated)."""
+    return min(-norm[h] if h in env.LOWER_IS_BETTER else norm[h] for h in env.hard_constraints)
+
+
+def robust_fom(env, worst_specs, corner_specs, w_worst=0.5):
+    """FoM of the PVT-robust mode, identical to CircuitEnv.robust_reward_computation but
+    without touching the environment's state: feasible only if the worst case passes every
+    hard constraint (then 0.3 + r_T on the worst-case area/current, exactly as nominal);
+    otherwise the violations are a blend of the worst case and the mean over the corners."""
+    def hard_part(norm):
+        r = 0.0
+        for spec in env.hard_constraints:
+            z, w = norm[spec], env.spec_weights.get(spec, 1.0)
+            r += w * (-max(z, 0.0) if spec in env.LOWER_IS_BETTER else min(z, 0.0))
+        return r
+    worst_norm = env.normalize_specs(worst_specs)
+    r_worst = hard_part(worst_norm)
+    r_mean = float(np.mean([hard_part(env.normalize_specs(s)) for s in corner_specs]))
+    r_T = sum(env.spec_weights.get(t, 1.0) * (-worst_norm[t]) for t in env.optimization_targets)
+    if r_worst >= env.success_threshold:
+        return float(0.3 + r_T), True
+    return float(w_worst * r_worst + (1.0 - w_worst) * r_mean + 0.05 * r_T), False
+
+
 def sig(x, digits=4):
     """Round to significant digits (keeps tool outputs short for the LLM)."""
     x = float(x)
@@ -95,7 +145,8 @@ class SizingExperiment:
     """
 
     def __init__(self, seed=123456, batch_size=128, replay_size=100_000, run_id=None,
-                 gamma=0.0, noise_sigma=0.1, pi_lr=3e-4, q_lr=1e-3):
+                 gamma=0.0, noise_sigma=0.1, pi_lr=3e-4, q_lr=1e-3, pvt_robust=False,
+                 pvt_workers=None):
         check_count(replay_size, "replay_size", 1_000_000)
         check_count(batch_size, "batch_size", replay_size)
         if type(seed) is not int or not 0 <= seed < 2**32:
@@ -108,10 +159,8 @@ class SizingExperiment:
         self.t0 = time.time()
         self._clock_started = False
 
-        self.env = CircuitEnv(run_id=self.run_id, success_threshold=0.0)
-        # Direct design evaluations must not change the ongoing RL episode.
-        self.evaluation_env = CircuitEnv(run_id=self.run_id + "_evaluate", success_threshold=0.0)
-        self.env.action_space.seed(seed)
+        self.pvt_workers = pvt_workers or default_pvt_workers()
+        self._build_envs(pvt_robust)
         Path(self.env.simulation_engine.output_files_folder).mkdir(parents=True, exist_ok=True)
         Path("solutions").mkdir(exist_ok=True)
 
@@ -176,7 +225,56 @@ class SizingExperiment:
         if not self._clock_started:
             self.t0, self._clock_started = time.time(), True
 
+    def _build_envs(self, pvt_robust):
+        """RL env + evaluation env (direct design evaluations must not change the ongoing
+        RL episode), nominal or PVT-robust (worst case over the 12 corners)."""
+        kwargs = {"success_threshold": 0.0}
+        if pvt_robust:
+            kwargs.update(pvt_robust=True, n_workers=self.pvt_workers)
+        self.env = CircuitEnv(run_id=self.run_id, **kwargs)
+        self.evaluation_env = CircuitEnv(run_id=self.run_id + "_evaluate", **kwargs)
+        self.env.action_space.seed(self.seed)
+        self.pvt_robust = bool(pvt_robust)
+
+    @property
+    def mode(self):
+        return "pvt_robust" if self.pvt_robust else "nominal"
+
+    def _corner_sims(self):
+        """ngspice runs of full simulations (12 per design in robust mode)."""
+        if not self.pvt_robust:
+            return self.simulator_calls
+        return self.env.n_corner_sims + self.evaluation_env.n_corner_sims
+
     # ------------------------------------------------------------------ tools
+    def enable_pvt_robust_mode(self, rationale: str = "") -> dict:
+        """Switch the experiment to PVT-robust mode (optional task 1). Only before the first
+        simulation, so every candidate, the best design, the RL rewards and the Pareto data
+        of the run use the same FoM. Quick analyses and corner checks are not affected."""
+        if self.pvt_robust:
+            return {"mode": self.mode, "note": "PVT-robust mode was already on."}
+        if self.simulator_calls or self.by_id or self.replay.size:
+            raise ValueError("PVT-robust mode must be enabled before the first simulation: this "
+                             "run already has simulated designs. Start a new run.")
+        self._build_envs(True)
+        self._write_summary()
+        return {
+            "mode": self.mode,
+            "corners": [corner_label(c) for c in CircuitEnv.PVT_CORNERS],
+            "parallel_ngspice_runs": self.pvt_workers,
+            "fom": "worst case over the 12 corners. Feasible only if every hard constraint "
+                   "passes in ALL corners; then FoM = 0.3 - z_area - z_current on the worst-case "
+                   "(largest) area and current. Infeasible: 0.5 * violations of the worst case + "
+                   "0.5 * mean violations over the corners + 0.05 * (-z_area - z_current).",
+            "cost": "simulate / sweep / RL steps: still ONE simulator call per design, but 12 "
+                    "ngspice runs (~1-3 s). quick_analysis stays single-corner (default TT 27C): "
+                    "use it at the binding corners; corner_check screens all 12 at once.",
+            "returned_per_design": "specs are the worst case over the corners; failing_corners "
+                                   "and worst_corner (the corner that sets each hard spec) say "
+                                   "where to act; operating_point shows the worst corner.",
+        }
+
+
     def design_space(self) -> dict:
         """Parameter grids, targets, constraints and the FoM definition (no simulation)."""
         params = {}
@@ -186,7 +284,7 @@ class SizingExperiment:
                             "step": rng["step"], "n_values": len(grid),
                             "unit": "count" if self.is_int[name] else
                                     ("F" if name == "cap" else "ohm" if name == "res" else "m")}
-        return {
+        out = {
             "parameters": params,
             "targets": {k: {"value": v, "unit": SPEC_UNITS[k]} for k, v in self.env.dict_targets.items()},
             "hard_constraints": {k: ("<= target" if k in self.env.LOWER_IS_BETTER else ">= target")
@@ -195,8 +293,16 @@ class SizingExperiment:
             "normalization": "z = (value - target) / (value + target), clipped to [-1, 1]",
             "fom": "infeasible: sum of hard-constraint violations (<0) + 0.05*(-z_area - z_current); "
                    "feasible: 0.3 + (-z_area - z_current). Higher is better; > 0.3 means feasible.",
+            "mode": self.mode,
             "run_id": self.run_id,
         }
+        if self.pvt_robust:
+            out["corners"] = [corner_label(c) for c in CircuitEnv.PVT_CORNERS]
+            out["fom"] = ("PVT-robust: specs = worst case over the 12 corners. Feasible only if every "
+                          "hard constraint passes in ALL corners; then 0.3 + (-z_area - z_current) on "
+                          "the worst-case area and current. Infeasible: 0.5 * violations(worst case) "
+                          "+ 0.5 * mean violations over the corners + 0.05*(-z_area - z_current).")
+        return out
 
     def simulate(self, parameters: dict, rationale: str = "", agent: str = "", base_id=None) -> dict:
         """Evaluate one design. `parameters` may be partial: missing values are copied
@@ -226,12 +332,11 @@ class SizingExperiment:
         specs = self.evaluation_env.simulate(params)
         self.simulator_calls += 1
         failed = self.evaluation_env.n_failed_sims > failed_before
-        op = read_op_data(self.evaluation_env.simulation_engine)  # same simulation, no extra call
         changes = {} if base is None else {n: params[n] for n in self.param_names
                                            if params[n] != base["parameters"][n]}
         cand = self._record(self.evaluation_env, params, specs, "llm", failed,
                             agent=agent, rationale=rationale,
-                            parent=None if base is None else base["id"], changes=changes, op=op)
+                            parent=None if base is None else base["id"], changes=changes)
         self._maybe_clean()
         self._write_summary()
         out = self._compact(cand, with_params=False)
@@ -353,8 +458,9 @@ class SizingExperiment:
         check_count(k, "k", 20)
         ranked = sorted(self.candidates.values(), key=lambda c: c["reward"], reverse=True)
         feasible = [c for c in ranked if c["feasible"]]
-        return {
+        out = {
             "run_id": self.run_id,
+            "mode": self.mode,
             "elapsed_s": round(time.time() - self.t0, 1),
             "simulator_calls": self.simulator_calls,
             "llm_designs": sum(c["source"] == "llm" for c in ranked),
@@ -371,6 +477,9 @@ class SizingExperiment:
             "best": [self._compact(c) for c in ranked[:k]],
             "best_feasible_id": feasible[0]["id"] if feasible else None,
         }
+        if self.pvt_robust:
+            out["corner_ngspice_runs"] = self._corner_sims()
+        return out
 
     def get_lineage(self, candidate_id: int) -> dict:
         """Chain of designs that led to a candidate, each with agent, changes and rationale."""
@@ -393,10 +502,14 @@ class SizingExperiment:
         self._write_summary()
         d = self._derive(cand)
         # conclusions first, the full device table last
-        return {"id": cand["id"], "source": cand["source"], "reward": sig(cand["reward"]),
-                "feasible": cand["feasible"], "violated": cand["violated"],
-                "warnings": d["warnings"], "notes": d["notes"], "circuit": d["circuit"],
-                "devices": d["devices"]}
+        out = {"id": cand["id"], "source": cand["source"], "reward": sig(cand["reward"]),
+               "feasible": cand["feasible"], "violated": cand["violated"]}
+        if cand.get("robust"):
+            out["corner"] = cand["robust"]["op_corner"] + " (worst corner of this design)"
+            out["failing_corners"] = cand["robust"]["failing_corners"]
+        out.update({"warnings": d["warnings"], "notes": d["notes"], "circuit": d["circuit"],
+                    "devices": d["devices"]})
+        return out
 
     def compare_operating_points(self, id_a: int, id_b: int) -> dict:
         """What changed between two simulated designs: parameters, specs, and the device and
@@ -463,6 +576,9 @@ class SizingExperiment:
                "note": "Cheap analyses, not candidates: confirm a chosen variant with simulate."}
         if "tran" in analyses:
             out["tran"] = f"short transient ({SHORT_TRAN_STOP}s): slew rate of the first rising edge"
+        if self.pvt_robust:
+            out["note"] += (" PVT-robust mode: this is ONE corner; reward/fom_if_feasible here are "
+                            "single-corner values, not the robust FoM (corner_check gives that).")
         return out
 
     def corner_check(self, rationale: str, agent: str = "", candidate_id: int = None,
@@ -529,8 +645,12 @@ class SizingExperiment:
         self.quick_calls += 1
         self.corner_checks += 1
         self._write_summary()
+        if self.pvt_robust:
+            # the FoM simulate would give this design in robust mode (same blend for infeasible)
+            reward, feasible = robust_fom(env, worst, full)
         return {"id": base["id"], "variant": variant or {}, "analyses": list(analyses),
-                "nominal": {"reward": sig(base["reward"]), "feasible": base["feasible"]} if not variant else None,
+                ("candidate" if self.pvt_robust else "nominal"):
+                    {"reward": sig(base["reward"]), "feasible": base["feasible"]} if not variant else None,
                 "worst_case": worst_corner,
                 "worst_case_fom": sig(reward), "feasible_in_all_corners": bool(feasible),
                 "failing_corners": [r["corner"] for r in rows if r.get("error") or r.get("violated")],
@@ -607,10 +727,14 @@ class SizingExperiment:
         return cand
 
     def _derive(self, cand):
-        """Derived operating-point quantities of a candidate (see ngspice_interface/op_data.py)."""
-        ugbw = cand["specs"].get("ugbw")
-        return derive_op(cand["op"], cand["parameters"],
-                         ugbw if ugbw is not None and math.isfinite(ugbw) and ugbw > 0 else None)
+        """Derived operating-point quantities of a candidate (see ngspice_interface/op_data.py).
+        Robust mode: the operating point, UGBW and VDD of the candidate's worst corner."""
+        robust = cand.get("robust")
+        ugbw = robust["op_ugbw"] if robust else cand["specs"].get("ugbw")
+        ugbw = ugbw if ugbw is not None and math.isfinite(ugbw) and ugbw > 0 else None
+        if robust:
+            return derive_op(cand["op"], cand["parameters"], ugbw, vdd=robust["op_vdd"])
+        return derive_op(cand["op"], cand["parameters"], ugbw)
 
     def _validate_corner(self, corner):
         """Full PVT corner dict; missing keys come from the evaluation corner (TT, 27 C, 1.2 V)."""
@@ -690,12 +814,38 @@ class SizingExperiment:
                 row["devices"] = d["devices"]
         return row
 
+    def _robust_details(self, env):
+        """Per-corner view of the design env just simulated (robust mode): the corners that
+        fail, the corner that sets each hard spec, and the worst corner (smallest margin),
+        whose operating point is kept for operating_point / compare_operating_points."""
+        labels = [corner_label(c) for c in env.corners]
+        norms = [env.normalize_specs(s) for s in env.corner_specs]
+        failing = [labels[i] for i, n in enumerate(norms) if corner_margin(env, n) < 0]
+        worst_corner = {}
+        for h in env.hard_constraints:
+            pick = max if h in env.LOWER_IS_BETTER else min
+            i = norms.index(pick(norms, key=lambda n: n[h]))
+            worst_corner[h] = labels[i]
+        i_worst = min(range(len(norms)), key=lambda i: corner_margin(env, norms[i]))
+        op = read_op_data(env.corner_engines[i_worst])
+        ugbw = env.corner_specs[i_worst].get("ugbw")
+        return {"failing_corners": failing, "worst_corner": worst_corner,
+                "op_corner": labels[i_worst], "op_vdd": float(env.corners[i_worst]["voltage"]),
+                "op_ugbw": None if ugbw is None or not math.isfinite(ugbw) else float(ugbw)}, op
+
     def _record(self, env, parameters, specs, source, failed, agent="", rationale="",
-                parent=None, changes=None, op=None):
+                parent=None, changes=None):
         """Score one measurement with the environment's own methods, store and log it.
-        op: operating-point data of the same simulation (read_op_data), or None."""
+        The operating point is read from the same simulation (no extra call): nominal mode
+        the TT run, robust mode the worst corner."""
         norm = env.normalize_specs(specs)
-        reward, feasible = env.reward_computation(norm)
+        robust = None
+        if env.pvt_robust:
+            reward, feasible = robust_fom(env, specs, env.corner_specs)
+            robust, op = self._robust_details(env)
+        else:
+            reward, feasible = env.reward_computation(norm)
+            op = read_op_data(env.simulation_engine)
         violated = [s for s in env.hard_constraints
                     if (norm[s] > 0 if s in env.LOWER_IS_BETTER else norm[s] < 0)]
         cand = {"id": self.next_id, "source": source, "agent": agent, "rationale": rationale,
@@ -703,7 +853,7 @@ class SizingExperiment:
                 "specs": {k: float(v) for k, v in specs.items()}, "normalized_specs": norm,
                 "reward": float(reward), "feasible": bool(feasible), "violated": violated,
                 "failed": bool(failed), "sim_call": self.simulator_calls,
-                "elapsed_s": round(time.time() - self.t0, 2), "op": op}
+                "elapsed_s": round(time.time() - self.t0, 2), "op": op, "robust": robust}
         self.next_id += 1
         if op is not None:
             with open(self.op_path, "a") as f:
@@ -729,6 +879,9 @@ class SizingExperiment:
                "normalized": {k: sig(v, 3) for k, v in cand["normalized_specs"].items()}}
         if cand["failed"]:
             out["failed"] = True
+        if cand.get("robust"):
+            out["failing_corners"] = cand["robust"]["failing_corners"]
+            out["worst_corner"] = cand["robust"]["worst_corner"]
         if with_params:
             out["parameters"] = cand["parameters"]
         else:
@@ -754,8 +907,7 @@ class SizingExperiment:
                     self.observation = self.env.reset()
                     self.simulator_calls += self.env.n_simulations - s0
                     self._record(self.env, self.env.param_values, self.env.real_specs,
-                                 "rl_reset", self.env.n_failed_sims > f0, agent="td3",
-                                 op=read_op_data(self.env.simulation_engine))
+                                 "rl_reset", self.env.n_failed_sims > f0, agent="td3")
                 if training:
                     action = self.agent.select_action(self.observation)
                 elif getattr(self, "_local", None) is not None:
@@ -766,8 +918,7 @@ class SizingExperiment:
                 next_obs, reward, done, info = self.env.step(action)
                 self.simulator_calls += self.env.n_simulations - s0
                 failed = self.env.n_failed_sims > f0
-                self._record(self.env, info["params"], info["specs"], phase, failed, agent="td3",
-                             op=read_op_data(self.env.simulation_engine))
+                self._record(self.env, info["params"], info["specs"], phase, failed, agent="td3")
                 if not failed:
                     self.replay.push(self.observation, action, reward, next_obs, float(done))
                 if training and self.replay.size >= self.batch_size:
@@ -801,7 +952,8 @@ class SizingExperiment:
             self._last_clean = self.simulator_calls
 
     def _write_summary(self):
-        summary = {"run_id": self.run_id, "elapsed_s": round(time.time() - self.t0, 1),
+        summary = {"run_id": self.run_id, "mode": self.mode,
+                   "elapsed_s": round(time.time() - self.t0, 1),
                    "simulator_calls": self.simulator_calls, "warmup_steps": self.warmup_steps,
                    "training_steps": self.training_steps, "updates": self.updates,
                    "seeded_transitions": self.seeded, "op_lookups": self.op_lookups,
@@ -811,5 +963,10 @@ class SizingExperiment:
                    "best": None if self.best is None else {
                        k: self.best[k] for k in ("id", "source", "reward", "feasible",
                                                  "specs", "parameters")}}
+        if self.pvt_robust:
+            summary["corner_ngspice_runs"] = self._corner_sims()
+            summary["n_failed_corner_runs"] = self.env.n_failed_sims + self.evaluation_env.n_failed_sims
+            if self.best is not None and self.best.get("robust"):
+                summary["best"]["failing_corners"] = self.best["robust"]["failing_corners"]
         with open(self.out_dir / "summary.json", "w") as f:
             json.dump(to_builtin(summary), f, indent=2)

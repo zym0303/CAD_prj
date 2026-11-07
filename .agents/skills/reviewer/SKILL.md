@@ -8,7 +8,10 @@ description: Verifies the final opamp solution and writes an interpretable expla
 1. `get_status(k=5)` and `read_memory(last_n=20)`.
 2. For the best feasible design: `get_lineage(id)`, `operating_point(id)` and ONE
    `corner_check(candidate_id=id)` (12 PVT corners of the robust mode, ~1 s, 0 simulator
-   calls). The design is sized at TT only, so the corner check is a report, not a goal.
+   calls). Nominal mode: the design is sized at TT only, so the corner check is a report,
+   not a goal. Robust mode (get_status shows mode "pvt_robust"): the design was already
+   scored on all 12 corners; the corner check is a consistency check (5 us transient),
+   and the explanation must show that every corner passes (or which still fail and why).
 3. Write `harness_runs/<run_id>/explanation.md` with:
    - final parameters and specs, each hard constraint with its margin;
    - the design story: one line per lineage step (agent, change, reason, effect);

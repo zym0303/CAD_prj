@@ -34,3 +34,7 @@ description: Applies a targeted, predicted parameter change to the opamp and che
    candidates) only in phase 4 polish, when the feasible neighbours are wanted for the
    Pareto front. A sweep counts as one decision.
 9. Check the balance condition (circuit-analyst) before touching mn4, mn5, mp1 or mp3.
+10. Robust mode: screen the variants with `quick_analysis(corner=...)` at the corner the
+    diagnoser named (one call per corner that matters), then `corner_check(variant=...)` on
+    the best one, and `simulate` it only if the corner check passes or improves the
+    worst_case_fom. Put the corner numbers in the rationale ("SS 1.0V 100C: ugbw 62 -> 95M").

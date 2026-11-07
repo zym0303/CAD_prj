@@ -40,9 +40,22 @@ def create_server(experiment):
                 raise ToolError(str(error)) from error
 
     @server.tool()
+    def enable_pvt_robust_mode(rationale: str) -> dict[str, Any]:
+        """ONLY when the user asks for a PVT-robust run (optional task 1). Call it FIRST,
+        before any simulate / sweep / warmup / train: it is refused once the run has
+        simulated designs. From then on every design is simulated in the 12 PVT corners
+        {TT,SS,FF} x {1.2 V, 1.0 V} x {0 C, 100 C} and scored on its WORST CASE: feasible only
+        if every corner passes. simulate, sweep and the RL tools keep their meaning (still one
+        simulator call per design, now 12 ngspice runs), and each design also returns
+        failing_corners and worst_corner (the corner that sets each hard spec). Do NOT call
+        it for a normal run: the default mode is the nominal corner (TT, 1.2 V, 27 C)."""
+        return call("enable_pvt_robust_mode", rationale=rationale)
+
+    @server.tool()
     def design_space() -> dict[str, Any]:
-        """Parameter grids (min, max, step, unit), spec targets, hard constraints and the
-        FoM definition. No simulation. Call once at the start instead of reading files."""
+        """Parameter grids (min, max, step, unit), spec targets, hard constraints, the
+        FoM definition and the mode (nominal or pvt_robust). No simulation. Call once at the
+        start instead of reading files."""
         return call("design_space")
 
     @server.tool()
@@ -197,11 +210,19 @@ def main():
     parser.add_argument("--batch-size", type=int, default=128)
     parser.add_argument("--replay-size", type=int, default=100_000)
     parser.add_argument("--run-id", default=None)
+    # Optional task 1. Normally the LLM switches the mode with enable_pvt_robust_mode when the
+    # prompt asks for it; this flag (or CAD_PVT_ROBUST=1) starts the server in robust mode.
+    parser.add_argument("--pvt-robust", action="store_true",
+                        default=os.environ.get("CAD_PVT_ROBUST", "") in ("1", "true", "yes"))
+    parser.add_argument("--pvt-workers", type=int, default=None,
+                        help="parallel ngspice runs per design in robust mode (default: CAD_PVT_WORKERS "
+                             "or half the cores, max 6)")
     args = parser.parse_args()
     # Existing course code resolves model/netlist paths relative to the project.
     os.chdir(Path(__file__).resolve().parent)
     with redirect_stdout(sys.stderr):
-        experiment = SizingExperiment(args.seed, args.batch_size, args.replay_size, args.run_id)
+        experiment = SizingExperiment(args.seed, args.batch_size, args.replay_size, args.run_id,
+                                      pvt_robust=args.pvt_robust, pvt_workers=args.pvt_workers)
     create_server(experiment).run(transport="stdio")
 
 

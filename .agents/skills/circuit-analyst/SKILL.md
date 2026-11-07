@@ -43,6 +43,16 @@ I_tail = 30 uA * S4/S3, I_2 = 30 uA * S5/S3 (same L for the mirror devices keeps
 - Area: sum of m*W*L of all devices plus the capacitor; Cc usually dominates, so keep Cc small.
 - Mirror matching: use the same length for mn3, mn4, mn5.
 
+## Robust mode (PVT corners)
+
+Only when the harness runs in robust mode. Mobility falls roughly as (T/T0)^-1.5, so at
+100 C gm, UGBW and slew rate are clearly lower than at 27 C, and at 1.0 V the headroom of
+the tail and output devices shrinks. At 0 C the UGBW is highest and the phase margin
+smallest. So plan nominal margins on UGBW/SR for the hot corners and on PM for the cold
+ones, keep the 2nd pole gm6/CL well above the UGBW in every corner, and screen the first-cut
+variants with `quick_analysis` at SS/1.0 V/100 C and at a 0 C corner (or one `corner_check`
+on a simulated design) before simulating.
+
 ## What to do
 
 1. Call `design_space` once.

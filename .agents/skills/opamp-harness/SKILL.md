@@ -25,6 +25,11 @@ only the memory it needs. Otherwise play the roles one after another in this ses
 | full | "full", "with RL", or no mode given | phases 1-5 below |
 | no-rl | "without RL", "no RL", "hand only" | phases 1, 2, 5 (phase 2 up to 25 sims) |
 | test | "test", "quick" | analyst + one diagnoser/sizer round, <= 5 sims, no RL, get_status(k=3), stop |
+| robust | "PVT-robust", "robust", "12 corners", "optional task 1" | `enable_pvt_robust_mode` FIRST, then phases 1-5 with the robust rules below (can be combined with no-rl or test) |
+
+`enable_pvt_robust_mode` is called ONLY in robust mode, and only as the very first tool call
+(it is refused after the first simulation). In every other mode never call it: those runs
+are sized at the nominal corner (TT, 1.2 V, 27 C) exactly as before.
 
 Budgets (the user may override them, e.g. "budget 1500 sims, 30 hand sims"):
 - total simulator calls: 1000 (default);
@@ -34,7 +39,7 @@ Budgets (the user may override them, e.g. "budget 1500 sims, 30 hand sims"):
   operating-point lookups (`operating_point`, `compare_operating_points`) and 3
   `corner_check` calls. They are NOT simulator calls and NOT hand decisions; their ngspice
   runs are reported separately (quick_runs).
-Start by stating the mode and both budgets in one line. This skill is the full
+Start by stating the mode and both budgets in one line (robust mode: its own budgets, below). This skill is the full
 instruction; the user does not repeat the steps.
 
 ## Phases (full mode)
@@ -86,6 +91,24 @@ once, and `operating_point` reads transistor data that every simulation already 
   report, seed or compare a design that was only quick-analysed.
 - Do not screen what an equation already answers with confidence: cheap is not free
   (each call is an LLM turn).
+
+## Robust mode (optional task 1)
+
+After `enable_pvt_robust_mode`, every `simulate`, `sweep` and RL step evaluates the design
+in the 12 corners {TT,SS,FF} x {1.2 V, 1.0 V} x {0 C, 100 C}; its specs are the WORST case
+and it is feasible only if every corner passes. Each design also returns `failing_corners`
+and `worst_corner` (the corner that sets each hard spec); `operating_point` shows the
+design's worst corner. Same phases, same roles, with these changes:
+- Default budgets: 600 simulator calls in total (each design is 12 ngspice runs, ~1-3 s),
+  RL phase <= 400, hand decisions 40, corner_check <= 8. The user may override them.
+- Screening: `quick_analysis` is single-corner. Screen at the corners that bind (read
+  `worst_corner`: typically SS/1.0 V/100 C for UGBW and slew rate, the 0 C corners for phase
+  margin), then `corner_check(variant=...)` on the best variant (12 quick runs, 0 simulator
+  calls), and `simulate` only a variant whose corner check passes or comes closest.
+- Feasible = "passes in all 12 corners". The current target (200 uA) is an optimization
+  target, not a hard constraint: robustness may cost current; first reach all-corner
+  feasibility, then trade margins for current and area as in phase 2.
+- Report the corner trade-off in the narration: which corner sets which spec, and why.
 
 ## Rules for every role
 
