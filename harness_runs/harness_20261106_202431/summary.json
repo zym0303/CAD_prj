@@ -1,0 +1,46 @@
+{
+  "run_id": "harness_20261106_202431",
+  "elapsed_s": 1645.8,
+  "simulator_calls": 988,
+  "warmup_steps": 140,
+  "training_steps": 820,
+  "updates": 820,
+  "seeded_transitions": 60,
+  "best": {
+    "id": 953,
+    "source": "rl_train",
+    "reward": 0.6992687920118608,
+    "feasible": true,
+    "specs": {
+      "area": 9.216816666666666e-10,
+      "current": 0.00018827629,
+      "gain": 951.1094200177833,
+      "noise": 0.018354415,
+      "phm": 60.724655471656334,
+      "slewRate": 60.425702531671554,
+      "ugbw": 100507722.4226812
+    },
+    "parameters": {
+      "mp1": 6,
+      "wp1": 1.5e-06,
+      "lp1": 9e-08,
+      "mn1": 13,
+      "wn1": 2e-06,
+      "ln1": 1.35e-07,
+      "mp3": 12,
+      "wp3": 2e-06,
+      "lp3": 9e-08,
+      "mn3": 5,
+      "wn3": 1e-06,
+      "ln3": 9e-08,
+      "mn4": 9,
+      "wn4": 1.25e-06,
+      "ln4": 9e-08,
+      "mn5": 13,
+      "wn5": 1.25e-06,
+      "ln5": 9e-08,
+      "cap": 5e-13,
+      "res": 9800.0
+    }
+  }
+}
