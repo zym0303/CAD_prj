@@ -11,8 +11,8 @@ tool call, so LLM latency is included). RL runs: output_figs/<id>/history.csv (w
 n_simulations, reward; ngspice time only). Only RL runs that ran alone on the machine should be
 given (parallel runs have inflated wall times).
 
-Writes output_figs/comparison/harness_vs_rl_runtime.png (a: FoM vs runtime, log x; b: FoM vs simulator
-calls, log x) and harness_vs_rl_runtime.csv: per run, the runtime and simulator calls needed to reach
+Writes output_figs/comparison/<out>.png (a: FoM vs runtime, log x; b: FoM vs simulator calls, log x;
+c: current-area Pareto fronts, harness runs pooled vs. each RL run) and harness_vs_rl_runtime.csv: per run, the runtime and simulator calls needed to reach
 FoM 0.3 / 0.5 / 0.6 / 0.65, the best FoM at 1000 s and at 900 simulator calls, the final best FoM.
 """
 import argparse
@@ -21,8 +21,13 @@ import os
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+import json
+
 import numpy as np
 import pandas as pd
+
+from compare_runs import load_solutions
+from utils.plotting import is_pareto_efficient
 
 INK, MUTED = "#222222", "#8a8a8a"
 HARNESS_COLOR = "#2a78d6"
@@ -38,6 +43,33 @@ def load_harness(run_id):
 def load_rl(run_id):
     df = pd.read_csv(os.path.join("output_figs", run_id, "history.csv"))
     return df["wall_time_s"].to_numpy(), df["n_simulations"].to_numpy(), df["reward"].cummax().to_numpy()
+
+
+def harness_feasible(run_ids):
+    pts = []
+    for rid in run_ids:
+        df = pd.read_csv(os.path.join("harness_runs", rid, "log.csv"))
+        for spec in df.loc[df["feasible"] == 1, "specs"]:
+            d = json.loads(spec)
+            pts.append([d["current"] * 1e6, d["area"] * 1e12])
+    return np.array(pts).reshape(-1, 2)
+
+
+def rl_feasible(run_ids):
+    pts = [[sol[1]["current"] * 1e6, sol[1]["area"] * 1e12] for rid in run_ids for sol in load_solutions(rid)]
+    return np.array(pts).reshape(-1, 2)
+
+
+def draw_front(ax, pts, color, marker, label):
+    if not len(pts):
+        return 0
+    front = pts[is_pareto_efficient(pts)]
+    front = front[np.argsort(front[:, 0])]
+    ax.scatter(pts[:, 0], pts[:, 1], s=9, color=color, alpha=0.18, lw=0)
+    ax.step(front[:, 0], front[:, 1], where="post", color=color, lw=1.8, zorder=3)
+    ax.plot(front[:, 0], front[:, 1], marker, ms=6, mfc=color, mec="white", mew=1.2, zorder=4,
+            label=f"{label}: {len(pts)} feasible, front {len(front)} pts")
+    return len(front)
 
 
 def first_reach(x, fom, threshold):
@@ -60,7 +92,7 @@ def main():
     plt.rcParams.update({"font.size": 10, "axes.edgecolor": MUTED, "axes.labelcolor": INK,
                          "xtick.color": MUTED, "ytick.color": MUTED, "axes.spines.top": False,
                          "axes.spines.right": False})
-    fig, (ax_t, ax_s) = plt.subplots(1, 2, figsize=(13, 5))
+    fig, (ax_t, ax_s, ax_p) = plt.subplots(1, 3, figsize=(18, 5))
     rows = []
 
     def add(label, run_id, t, s, fom, color, lw, alpha, legend):
@@ -102,6 +134,18 @@ def main():
     ax_s.axvline(900, color=HARNESS_COLOR, ls="--", lw=0.8, alpha=0.6)
     ax_s.text(900, -0.95, " harness budget 900-1000 sims", color=HARNESS_COLOR, fontsize=8)
     ax_t.legend(fontsize=8, frameon=False, loc="lower right", bbox_to_anchor=(1, 0.06))
+    # (c) current-area Pareto fronts of the feasible designs, harness runs pooled vs. each RL method
+    for group in a.harness:
+        draw_front(ax_p, harness_feasible(group[1:]), HARNESS_COLOR, "o", f"{group[0]}, {len(group) - 1} runs pooled")
+    for group, color in zip(a.rl, RL_COLORS):
+        draw_front(ax_p, rl_feasible(group[1:]), color, "s", group[0])
+    ax_p.set_xlabel("total current [µA]")
+    ax_p.set_ylabel("active area [µm²]")
+    ax_p.set_xlim(150, 700)
+    ax_p.set_ylim(400, 1300)
+    ax_p.grid(alpha=0.25, lw=0.6, ls="--")
+    ax_p.set_title("(c) current-area Pareto front of the feasible designs", loc="left", fontsize=10, color=INK)
+    ax_p.legend(fontsize=8, frameon=False, loc="upper right")
     fig.suptitle("LLM-based agentic harness vs. the RL sizer alone (single runs on the same machine)",
                  x=0.01, ha="left", fontsize=12, color=INK)
     fig.tight_layout()
