@@ -17,3 +17,6 @@ no_backup/
 # the saved network weights (~3 MB per run) are not
 output_figs/**/td3_*
 data/
+
+# ngspice output written when the netlist is run from the project root (wrdata *_TwoStage.csv)
+/*_TwoStage.csv
