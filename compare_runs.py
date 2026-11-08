@@ -7,7 +7,7 @@ For each run it reads
     output_figs/<run_id>/history.csv   (written by td3_runner.py: FoM per step + n_simulations)
 or, if that file is missing (e.g. a baseline that does not use our runner),
     output_figs/<run_id>/reward_history.npy / .csv  (one FoM per step; x-axis = step)
-and the feasible designs in solutions/<run_id>.csv.
+and the feasible designs in solutions/<run_id>.csv (or its filed copy under solutions/milestone*/).
 
 Writes output_figs/<out_dir>/ (default output_figs/comparison/)
     max_fom_vs_sims.png   running max FoM vs. number of simulations, all runs
@@ -16,6 +16,7 @@ Writes output_figs/<out_dir>/ (default output_figs/comparison/)
 """
 import argparse
 import csv
+import glob
 import os
 
 import matplotlib
@@ -43,8 +44,18 @@ def load_history(run_id):
     raise FileNotFoundError(f'no history found for run {run_id}')
 
 
+def solutions_csv(run_id):
+    """Path of solutions/<run_id>.csv: new runs write it at the top level, finished runs are filed
+    under solutions/milestone3_final/<method>/, milestone3_sweep/ or milestone4_harness/."""
+    top = os.path.join('solutions', f'{run_id}.csv')
+    if os.path.isfile(top):
+        return top
+    hits = glob.glob(os.path.join('solutions', '**', f'{run_id}.csv'), recursive=True)
+    return hits[0] if hits else top
+
+
 def load_solutions(run_id):
-    path = os.path.join('solutions', f'{run_id}.csv')
+    path = solutions_csv(run_id)
     if not os.path.isfile(path):
         return []
     out = []

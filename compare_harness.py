@@ -84,7 +84,8 @@ def main():
         feas = log[log["feasible"] == 1]["specs"].map(json.loads)
         sets[f"LLM harness ({h})"] = [(s["current"] * 1e6, s["area"] * 1e12) for s in feas]
     try:
-        sol = pd.read_csv(os.path.join("solutions", f"{a.rl}.csv"))
+        from compare_runs import solutions_csv
+        sol = pd.read_csv(solutions_csv(a.rl))
         specs = sol["Specs"].map(lambda t: ast.literal_eval(t) if isinstance(t, str) else t)
         sets[f"TD3 only ({a.rl})"] = [(float(s["current"]) * 1e6, float(s["area"]) * 1e12) for s in specs]
     except Exception as e:  # the RL file format is optional for this plot
