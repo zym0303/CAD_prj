@@ -31,7 +31,7 @@ uv pip install --python .venv39/bin/python numpy scipy matplotlib pyyaml pandas 
 ## 2. Unit tests (run before everything else)
 
 ```bash
-pytest -q                      # all 6 files, ~2.5 min (86 tests, 400+ subtests)
+pytest -q                      # all 6 files, ~1.5 min (86 tests, 436 subtests)
 pytest -q test_dut.py          # milestone 1: simulator interface vs. the TA reference designs
 pytest -q test_circuit_env.py  # milestone 2: action_refine, normalisation, reward, reset/step, end to end
 pytest -q test_td3_agent.py    # milestone 3: TD3 update rules, replay buffer, a short learning run
@@ -88,18 +88,25 @@ The LLM client is Google's **Antigravity CLI (`agy`)** with Gemini 3.8 Flash. Re
 agy mcp add --type stdio --env PATH="$PATH" cad -- "$PWD/.venv/bin/python" "$PWD/mcp_server.py"
 ```
 
-Run the harness — one fixed prompt, everything else comes from the skills:
+Run the harness — one fixed prompt, everything else comes from the skills. `-p` is agy's headless
+(print) mode; it cannot ask for tool permissions, so `--dangerously-skip-permissions` is required
+(the model occasionally issues a shell command such as `ls`, which would otherwise be auto-denied and
+abort the run). In an interactive `agy` session the same prompt works without the flag.
 
 ```bash
-agy -p "Use the opamp-harness skill to size the opamp (full mode)." --model gemini-3.8-flash-high
-# quick check (analyst + one diagnoser/sizer round, <= 5 simulations, no RL):
-agy -p "Use the opamp-harness skill, test mode." --model gemini-3.8-flash-high
+agy -p "Use the opamp-harness skill to size the opamp (full mode)." --model gemini-3.8-flash-high --dangerously-skip-permissions
+# quick check (analyst + one diagnoser/sizer round, <= 5 simulations, no RL, ~3 min):
+agy -p "Use the opamp-harness skill, test mode." --model gemini-3.8-flash-high --dangerously-skip-permissions
 # optional task 1: every design simulated in the 12 PVT corners
-agy -p "Use the opamp-harness skill to size the opamp in PVT-robust mode." --model gemini-3.8-flash-high
+agy -p "Use the opamp-harness skill to size the opamp in PVT-robust mode." --model gemini-3.8-flash-high --dangerously-skip-permissions
 ```
 
 Default budget: 1000 simulator calls and 40 hand decisions (the prompt may override them, e.g.
-"budget 1500 sims"). A run writes `harness_runs/<run_id>/` (`log.csv` with every simulated design, its
+"budget 1500 sims"); a full run takes 15–20 min. Note on code versions: the five runs of report §4
+were made with the skills at commit `257061a`, before the cheap-analysis tools of optional task 2
+existed; on the current code the same prompt also uses `quick_analysis` / `operating_point` as the
+skills now prescribe, i.e. it reproduces the setting of §5.2. PVT-robust mode (§5.1) is only entered
+with the explicit "PVT-robust mode" prompt. A run writes `harness_runs/<run_id>/` (`log.csv` with every simulated design, its
 agent, parent, changed parameters, rationale and result; `memory.jsonl`; `summary.json`; the reviewer's
 `explanation.md`), `solutions/<run_id>.csv` and `output_figs/<run_id>/`. `bash run_harness_batch.sh`
 runs N independent sessions in a row and moves each run's outputs out of the project so that the next
