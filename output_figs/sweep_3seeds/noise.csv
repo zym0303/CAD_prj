@@ -1,0 +1,5 @@
+group,config,run_ids,n_seeds,best_mean,best_std,best_min,best_max,per_seed_best,first_feasible_median_sims,first_feasible_per_seed,seeds_never_feasible,feasible_per_seed_mean,feasible_pooled,pareto_pts_pooled,front_min_area_um2,front_min_current_uA,failed_sims_per_seed,critic_loss_mean,runtime_s_per_seed
+noise,"default (σ 0.1, batch 128, w 300, lr 3e-4/1e-3, γ 0.99)",sw_base sw_base_s7 sw_base_s42,3,0.5334,0.1187,0.4003,0.6283,0.628 / 0.400 / 0.572,937,697 / 1473 / 937,0,71.3,214,10,480.3,209.0,4 / 13 / 16,0.657,1155 / 2138 / 2130
+noise,σ 0.05,sw_noise0.05 sw_noise0.05_s7 sw_noise0.05_s42,3,0.3471,0.277,0.0282,0.5278,0.528 / 0.485 / 0.028,1107,761 / 1168 / 1107,0,6.7,20,6,388.9,296.7,4 / 17 / 15,0.7058,1148 / 2147 / 2114
+noise,σ 0.2,sw_noise0.2 sw_noise0.2_s7 sw_noise0.2_s42,3,0.4969,0.1222,0.3558,0.5702,0.565 / 0.570 / 0.356,682,450 / 682 / 924,0,13.0,39,8,250.7,218.6,6 / 13 / 13,0.5246,1119 / 2128 / 2109
+noise,σ 0.3,sw_noise0.3 sw_noise0.3_s7 sw_noise0.3_s42,3,0.519,0.0747,0.4579,0.6023,0.602 / 0.458 / 0.497,700,450 / 700 / 710,0,9.3,28,9,272.1,214.3,4 / 11 / 15,0.4547,1047 / 2130 / 2103
