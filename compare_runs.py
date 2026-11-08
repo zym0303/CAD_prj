@@ -28,7 +28,7 @@ from utils.plotting import is_pareto_efficient
 
 
 def load_history(run_id):
-    path = os.path.join('output_figs', run_id, 'history.csv')
+    path = os.path.join(run_dir(run_id), 'history.csv')
     if os.path.isfile(path):
         with open(path) as f:
             rows = list(csv.DictReader(f))
@@ -37,11 +37,34 @@ def load_history(run_id):
         feas = np.array([int(r['feasible']) for r in rows])
         return x, y, feas, '# simulations (reset included)'
     for ext in ('npy', 'csv'):
-        path = os.path.join('output_figs', run_id, f'reward_history.{ext}')
+        path = os.path.join(run_dir(run_id), f'reward_history.{ext}')
         if os.path.isfile(path):
             y = np.load(path) if ext == 'npy' else np.loadtxt(path, delimiter=',')
             return np.arange(1, len(y) + 1), y, None, '# simulation step'
     raise FileNotFoundError(f'no history found for run {run_id}')
+
+
+def _find_dir(root, run_id):
+    """<root>/<run_id> if it exists (new runs), else the filed copy <root>/<group>/[<sub>/]<run_id>.
+    A run folder is recognised by its files (history.csv / log.csv / summary.json), so a group folder
+    that happens to carry a run's name (milestone3_final/sac_baseline/) is not mistaken for the run."""
+    marks = ('history.csv', 'log.csv', 'summary.json')
+    candidates = ([os.path.join(root, run_id)] + glob.glob(os.path.join(root, '*', run_id))
+                  + glob.glob(os.path.join(root, '*', '*', run_id)))
+    for c in candidates:
+        if os.path.isdir(c) and any(os.path.isfile(os.path.join(c, m)) for m in marks):
+            return c
+    return candidates[0]
+
+
+def run_dir(run_id):
+    """output_figs folder of an RL run (history.csv, summary.json, plots)."""
+    return _find_dir('output_figs', run_id)
+
+
+def harness_dir(run_id):
+    """harness_runs folder of an LLM-harness run (log.csv, memory.jsonl, summary.json, explanation.md)."""
+    return _find_dir('harness_runs', run_id)
 
 
 def solutions_csv(run_id):

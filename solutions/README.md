@@ -32,10 +32,12 @@ lr 3e-4 / 1e-3, γ 0.99), three seeds each: `sw_<config>` (seed 123456), `sw_<co
 Configs: `base`, `noise0.05/0.2/0.3`, `gamma0.5/0.0`, `batch64/256`, `w128/1000`, `lr_slow/lr_fast`.
 Tables and figures: `output_figs/sweep_3seeds/`.
 
-## LLM harness (milestone 4): `milestone4_harness/`
+## LLM harness: `milestone4/`, `milestone4_optional2/`, `development/`
 
 `harness_<date>_<time>.csv`: the feasible designs each harness run simulated (LLM steps, RL warm-up
-and RL training alike). The full trace of a run — every simulated design with its agent, parent,
-changed parameters, rationale and result, the agents' memory notes and the reviewer's explanation —
-is in `harness_runs/<run_id>/` (`log.csv`, `memory.jsonl`, `summary.json`, `explanation.md`).
-The best harness design (FoM 0.730) is candidate 730 of `harness_20261106_232516`.
+and RL training alike), filed like `harness_runs/`:
+`milestone4/` = the five runs of report §4 (best: candidate 730 of `harness_20261106_232516`, FoM 0.730),
+`milestone4_optional2/` = the four cheap-analysis runs of §5.2, `development/` = earlier runs not in the report.
+The full trace of a run — every simulated design with its agent, parent, changed parameters, rationale
+and result, the agents' memory notes and the reviewer's explanation — is in `harness_runs/<group>/<run_id>/`
+(`log.csv`, `memory.jsonl`, `summary.json`, `explanation.md`).

@@ -16,6 +16,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from compare_runs import _find_dir
 
 # categorical slots 1-5 of the dataviz reference palette, fixed order (run i -> slot i)
 COLORS = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4", "#008300"]
@@ -35,7 +36,7 @@ def pareto_front(cur, area):
 
 
 def load(root, run_id, max_sims):
-    df = pd.read_csv(os.path.join(root, "harness_runs", run_id, "log.csv"))
+    df = pd.read_csv(os.path.join(_find_dir(os.path.join(root, "harness_runs"), run_id), "log.csv"))
     df = df[df["sim_call"] <= max_sims].copy()
     specs = df["specs"].map(json.loads)
     df["current_uA"] = specs.map(lambda s: s["current"] * 1e6)

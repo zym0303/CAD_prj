@@ -21,6 +21,7 @@ import numpy as np
 
 from compare_runs import load_history, load_solutions
 from utils.plotting import is_pareto_efficient
+from compare_runs import run_dir
 
 SWEEP_SEEDS = ['', '_s7', '_s42']          # '' = seed 123456 (run_sweep.sh), others run_rl_overnight.sh
 SWEEP = [  # (group, label, run_id without seed suffix)
@@ -39,7 +40,7 @@ FINAL = [  # (label, [run_ids])
 
 
 def run_stats(run_id):
-    with open(os.path.join('output_figs', run_id, 'summary.json')) as f:
+    with open(os.path.join(run_dir(run_id), 'summary.json')) as f:
         s = json.load(f)
     ff = s.get('first_feasible_step_and_sims')
     return {'run_id': run_id, 'seed': s['args']['seed'], 'best': s['best_fom'],
@@ -48,7 +49,7 @@ def run_stats(run_id):
 
 
 def aggregate(label, run_ids, group=''):
-    st = [run_stats(r) for r in run_ids if os.path.isfile(os.path.join('output_figs', r, 'summary.json'))]
+    st = [run_stats(r) for r in run_ids if os.path.isfile(os.path.join(run_dir(r), 'summary.json'))]
     best = np.array([x['best'] for x in st])
     ff = [x['first_feasible_sims'] for x in st]
     ff_ok = [v for v in ff if v is not None]

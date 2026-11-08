@@ -14,6 +14,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from compare_runs import harness_dir
 
 INK, MUTED = "#222222", "#8a8a8a"
 SOURCE_STYLE = {   # source in log.csv -> (label, colour, marker, size)
@@ -31,7 +32,7 @@ def main():
     p.add_argument("--mark", nargs="*", type=int, default=[], help="candidate ids to annotate")
     p.add_argument("--ymin", type=float, default=-1.5)
     a = p.parse_args()
-    df = pd.read_csv(os.path.join("harness_runs", a.run, "log.csv"))
+    df = pd.read_csv(os.path.join(harness_dir(a.run), "log.csv"))
     x, y = df["sim_call"].to_numpy(), df["reward"].to_numpy()
     run_max = np.maximum.accumulate(y)
 

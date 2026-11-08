@@ -28,6 +28,7 @@ import pandas as pd
 
 from compare_runs import load_solutions
 from utils.plotting import is_pareto_efficient
+from compare_runs import harness_dir, run_dir
 
 INK, MUTED = "#222222", "#8a8a8a"
 HARNESS_COLOR = "#2a78d6"
@@ -36,19 +37,19 @@ THRESHOLDS = [0.3, 0.5, 0.6, 0.65]
 
 
 def load_harness(run_id):
-    df = pd.read_csv(os.path.join("harness_runs", run_id, "log.csv"))
+    df = pd.read_csv(os.path.join(harness_dir(run_id), "log.csv"))
     return df["elapsed_s"].to_numpy(), df["sim_call"].to_numpy(), df["reward"].cummax().to_numpy()
 
 
 def load_rl(run_id):
-    df = pd.read_csv(os.path.join("output_figs", run_id, "history.csv"))
+    df = pd.read_csv(os.path.join(run_dir(run_id), "history.csv"))
     return df["wall_time_s"].to_numpy(), df["n_simulations"].to_numpy(), df["reward"].cummax().to_numpy()
 
 
 def harness_feasible(run_ids):
     pts = []
     for rid in run_ids:
-        df = pd.read_csv(os.path.join("harness_runs", rid, "log.csv"))
+        df = pd.read_csv(os.path.join(harness_dir(rid), "log.csv"))
         for spec in df.loc[df["feasible"] == 1, "specs"]:
             d = json.loads(spec)
             pts.append([d["current"] * 1e6, d["area"] * 1e12])

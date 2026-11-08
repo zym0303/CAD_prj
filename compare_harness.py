@@ -16,10 +16,11 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from compare_runs import harness_dir, run_dir
 
 
 def load_harness(run_id):
-    df = pd.read_csv(os.path.join("harness_runs", run_id, "log.csv"))
+    df = pd.read_csv(os.path.join(harness_dir(run_id), "log.csv"))
     return pd.DataFrame({"time": df["elapsed_s"], "sims": df["sim_call"],
                          "fom": df["reward"].cummax(), "source": df["source"]})
 
@@ -27,14 +28,14 @@ def load_harness(run_id):
 def quick_runs(run_id):
     """Cheap quick_analysis ngspice runs of a harness run (0 for runs before that tool)."""
     try:
-        with open(os.path.join("harness_runs", run_id, "summary.json")) as f:
+        with open(os.path.join(harness_dir(run_id), "summary.json")) as f:
             return int(json.load(f).get("quick_runs", 0))
     except (OSError, ValueError):
         return 0
 
 
 def load_rl(run_id):
-    df = pd.read_csv(os.path.join("output_figs", run_id, "history.csv"))
+    df = pd.read_csv(os.path.join(run_dir(run_id), "history.csv"))
     return pd.DataFrame({"time": df["wall_time_s"], "sims": df["n_simulations"],
                          "fom": df["reward"].cummax()})
 
@@ -80,7 +81,7 @@ def main():
     fig2, ax = plt.subplots(figsize=(6, 4.5))
     sets = {}
     for h in a.harness:
-        log = pd.read_csv(os.path.join("harness_runs", h, "log.csv"))
+        log = pd.read_csv(os.path.join(harness_dir(h), "log.csv"))
         feas = log[log["feasible"] == 1]["specs"].map(json.loads)
         sets[f"LLM harness ({h})"] = [(s["current"] * 1e6, s["area"] * 1e12) for s in feas]
     try:

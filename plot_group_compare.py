@@ -16,13 +16,14 @@ import numpy as np
 import pandas as pd
 
 from plot_harness_runs import INK, MUTED, pareto_front
+from compare_runs import harness_dir
 
 COLORS = ["#2a78d6", "#eb6834"]      # categorical slots 1-2 of the dataviz reference palette
 MARKERS = ["o", "s"]
 
 
 def load(run_id, max_sims):
-    df = pd.read_csv(os.path.join("harness_runs", run_id, "log.csv"))
+    df = pd.read_csv(os.path.join(harness_dir(run_id), "log.csv"))
     df = df[df["sim_call"] <= max_sims].copy()
     specs = df["specs"].map(json.loads)
     df["current_uA"] = specs.map(lambda s: s["current"] * 1e6)

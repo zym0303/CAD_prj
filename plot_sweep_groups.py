@@ -28,6 +28,7 @@ import numpy as np
 
 from compare_runs import load_history, load_solutions
 from utils.plotting import is_pareto_efficient
+from compare_runs import load_history, load_solutions, run_dir
 
 SWEEP_SEEDS = ["", "_s7", "_s42"]                    # seed 123456 (no suffix), 7, 42
 DEFAULT = ("default (σ 0.1, batch 128, w 300, lr 3e-4/1e-3, γ 0.99)", "sw_base")
@@ -54,17 +55,17 @@ def seed_curves(run_ids, max_sims):
     grid = np.arange(2, max_sims + 1)
     run_max, score, stats = [], [], []
     for rid in run_ids:
-        if not os.path.isfile(os.path.join("output_figs", rid, "history.csv")):
+        if not os.path.isfile(os.path.join(run_dir(rid), "history.csv")):
             continue
         x, y, feas, _ = load_history(rid)
         keep = x <= max_sims
         x, y, feas = x[keep], y[keep], feas[keep]
-        with open(os.path.join("output_figs", rid, "history.csv")) as f:
+        with open(os.path.join(run_dir(rid), "history.csv")) as f:
             closs = [float(r["critic_loss"]) for r in csv.DictReader(f) if r["critic_loss"]]
         run_max.append(np.interp(grid, x, np.maximum.accumulate(y), left=np.nan))
         ma = np.convolve(y, np.ones(WINDOW) / WINDOW, mode="valid")
         score.append(np.interp(grid, x[WINDOW - 1:], ma, left=np.nan))
-        with open(os.path.join("output_figs", rid, "summary.json")) as f:
+        with open(os.path.join(run_dir(rid), "summary.json")) as f:
             summary = json.load(f)
         first = int(x[np.argmax(feas == 1)]) if feas.any() else None
         stats.append({"run": rid, "seed": summary["args"]["seed"], "best": float(y.max()),
