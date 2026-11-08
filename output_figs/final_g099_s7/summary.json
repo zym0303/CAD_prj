@@ -1,0 +1,31 @@
+{
+  "args": {
+    "seed": 7,
+    "noise_sigma": 0.1,
+    "batch_size": 128,
+    "w": 128,
+    "pi_lr": 0.0003,
+    "q_lr": 0.001,
+    "gamma": 0.99,
+    "tau": 0.005,
+    "target_update_interval": 1,
+    "actor_update_interval": 2,
+    "hidden_size": 256,
+    "T": 10000,
+    "max_sims": 5000,
+    "replay_size": 1000000,
+    "cuda": false,
+    "pvt_robust": false,
+    "run_id": "final_g099_s7"
+  },
+  "env_steps": 4545,
+  "n_simulations": 5000,
+  "n_failed_sims": 6,
+  "n_corner_sims": 5000,
+  "best_fom": 0.4836652701419665,
+  "first_feasible_step_and_sims": [
+    668,
+    736
+  ],
+  "runtime_s": 4151.8
+}

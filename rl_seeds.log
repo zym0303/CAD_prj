@@ -1,0 +1,7 @@
+=== RL seeds started 16:05:12 on abl-analyst-bare @ 9f6a090
+    TD3 seed 7 -> output_figs/final_g099_s7 (pid 986798)
+    TD3 seed 42 -> output_figs/final_g099_s42 (pid 986799)
+    SAC seed 7 -> output_figs/sac_baseline_s7 (pid 986800)
+=== RL seeds done 17:14:29
+    output_figs/final_g099_s42: best FoM 0.5036, first feasible at sims [900, 992], runtime 4154 s
+    output_figs/final_g099_s7: best FoM 0.4837, first feasible at sims [668, 736], runtime 4152 s

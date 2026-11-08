@@ -1,0 +1,31 @@
+{
+  "args": {
+    "seed": 42,
+    "noise_sigma": 0.1,
+    "batch_size": 128,
+    "w": 1000,
+    "pi_lr": 0.0003,
+    "q_lr": 0.001,
+    "gamma": 0.99,
+    "tau": 0.005,
+    "target_update_interval": 1,
+    "actor_update_interval": 2,
+    "hidden_size": 256,
+    "T": 10000,
+    "max_sims": 2000,
+    "replay_size": 1000000,
+    "cuda": false,
+    "pvt_robust": false,
+    "run_id": "sw_w1000_s42"
+  },
+  "env_steps": 1818,
+  "n_simulations": 2000,
+  "n_failed_sims": 13,
+  "n_corner_sims": 2000,
+  "best_fom": 0.37404678556754595,
+  "first_feasible_step_and_sims": [
+    1257,
+    1384
+  ],
+  "runtime_s": 1726.3
+}

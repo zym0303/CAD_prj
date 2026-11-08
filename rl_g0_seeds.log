@@ -1,0 +1,13 @@
+=== RL seeds started 08:55:46 on abl-analyst-bare @ 9f6a090
+    TD3 seed 7 -> output_figs/final_g0_s7 (pid 1683594)
+    TD3 seed 42 -> output_figs/final_g0_s42 (pid 1683596)
+    TD3 seed 1 -> output_figs/final_g0_s1 (pid 1683598)
+    TD3 seed 2 -> output_figs/final_g0_s2 (pid 1683600)
+    SAC seed 7 -> output_figs/sac_baseline_s7 (pid 1683601)
+=== RL seeds done 09:53:48
+    output_figs/final_g0_s1: best FoM 0.6712, first feasible at sims [233, 258], runtime 3477 s
+    output_figs/final_g0_s2: best FoM 0.6459, first feasible at sims [445, 491], runtime 3480 s
+    output_figs/final_g0_s42: best FoM 0.5903, first feasible at sims [861, 949], runtime 3476 s
+    output_figs/final_g0_s7: best FoM 0.6637, first feasible at sims [624, 688], runtime 3475 s
+    output_figs/sac_baseline_s42: best FoM 0.6735, first feasible at sims [251, 278], runtime 5496 s
+    output_figs/sac_baseline_s7: best FoM 0.6972, first feasible at sims [432, 477], runtime 5508 s

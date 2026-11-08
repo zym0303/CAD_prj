@@ -1,0 +1,218 @@
+
+ Initialized TwoStage with simulator ngspice 
+
+[warmup] step     0 | sims     2 | FoM -2.0452 | best -2.0452 | failed sims 0
+[warmup] step    50 | sims    57 | FoM -2.8896 | best -0.8390 | failed sims 0
+rm: cannot remove 'no_backup/output_files': Directory not empty
+mkdir: cannot create directory ‘no_backup/output_files’: File exists
+[warmup] step   100 | sims   112 | FoM -3.9803 | best -0.2280 | failed sims 0
+[td3] step   150 | sims   167 | FoM -2.6635 | best -0.2280 | failed sims 0
+/home/zyumeng016/CAD_prj/no_backup/output_files/tran_TwoStage_1794087588_hecbqjyxmw.csv doesn't exist
+/home/zyumeng016/CAD_prj/no_backup/output_files/ac_TwoStage_1794087588_hecbqjyxmw.csv doesn't exist
+[simulate] {'process': 'TT', 'voltage': 1.2, 'temp': 27} failed (FileNotFoundError: /home/zyumeng016/CAD_prj/no_backup/output_files/tran_TwoStage_1794087588_hecbqjyxmw.csv not found.) -> worst-case specs (failed so far: 1)
+[td3] step   200 | sims   222 | FoM -0.9885 | best -0.2280 | failed sims 1
+[td3] step   250 | sims   277 | FoM -0.5902 | best -0.2280 | failed sims 1
+[td3] step   300 | sims   332 | FoM -1.0872 | best -0.1813 | failed sims 1
+[td3] step   350 | sims   387 | FoM -0.5246 | best -0.0983 | failed sims 1
+[td3] step   400 | sims   442 | FoM -0.5183 | best -0.0475 | failed sims 1
+[td3] step   450 | sims   497 | FoM -0.5901 | best -0.0475 | failed sims 1
+[td3] step   500 | sims   552 | FoM -0.6377 | best -0.0475 | failed sims 1
+[simulate] {'process': 'TT', 'voltage': 1.2, 'temp': 27} failed (FileNotFoundError: /home/zyumeng016/CAD_prj/no_backup/output_files/ac_TwoStage_1794087950_shxlyukjfj.csv not found.) -> worst-case specs (failed so far: 2)
+[td3] step   550 | sims   607 | FoM -0.9361 | best -0.0443 | failed sims 2
+[td3] step   600 | sims   662 | FoM -1.4862 | best -0.0353 | failed sims 2
+[simulate] {'process': 'TT', 'voltage': 1.2, 'temp': 27} failed (FileNotFoundError: /home/zyumeng016/CAD_prj/no_backup/output_files/ac_TwoStage_1794088048_btrelcptdc.csv not found.) -> worst-case specs (failed so far: 3)
+[simulate] {'process': 'TT', 'voltage': 1.2, 'temp': 27} failed (FileNotFoundError: /home/zyumeng016/CAD_prj/no_backup/output_files/ac_TwoStage_1794088049_ucxlcbeofg.csv not found.) -> worst-case specs (failed so far: 4)
+/home/zyumeng016/CAD_prj/no_backup/output_files/tran_TwoStage_1794088051_oolgtszfic.csv doesn't exist
+/home/zyumeng016/CAD_prj/no_backup/output_files/ac_TwoStage_1794088051_oolgtszfic.csv doesn't exist
+/home/zyumeng016/CAD_prj/no_backup/output_files/dc_TwoStage_1794088051_oolgtszfic.csv doesn't exist
+/home/zyumeng016/CAD_prj/no_backup/output_files/noise_TwoStage_1794088051_oolgtszfic.csv doesn't exist
+[simulate] {'process': 'TT', 'voltage': 1.2, 'temp': 27} failed (FileNotFoundError: /home/zyumeng016/CAD_prj/no_backup/output_files/tran_TwoStage_1794088051_oolgtszfic.csv not found.) -> worst-case specs (failed so far: 5)
+[td3] step   650 | sims   717 | FoM -0.5988 | best -0.0353 | failed sims 5
+[simulate] {'process': 'TT', 'voltage': 1.2, 'temp': 27} failed (FileNotFoundError: /home/zyumeng016/CAD_prj/no_backup/output_files/ac_TwoStage_1794088161_bzrsptqoow.csv not found.) -> worst-case specs (failed so far: 6)
+[td3] step   700 | sims   772 | FoM -1.3138 | best -0.0353 | failed sims 6
+[simulate] {'process': 'TT', 'voltage': 1.2, 'temp': 27} failed (FileNotFoundError: /home/zyumeng016/CAD_prj/no_backup/output_files/ac_TwoStage_1794088166_czfyuxnamx.csv not found.) -> worst-case specs (failed so far: 7)
+[td3] step   750 | sims   827 | FoM -1.2304 | best -0.0353 | failed sims 7
+[td3] step   800 | sims   882 | FoM -0.1604 | best -0.0353 | failed sims 7
+[td3] step   850 | sims   937 | FoM -1.2067 | best -0.0353 | failed sims 7
+rm: cannot remove 'no_backup/output_files': Directory not empty
+mkdir: cannot create directory ‘no_backup/output_files’: File exists
+[td3] step   900 | sims   992 | FoM -1.5875 | best -0.0353 | failed sims 7
+/home/zyumeng016/CAD_prj/no_backup/output_files/tran_TwoStage_1794088403_mbuqbkcbam.csv doesn't exist
+/home/zyumeng016/CAD_prj/no_backup/output_files/ac_TwoStage_1794088403_mbuqbkcbam.csv doesn't exist
+[simulate] {'process': 'TT', 'voltage': 1.2, 'temp': 27} failed (FileNotFoundError: /home/zyumeng016/CAD_prj/no_backup/output_files/tran_TwoStage_1794088403_mbuqbkcbam.csv not found.) -> worst-case specs (failed so far: 8)
+[td3] step   950 | sims  1047 | FoM -1.5925 | best -0.0353 | failed sims 8
+[td3] step  1000 | sims  1102 | FoM -1.4044 | best -0.0353 | failed sims 8
+/home/zyumeng016/CAD_prj/no_backup/output_files/tran_TwoStage_1794088520_eqjqvtcpfo.csv doesn't exist
+[simulate] {'process': 'TT', 'voltage': 1.2, 'temp': 27} failed (FileNotFoundError: /home/zyumeng016/CAD_prj/no_backup/output_files/tran_TwoStage_1794088520_eqjqvtcpfo.csv not found.) -> worst-case specs (failed so far: 9)
+[simulate] {'process': 'TT', 'voltage': 1.2, 'temp': 27} failed (FileNotFoundError: /home/zyumeng016/CAD_prj/no_backup/output_files/ac_TwoStage_1794088525_ikghbikhck.csv not found.) -> worst-case specs (failed so far: 10)
+[td3] step  1050 | sims  1157 | FoM -0.8288 | best -0.0353 | failed sims 10
+rm: cannot remove 'no_backup/output_files': Directory not empty
+mkdir: cannot create directory ‘no_backup/output_files’: File exists
+[td3] step  1100 | sims  1212 | FoM -0.2252 | best -0.0291 | failed sims 10
+[td3] step  1150 | sims  1267 | FoM -0.2104 | best -0.0291 | failed sims 10
+[td3] step  1200 | sims  1322 | FoM -0.1658 | best -0.0291 | failed sims 10
+[td3] step  1250 | sims  1377 | FoM -0.1205 | best -0.0280 | failed sims 10
+[td3] step  1300 | sims  1432 | FoM -0.3893 | best -0.0280 | failed sims 10
+[td3] step  1350 | sims  1487 | FoM -0.1952 | best -0.0280 | failed sims 10
+[td3] step  1400 | sims  1542 | FoM -0.2807 | best +0.2199 | failed sims 10
+[td3] step  1450 | sims  1597 | FoM -0.3654 | best +0.2199 | failed sims 10
+[td3] step  1500 | sims  1652 | FoM -1.8247 | best +0.2199 | failed sims 10
+[td3] step  1550 | sims  1707 | FoM -0.1790 | best +0.2199 | failed sims 10
+[td3] step  1600 | sims  1762 | FoM -0.6224 | best +0.2199 | failed sims 10
+/home/zyumeng016/CAD_prj/no_backup/output_files/tran_TwoStage_1794089238_xfxxtdhwaa.csv doesn't exist
+[simulate] {'process': 'TT', 'voltage': 1.2, 'temp': 27} failed (FileNotFoundError: /home/zyumeng016/CAD_prj/no_backup/output_files/tran_TwoStage_1794089238_xfxxtdhwaa.csv not found.) -> worst-case specs (failed so far: 11)
+[td3] step  1650 | sims  1817 | FoM -0.3208 | best +0.2199 | failed sims 11
+rm: cannot remove 'no_backup/output_files': Directory not empty
+mkdir: cannot create directory ‘no_backup/output_files’: File exists
+/home/zyumeng016/CAD_prj/no_backup/output_files/tran_TwoStage_1794089351_nacbbommhg.csv doesn't exist
+/home/zyumeng016/CAD_prj/no_backup/output_files/ac_TwoStage_1794089351_nacbbommhg.csv doesn't exist
+/home/zyumeng016/CAD_prj/no_backup/output_files/dc_TwoStage_1794089351_nacbbommhg.csv doesn't exist
+/home/zyumeng016/CAD_prj/no_backup/output_files/noise_TwoStage_1794089351_nacbbommhg.csv doesn't exist
+[simulate] {'process': 'TT', 'voltage': 1.2, 'temp': 27} failed (FileNotFoundError: /home/zyumeng016/CAD_prj/no_backup/output_files/tran_TwoStage_1794089351_nacbbommhg.csv not found.) -> worst-case specs (failed so far: 12)
+[td3] step  1700 | sims  1872 | FoM -5.0415 | best +0.2199 | failed sims 12
+[td3] step  1750 | sims  1927 | FoM -0.0471 | best +0.2199 | failed sims 12
+[td3] step  1800 | sims  1982 | FoM -0.1882 | best +0.2199 | failed sims 12
+[td3] step  1850 | sims  2037 | FoM -0.2719 | best +0.2199 | failed sims 12
+rm: cannot remove 'no_backup/output_files': Directory not empty
+mkdir: cannot create directory ‘no_backup/output_files’: File exists
+[td3] step  1900 | sims  2092 | FoM -0.3656 | best +0.2199 | failed sims 12
+[td3] step  1950 | sims  2147 | FoM -0.4543 | best +0.2199 | failed sims 12
+[td3] step  2000 | sims  2202 | FoM -1.8769 | best +0.2199 | failed sims 12
+/home/zyumeng016/CAD_prj/no_backup/output_files/tran_TwoStage_1794089714_oarfaqdwtz.csv doesn't exist
+[simulate] {'process': 'TT', 'voltage': 1.2, 'temp': 27} failed (FileNotFoundError: /home/zyumeng016/CAD_prj/no_backup/output_files/tran_TwoStage_1794089714_oarfaqdwtz.csv not found.) -> worst-case specs (failed so far: 13)
+[td3] step  2050 | sims  2257 | FoM -0.9984 | best +0.2199 | failed sims 13
+[td3] step  2100 | sims  2312 | FoM -0.7724 | best +0.2199 | failed sims 13
+[td3] step  2150 | sims  2367 | FoM -0.1231 | best +0.2199 | failed sims 13
+rm: cannot remove 'no_backup/output_files': Directory not empty
+mkdir: cannot create directory ‘no_backup/output_files’: File exists
+[td3] step  2200 | sims  2422 | FoM -0.1811 | best +0.2199 | failed sims 13
+[td3] step  2250 | sims  2477 | FoM -0.2020 | best +0.2199 | failed sims 13
+[td3] step  2300 | sims  2532 | FoM -0.4913 | best +0.2199 | failed sims 13
+[td3] step  2350 | sims  2587 | FoM -0.5812 | best +0.2199 | failed sims 13
+rm: cannot remove 'no_backup/output_files': Directory not empty
+mkdir: cannot create directory ‘no_backup/output_files’: File exists
+[td3] step  2400 | sims  2642 | FoM -0.3756 | best +0.2199 | failed sims 13
+[td3] step  2450 | sims  2697 | FoM -0.8694 | best +0.2199 | failed sims 13
+[td3] step  2500 | sims  2752 | FoM -0.5295 | best +0.2199 | failed sims 13
+/home/zyumeng016/CAD_prj/no_backup/output_files/tran_TwoStage_1794090324_dnrpngoizw.csv doesn't exist
+/home/zyumeng016/CAD_prj/no_backup/output_files/ac_TwoStage_1794090324_dnrpngoizw.csv doesn't exist
+/home/zyumeng016/CAD_prj/no_backup/output_files/dc_TwoStage_1794090324_dnrpngoizw.csv doesn't exist
+/home/zyumeng016/CAD_prj/no_backup/output_files/noise_TwoStage_1794090324_dnrpngoizw.csv doesn't exist
+[simulate] {'process': 'TT', 'voltage': 1.2, 'temp': 27} failed (FileNotFoundError: /home/zyumeng016/CAD_prj/no_backup/output_files/tran_TwoStage_1794090324_dnrpngoizw.csv not found.) -> worst-case specs (failed so far: 14)
+[td3] step  2550 | sims  2807 | FoM -0.5788 | best +0.2199 | failed sims 14
+[td3] step  2600 | sims  2862 | FoM -0.4346 | best +0.2199 | failed sims 14
+[simulate] {'process': 'TT', 'voltage': 1.2, 'temp': 27} failed (FileNotFoundError: /home/zyumeng016/CAD_prj/no_backup/output_files/ac_TwoStage_1794090446_otppyjrumy.csv not found.) -> worst-case specs (failed so far: 15)
+[td3] step  2650 | sims  2917 | FoM -0.8030 | best +0.2199 | failed sims 15
+[td3] step  2700 | sims  2972 | FoM -1.2439 | best +0.2199 | failed sims 15
+[td3] step  2750 | sims  3027 | FoM -0.6108 | best +0.2199 | failed sims 15
+rm: cannot remove 'no_backup/output_files': Directory not empty
+mkdir: cannot create directory ‘no_backup/output_files’: File exists
+[td3] step  2800 | sims  3082 | FoM -1.0667 | best +0.2199 | failed sims 15
+/home/zyumeng016/CAD_prj/no_backup/output_files/tran_TwoStage_1794090670_gewvsfqqjv.csv doesn't exist
+/home/zyumeng016/CAD_prj/no_backup/output_files/ac_TwoStage_1794090670_gewvsfqqjv.csv doesn't exist
+/home/zyumeng016/CAD_prj/no_backup/output_files/dc_TwoStage_1794090670_gewvsfqqjv.csv doesn't exist
+/home/zyumeng016/CAD_prj/no_backup/output_files/noise_TwoStage_1794090670_gewvsfqqjv.csv doesn't exist
+[simulate] {'process': 'TT', 'voltage': 1.2, 'temp': 27} failed (FileNotFoundError: /home/zyumeng016/CAD_prj/no_backup/output_files/tran_TwoStage_1794090670_gewvsfqqjv.csv not found.) -> worst-case specs (failed so far: 16)
+[td3] step  2850 | sims  3137 | FoM -1.2725 | best +0.2199 | failed sims 16
+rm: cannot remove 'no_backup/output_files': Directory not empty
+mkdir: cannot create directory ‘no_backup/output_files’: File exists
+[td3] step  2900 | sims  3192 | FoM -0.5733 | best +0.2199 | failed sims 16
+[td3] step  2950 | sims  3247 | FoM -1.0521 | best +0.2199 | failed sims 16
+rm: cannot remove 'no_backup/output_files': Directory not empty
+mkdir: cannot create directory ‘no_backup/output_files’: File exists
+mkdir: cannot create directory ‘no_backup/output_netlists’: File exists
+[td3] step  3000 | sims  3302 | FoM -2.2083 | best +0.2199 | failed sims 16
+[simulate] {'process': 'TT', 'voltage': 1.2, 'temp': 27} failed (FileNotFoundError: /home/zyumeng016/CAD_prj/no_backup/output_files/ac_TwoStage_1794090902_qrvstwfwbp.csv not found.) -> worst-case specs (failed so far: 17)
+[td3] step  3050 | sims  3357 | FoM -1.9333 | best +0.2199 | failed sims 17
+[td3] step  3100 | sims  3412 | FoM -0.0803 | best +0.2199 | failed sims 17
+[simulate] {'process': 'TT', 'voltage': 1.2, 'temp': 27} failed (FileNotFoundError: /home/zyumeng016/CAD_prj/no_backup/output_files/ac_TwoStage_1794091029_whjzcogocl.csv not found.) -> worst-case specs (failed so far: 18)
+[td3] step  3150 | sims  3467 | FoM -0.3981 | best +0.2199 | failed sims 18
+[td3] step  3200 | sims  3522 | FoM -0.8026 | best +0.2199 | failed sims 18
+[td3] step  3250 | sims  3577 | FoM -0.3533 | best +0.2199 | failed sims 18
+[simulate] {'process': 'TT', 'voltage': 1.2, 'temp': 27} failed (FileNotFoundError: /home/zyumeng016/CAD_prj/no_backup/output_files/ac_TwoStage_1794091215_jbyiyllodn.csv not found.) -> worst-case specs (failed so far: 19)
+[td3] step  3300 | sims  3632 | FoM -0.7466 | best +0.2199 | failed sims 19
+[td3] step  3350 | sims  3687 | FoM -0.2556 | best +0.2199 | failed sims 19
+[td3] step  3400 | sims  3742 | FoM -1.0594 | best +0.2199 | failed sims 19
+[td3] step  3450 | sims  3797 | FoM -0.4668 | best +0.2199 | failed sims 19
+[td3] step  3500 | sims  3852 | FoM -0.3052 | best +0.2199 | failed sims 19
+[simulate] {'process': 'TT', 'voltage': 1.2, 'temp': 27} failed (FileNotFoundError: /home/zyumeng016/CAD_prj/no_backup/output_files/ac_TwoStage_1794091504_oxsqxhtedc.csv not found.) -> worst-case specs (failed so far: 20)
+[td3] step  3550 | sims  3907 | FoM -0.5667 | best +0.2199 | failed sims 20
+rm: cannot remove 'no_backup/output_netlists': Directory not empty
+mkdir: cannot create directory ‘no_backup/output_netlists’: File exists
+[td3] step  3600 | sims  3962 | FoM -0.6659 | best +0.2199 | failed sims 20
+/home/zyumeng016/CAD_prj/no_backup/output_files/tran_TwoStage_1794091631_oavgacaqtd.csv doesn't exist
+/home/zyumeng016/CAD_prj/no_backup/output_files/ac_TwoStage_1794091631_oavgacaqtd.csv doesn't exist
+/home/zyumeng016/CAD_prj/no_backup/output_files/dc_TwoStage_1794091631_oavgacaqtd.csv doesn't exist
+/home/zyumeng016/CAD_prj/no_backup/output_files/noise_TwoStage_1794091631_oavgacaqtd.csv doesn't exist
+[simulate] {'process': 'TT', 'voltage': 1.2, 'temp': 27} failed (FileNotFoundError: /home/zyumeng016/CAD_prj/no_backup/output_files/tran_TwoStage_1794091631_oavgacaqtd.csv not found.) -> worst-case specs (failed so far: 21)
+[td3] step  3650 | sims  4017 | FoM -1.3913 | best +0.2199 | failed sims 21
+/home/zyumeng016/CAD_prj/no_backup/output_files/tran_TwoStage_1794091718_higsimrqno.csv doesn't exist
+/home/zyumeng016/CAD_prj/no_backup/output_files/ac_TwoStage_1794091718_higsimrqno.csv doesn't exist
+[simulate] {'process': 'TT', 'voltage': 1.2, 'temp': 27} failed (FileNotFoundError: /home/zyumeng016/CAD_prj/no_backup/output_files/tran_TwoStage_1794091718_higsimrqno.csv not found.) -> worst-case specs (failed so far: 22)
+[td3] step  3700 | sims  4072 | FoM -0.4286 | best +0.2199 | failed sims 22
+/home/zyumeng016/CAD_prj/no_backup/output_files/tran_TwoStage_1794091769_bckpdcypxu.csv doesn't exist
+[simulate] {'process': 'TT', 'voltage': 1.2, 'temp': 27} failed (FileNotFoundError: /home/zyumeng016/CAD_prj/no_backup/output_files/tran_TwoStage_1794091769_bckpdcypxu.csv not found.) -> worst-case specs (failed so far: 23)
+[td3] step  3750 | sims  4127 | FoM -1.5769 | best +0.2199 | failed sims 23
+[td3] step  3800 | sims  4182 | FoM -2.1556 | best +0.2199 | failed sims 23
+[td3] step  3850 | sims  4237 | FoM -2.9727 | best +0.2199 | failed sims 23
+/home/zyumeng016/CAD_prj/no_backup/output_files/ac_TwoStage_1794091910_xtngglclmo.csv doesn't exist
+/home/zyumeng016/CAD_prj/no_backup/output_files/dc_TwoStage_1794091910_xtngglclmo.csv doesn't exist
+/home/zyumeng016/CAD_prj/no_backup/output_files/noise_TwoStage_1794091910_xtngglclmo.csv doesn't exist
+[simulate] {'process': 'TT', 'voltage': 1.2, 'temp': 27} failed (FileNotFoundError: /home/zyumeng016/CAD_prj/no_backup/output_files/ac_TwoStage_1794091910_xtngglclmo.csv not found.) -> worst-case specs (failed so far: 24)
+[simulate] {'process': 'TT', 'voltage': 1.2, 'temp': 27} failed (FileNotFoundError: /home/zyumeng016/CAD_prj/no_backup/output_files/ac_TwoStage_1794091952_zlhezgoyxb.csv not found.) -> worst-case specs (failed so far: 25)
+[td3] step  3900 | sims  4292 | FoM -1.9335 | best +0.2199 | failed sims 25
+[td3] step  3950 | sims  4347 | FoM -1.0846 | best +0.2199 | failed sims 25
+[td3] step  4000 | sims  4402 | FoM -3.0091 | best +0.2199 | failed sims 25
+[td3] step  4050 | sims  4457 | FoM -0.1641 | best +0.2199 | failed sims 25
+[td3] step  4100 | sims  4512 | FoM -2.9847 | best +0.2199 | failed sims 25
+/home/zyumeng016/CAD_prj/no_backup/output_files/dc_TwoStage_1794092258_mmnttezdxh.csv doesn't exist
+/home/zyumeng016/CAD_prj/no_backup/output_files/noise_TwoStage_1794092258_mmnttezdxh.csv doesn't exist
+[simulate] {'process': 'TT', 'voltage': 1.2, 'temp': 27} failed (FileNotFoundError: /home/zyumeng016/CAD_prj/no_backup/output_files/ac_TwoStage_1794092258_mmnttezdxh.csv not found.) -> worst-case specs (failed so far: 26)
+[td3] step  4150 | sims  4567 | FoM -1.8619 | best +0.2199 | failed sims 26
+[td3] step  4200 | sims  4622 | FoM -1.4361 | best +0.2199 | failed sims 26
+[td3] step  4250 | sims  4677 | FoM -1.9395 | best +0.2199 | failed sims 26
+rm: cannot remove 'no_backup/output_files': Directory not empty
+mkdir: cannot create directory ‘no_backup/output_files’: File exists
+[td3] step  4300 | sims  4732 | FoM -0.3476 | best +0.2199 | failed sims 26
+[td3] step  4350 | sims  4787 | FoM -1.9931 | best +0.2199 | failed sims 26
+/home/zyumeng016/CAD_prj/no_backup/output_files/ac_TwoStage_1794092543_ckquyisorr.csv doesn't exist
+[simulate] {'process': 'TT', 'voltage': 1.2, 'temp': 27} failed (FileNotFoundError: /home/zyumeng016/CAD_prj/no_backup/output_files/ac_TwoStage_1794092543_ckquyisorr.csv not found.) -> worst-case specs (failed so far: 27)
+rm: cannot remove 'no_backup/output_files': Directory not empty
+mkdir: cannot create directory ‘no_backup/output_files’: File exists
+[td3] step  4400 | sims  4842 | FoM -1.9804 | best +0.2199 | failed sims 27
+/home/zyumeng016/CAD_prj/no_backup/output_files/tran_TwoStage_1794092567_qknyrxtxvm.csv doesn't exist
+[simulate] {'process': 'TT', 'voltage': 1.2, 'temp': 27} failed (FileNotFoundError: /home/zyumeng016/CAD_prj/no_backup/output_files/tran_TwoStage_1794092567_qknyrxtxvm.csv not found.) -> worst-case specs (failed so far: 28)
+[td3] step  4450 | sims  4897 | FoM -0.1557 | best +0.2199 | failed sims 28
+[td3] step  4500 | sims  4952 | FoM -1.0622 | best +0.2199 | failed sims 28
+177 feasible designs, 4 on the Pareto front -> solutions/final_g099_s2/
+{
+  "args": {
+    "seed": 2,
+    "noise_sigma": 0.1,
+    "batch_size": 128,
+    "w": 128,
+    "pi_lr": 0.0003,
+    "q_lr": 0.001,
+    "gamma": 0.99,
+    "tau": 0.005,
+    "target_update_interval": 1,
+    "actor_update_interval": 2,
+    "hidden_size": 256,
+    "T": 10000,
+    "max_sims": 5000,
+    "replay_size": 1000000,
+    "cuda": false,
+    "pvt_robust": false,
+    "run_id": "final_g099_s2"
+  },
+  "env_steps": 4545,
+  "n_simulations": 5000,
+  "n_failed_sims": 28,
+  "n_corner_sims": 5000,
+  "best_fom": 0.21988986065568317,
+  "first_feasible_step_and_sims": [
+    351,
+    388
+  ],
+  "runtime_s": 5377.2
+}

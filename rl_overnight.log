@@ -1,0 +1,58 @@
+=== started 22:35:52 on abl-analyst-bare @ 9f6a090, 8 parallel
+    start final_g099_s1  (22:35:52, load 28.48)
+    start final_g099_s2  (22:35:52, load 28.48)
+    start sac_baseline_s7  (22:35:52, load 28.48)
+    start sac_baseline_s42  (22:35:52, load 28.48)
+    start sw_base_s7  (22:35:52, load 28.48)
+    start sw_noise0.05_s7  (22:35:52, load 28.48)
+    start sw_noise0.2_s7  (22:35:52, load 28.48)
+    start sw_noise0.3_s7  (22:35:52, load 28.48)
+    done sw_noise0.2_s7: best FoM 0.5702, first feasible [619, 682], 13 failed sims, 2131 s
+    start sw_gamma0.5_s7  (23:11:23, load 15.83)
+    done sw_noise0.3_s7: best FoM 0.4579, first feasible [635, 700], 11 failed sims, 2134 s
+    start sw_gamma0.0_s7  (23:11:26, load 15.84)
+    done sw_base_s7: best FoM 0.4003, first feasible [1338, 1473], 13 failed sims, 2141 s
+    start sw_batch64_s7  (23:11:33, load 15.77)
+    done sw_noise0.05_s7: best FoM 0.4854, first feasible [1060, 1168], 17 failed sims, 2150 s
+    start sw_batch256_s7  (23:11:42, load 15.82)
+    done sw_gamma0.5_s7: best FoM 0.2689, first feasible [675, 744], 10 failed sims, 2148 s
+    start sw_w128_s7  (23:47:11, load 15.38)
+    done sw_gamma0.0_s7: best FoM 0.5983, first feasible [1109, 1221], 12 failed sims, 2160 s
+    start sw_w1000_s7  (23:47:26, load 14.86)
+    done sw_batch64_s7: best FoM -0.0313, first feasible None, 10 failed sims, 2161 s
+    start sw_lr_slow_s7  (23:47:34, load 14.79)
+    done sw_batch256_s7: best FoM 0.4101, first feasible [1138, 1253], 9 failed sims, 2171 s
+    start sw_lr_fast_s7  (23:47:53, load 14.56)
+    done final_g099_s1: best FoM 0.5992, first feasible [223, 247], 28 failed sims, 5362 s
+    start sw_base_s42  (00:05:14, load 15.74)
+    done final_g099_s2: best FoM 0.2199, first feasible [351, 388], 28 failed sims, 5380 s
+    start sw_noise0.05_s42  (00:05:32, load 15.85)
+    done sac_baseline_s42: best FoM 0.6735, first feasible [251, 278], 42 failed sims, 5498 s
+    start sw_noise0.2_s42  (00:07:30, load 15.89)
+    done sac_baseline_s7: best FoM 0.6972, first feasible [432, 477], 40 failed sims, 5511 s
+    start sw_noise0.3_s42  (00:07:43, load 16.00)
+    done sw_w128_s7: best FoM 0.6204, first feasible [657, 724], 11 failed sims, 2138 s
+    start sw_gamma0.5_s42  (00:22:49, load 14.76)
+    done sw_w1000_s7: best FoM 0.5331, first feasible [1595, 1756], 21 failed sims, 2135 s
+    start sw_gamma0.0_s42  (00:23:01, load 14.75)
+    done sw_lr_slow_s7: best FoM 0.2469, first feasible [1025, 1129], 9 failed sims, 2131 s
+    start sw_batch64_s42  (00:23:05, load 14.75)
+    done sw_lr_fast_s7: best FoM 0.2883, first feasible [619, 682], 16 failed sims, 2125 s
+    start sw_batch256_s42  (00:23:18, load 14.72)
+    done sw_base_s42: best FoM 0.5715, first feasible [850, 937], 16 failed sims, 2132 s
+    start sw_w128_s42  (00:40:46, load 15.40)
+    done sw_noise0.05_s42: best FoM 0.0282, first feasible [1005, 1107], 15 failed sims, 2116 s
+    start sw_w1000_s42  (00:40:48, load 15.40)
+    done sw_noise0.2_s42: best FoM 0.3558, first feasible [839, 924], 13 failed sims, 2112 s
+    start sw_lr_slow_s42  (00:42:42, load 15.36)
+    done sw_noise0.3_s42: best FoM 0.4967, first feasible [644, 710], 15 failed sims, 2106 s
+    start sw_lr_fast_s42  (00:42:49, load 15.25)
+    done sw_gamma0.0_s42: best FoM 0.6055, first feasible [782, 862], 15 failed sims, 2083 s
+    done sw_gamma0.5_s42: best FoM 0.5109, first feasible [830, 915], 13 failed sims, 2099 s
+    done sw_batch64_s42: best FoM 0.2538, first feasible [720, 794], 12 failed sims, 2088 s
+    done sw_batch256_s42: best FoM 0.1274, first feasible [630, 695], 17 failed sims, 2097 s
+    done sw_w1000_s42: best FoM 0.3740, first feasible [1257, 1384], 13 failed sims, 1729 s
+    done sw_w128_s42: best FoM 0.5827, first feasible [1078, 1187], 12 failed sims, 1734 s
+    done sw_lr_slow_s42: best FoM -0.0254, first feasible None, 6 failed sims, 1682 s
+    done sw_lr_fast_s42: best FoM 0.4825, first feasible [742, 818], 8 failed sims, 1688 s
+=== all done 01:10:57

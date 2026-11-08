@@ -1,0 +1,89 @@
+TwoStage_opamp_netlist
+
+.include "ngspice_interface/files/spice_models/p045_TT.sp"
+
+.param wp1=7.5e-07 lp1=1.35e-07 mp1=14
+.param wn1=1.5e-06 ln1=1.35e-07 mn1=9
+.param wn3=1e-06 ln3=1.35e-07 mn3=13
+.param wp3=1.25e-06 lp3=9e-08 mp3=22
+.param wn4=1.75e-06 ln4=9e-08 mn4=16
+.param wn5=2.5e-07 ln5=4.5e-08 mn5=13
+.param cap=5e-13
+.param res=4700.0
+
+.param ibias=30u
+.param cload=10p
+.param vcm=0.6
+
+.param VDD=1.2
+* 27 degC: reproduces the TA reference designs (same as circuit_env.py pvt_corner); at 25 degC design 1 gain/noise differ by ~7.8 %
+.param temp_pvt=27
+.param trf=0.5u
+.param period=10u
+.param vhigh=VDD
+ 
+mp1 net4 net4 VDD VDD pmos w=wp1 l=lp1 m=mp1
+mp2 net5 net4 VDD VDD pmos w=wp1 l=lp1 m=mp1
+mn1 net4 net2 net3 net3 nmos w=wn1 l=ln1 m=mn1
+mn2 net5 net1 net3 net3 nmos w=wn1 l=ln1 m=mn1
+mn3 net7 net7 VSS VSS nmos w=wn3 l=ln3 m=mn3
+mn4 net3 net7 VSS VSS nmos w=wn4 l=ln4 m=mn4
+mp3 net6 net5 VDD VDD pmos w=wp3 l=lp3 m=mp3
+mn5 net6 net7 VSS VSS nmos w=wn5 l=ln5 m=mn5
+cc net5 net8 {cap}
+rc net8 net6 {res}
+
+ibias VDD net7 ibias
+
+Vicm VCM VSS dc=vcm
+Vinput aid VSS dc=0.0 ac=1.0 PULSE({-VHIGH/2} {VHIGH/2} {trf} {trf} {trf} {0.5*period-trf} {period})
+ein1 net1 VCM aid 0 0.5
+ein2 net2 VCM aid 0 -0.5
+
+vdd VDD 0 dc=VDD
+vss VSS 0 dc=0
+CL net6 0 {cload}
+
+* set temperature
+.temp {temp_pvt}
+
+.control
+run
+set units=degrees
+set wr_vecnames
+option numdgt=7
+
+* transient analysis (1 ns step: same as the TA reference designs; 50 ns underestimates fast slew rates)
+tran 1n 30u
+* save Vout data in a file named 'tran_TwoStage.csv'
+wrdata /home/zyumeng016/CAD_prj/no_backup/output_files/tran_TwoStage_1794092862_udztoxrthp.csv v(net6)
+
+* 'reset' before each new analysis: older ngspice (e.g. ngspice-36 from Ubuntu 22.04) seeds the next
+* DC operating point with the end state of the transient, and this open-loop amp then converges to a
+* wrong solution (gain ~1e-3). Harmless on newer ngspice (the course server).
+reset
+
+* ac analysis
+ac dec 10 1 1T
+* save Vout data in a file named 'ac_TwoStage.csv'
+wrdata /home/zyumeng016/CAD_prj/no_backup/output_files/ac_TwoStage_1794092862_udztoxrthp.csv v(net6)
+
+* noise analysis
+* calculate the output noise and save it in a file named 'noise_TwoStage.csv'
+noise v(net6) vinput dec 10 1 1T
+wrdata /home/zyumeng016/CAD_prj/no_backup/output_files/noise_TwoStage_1794092862_udztoxrthp.csv onoise_total
+
+* dc analysis
+reset
+op
+* save the total current consumption in a file named 'dc_TwoStage.csv'
+wrdata /home/zyumeng016/CAD_prj/no_backup/output_files/dc_TwoStage_1794092862_udztoxrthp.csv i(vdd)
+* transistor operating point of the same 'op' analysis (optional task 2): Id, gm, gds,
+* Vgs, Vth, Vds, Vdsat of every device and the DC node voltages, saved in 'op_TwoStage.csv'.
+* Output only: it adds no analysis and does not change any measured spec.
+* Read by ngspice_interface/op_data.py.
+wrdata /home/zyumeng016/CAD_prj/no_backup/output_files/op_TwoStage_1794092862_udztoxrthp.csv @mn1[id] @mn1[gm] @mn1[gds] @mn1[vgs] @mn1[vth] @mn1[vds] @mn1[vdsat] @mn2[id] @mn2[gm] @mn2[gds] @mn2[vgs] @mn2[vth] @mn2[vds] @mn2[vdsat] @mp1[id] @mp1[gm] @mp1[gds] @mp1[vgs] @mp1[vth] @mp1[vds] @mp1[vdsat] @mp2[id] @mp2[gm] @mp2[gds] @mp2[vgs] @mp2[vth] @mp2[vds] @mp2[vdsat] @mn3[id] @mn3[gm] @mn3[gds] @mn3[vgs] @mn3[vth] @mn3[vds] @mn3[vdsat] @mn4[id] @mn4[gm] @mn4[gds] @mn4[vgs] @mn4[vth] @mn4[vds] @mn4[vdsat] @mp3[id] @mp3[gm] @mp3[gds] @mp3[vgs] @mp3[vth] @mp3[vds] @mp3[vdsat] @mn5[id] @mn5[gm] @mn5[gds] @mn5[vgs] @mn5[vth] @mn5[vds] @mn5[vdsat] v(net3) v(net4) v(net5) v(net6) v(net7)
+
+.endc
+
+.end

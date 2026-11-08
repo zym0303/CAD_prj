@@ -1,5 +1,7 @@
 # Python environment and caches (each person builds their own with setup_mac.sh)
 .venv/
+# Python 3.9 env for the compiled SAC baseline (see baseline_runner.py)
+.venv39/
 __pycache__/
 *.pyc
 

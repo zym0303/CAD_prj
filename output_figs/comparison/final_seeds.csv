@@ -1,0 +1,4 @@
+group,config,n_seeds,best_mean,best_std,best_min,best_max,per_seed,first_feasible_median,never_feasible,n_feasible_mean,failed_sims_mean
+,"TD3 final (w 128, gamma 0.99)",5,0.4984,0.1753,0.2199,0.6854,0.685 / 0.484 / 0.504 / 0.599 / 0.220,388,0,281.8000,15.0000
+,"TD3 final (w 128, gamma 0)",5,0.6459,0.0324,0.5903,0.6712,0.658 / 0.664 / 0.590 / 0.671 / 0.646,688,0,1464.4000,15.6000
+,SAC baseline (TAs),3,0.6673,0.0334,0.6312,0.6972,0.631 / 0.697 / 0.673,337,0,52.0000,28.0000

@@ -1,0 +1,141 @@
+
+ Initialized TwoStage with simulator ngspice 
+
+[warmup] step     0 | sims     2 | FoM -3.9404 | best -3.9404 | failed sims 0
+[warmup] step    50 | sims    57 | FoM -2.5579 | best -0.0642 | failed sims 0
+[warmup] step   100 | sims   112 | FoM -3.0427 | best -0.0642 | failed sims 0
+[td3] step   150 | sims   167 | FoM -1.9889 | best -0.0642 | failed sims 0
+mkdir: cannot create directory ‘no_backup/output_files’: File exists
+mkdir: cannot create directory ‘no_backup/output_netlists’: File exists
+[td3] step   200 | sims   222 | FoM -0.7913 | best -0.0642 | failed sims 0
+[td3] step   250 | sims   277 | FoM -2.0051 | best -0.0642 | failed sims 0
+[td3] step   300 | sims   332 | FoM -1.4477 | best -0.0642 | failed sims 0
+[td3] step   350 | sims   387 | FoM -1.7033 | best -0.0642 | failed sims 0
+[td3] step   400 | sims   442 | FoM -0.6828 | best -0.0642 | failed sims 0
+[td3] step   450 | sims   497 | FoM -2.0048 | best -0.0642 | failed sims 0
+[simulate] {'process': 'TT', 'voltage': 1.2, 'temp': 27} failed (FileNotFoundError: /home/zyumeng016/CAD_prj/no_backup/output_files/ac_TwoStage_1794064390_lcbephkmgm.csv not found.) -> worst-case specs (failed so far: 1)
+[td3] step   500 | sims   552 | FoM -0.9847 | best -0.0642 | failed sims 1
+[td3] step   550 | sims   607 | FoM -0.9751 | best -0.0196 | failed sims 1
+[td3] step   600 | sims   662 | FoM -0.8024 | best -0.0196 | failed sims 1
+[td3] step   650 | sims   717 | FoM -1.8987 | best -0.0196 | failed sims 1
+[td3] step   700 | sims   772 | FoM -0.7050 | best +0.4837 | failed sims 1
+[td3] step   750 | sims   827 | FoM -1.3253 | best +0.4837 | failed sims 1
+[simulate] {'process': 'TT', 'voltage': 1.2, 'temp': 27} failed (FileNotFoundError: /home/zyumeng016/CAD_prj/no_backup/output_files/ac_TwoStage_1794064682_qelapcwcnp.csv not found.) -> worst-case specs (failed so far: 2)
+[td3] step   800 | sims   882 | FoM -0.9488 | best +0.4837 | failed sims 2
+[td3] step   850 | sims   937 | FoM -2.4097 | best +0.4837 | failed sims 2
+[td3] step   900 | sims   992 | FoM -1.4560 | best +0.4837 | failed sims 2
+[td3] step   950 | sims  1047 | FoM -1.0984 | best +0.4837 | failed sims 2
+[td3] step  1000 | sims  1102 | FoM -1.8845 | best +0.4837 | failed sims 2
+[td3] step  1050 | sims  1157 | FoM -2.6896 | best +0.4837 | failed sims 2
+[simulate] {'process': 'TT', 'voltage': 1.2, 'temp': 27} failed (FileNotFoundError: /home/zyumeng016/CAD_prj/no_backup/output_files/ac_TwoStage_1794064977_cnycxyhcmr.csv not found.) -> worst-case specs (failed so far: 3)
+[td3] step  1100 | sims  1212 | FoM -1.4259 | best +0.4837 | failed sims 3
+[td3] step  1150 | sims  1267 | FoM -2.3159 | best +0.4837 | failed sims 3
+[td3] step  1200 | sims  1322 | FoM -0.3183 | best +0.4837 | failed sims 3
+[td3] step  1250 | sims  1377 | FoM -0.6683 | best +0.4837 | failed sims 3
+[td3] step  1300 | sims  1432 | FoM -1.9804 | best +0.4837 | failed sims 3
+[td3] step  1350 | sims  1487 | FoM -1.6607 | best +0.4837 | failed sims 3
+[td3] step  1400 | sims  1542 | FoM -0.4892 | best +0.4837 | failed sims 3
+[td3] step  1450 | sims  1597 | FoM -0.7059 | best +0.4837 | failed sims 3
+[td3] step  1500 | sims  1652 | FoM -0.6607 | best +0.4837 | failed sims 3
+[td3] step  1550 | sims  1707 | FoM -0.4607 | best +0.4837 | failed sims 3
+[td3] step  1600 | sims  1762 | FoM -0.4032 | best +0.4837 | failed sims 3
+[td3] step  1650 | sims  1817 | FoM -0.5531 | best +0.4837 | failed sims 3
+/home/zyumeng016/CAD_prj/no_backup/output_files/tran_TwoStage_1794065778_bmqcrqsyuj.csv doesn't exist
+/home/zyumeng016/CAD_prj/no_backup/output_files/ac_TwoStage_1794065778_bmqcrqsyuj.csv doesn't exist
+[simulate] {'process': 'TT', 'voltage': 1.2, 'temp': 27} failed (FileNotFoundError: /home/zyumeng016/CAD_prj/no_backup/output_files/tran_TwoStage_1794065778_bmqcrqsyuj.csv not found.) -> worst-case specs (failed so far: 4)
+[td3] step  1700 | sims  1872 | FoM -0.5087 | best +0.4837 | failed sims 4
+[td3] step  1750 | sims  1927 | FoM -0.3321 | best +0.4837 | failed sims 4
+/home/zyumeng016/CAD_prj/no_backup/output_files/tran_TwoStage_1794065984_zlstdjnocq.csv doesn't exist
+[simulate] {'process': 'TT', 'voltage': 1.2, 'temp': 27} failed (FileNotFoundError: /home/zyumeng016/CAD_prj/no_backup/output_files/tran_TwoStage_1794065984_zlstdjnocq.csv not found.) -> worst-case specs (failed so far: 5)
+[td3] step  1800 | sims  1982 | FoM -0.1980 | best +0.4837 | failed sims 5
+[td3] step  1850 | sims  2037 | FoM -1.0243 | best +0.4837 | failed sims 5
+[td3] step  1900 | sims  2092 | FoM -0.4251 | best +0.4837 | failed sims 5
+[td3] step  1950 | sims  2147 | FoM -0.3612 | best +0.4837 | failed sims 5
+[td3] step  2000 | sims  2202 | FoM -1.7109 | best +0.4837 | failed sims 5
+[td3] step  2050 | sims  2257 | FoM -1.3455 | best +0.4837 | failed sims 5
+[td3] step  2100 | sims  2312 | FoM -0.7423 | best +0.4837 | failed sims 5
+[td3] step  2150 | sims  2367 | FoM -3.0615 | best +0.4837 | failed sims 5
+[td3] step  2200 | sims  2422 | FoM -0.8552 | best +0.4837 | failed sims 5
+[td3] step  2250 | sims  2477 | FoM -2.5841 | best +0.4837 | failed sims 5
+[simulate] {'process': 'TT', 'voltage': 1.2, 'temp': 27} failed (FileNotFoundError: /home/zyumeng016/CAD_prj/no_backup/output_files/noise_TwoStage_1794066420_hovfaezhoc.csv not found.) -> worst-case specs (failed so far: 6)
+[td3] step  2300 | sims  2532 | FoM -2.8321 | best +0.4837 | failed sims 6
+[td3] step  2350 | sims  2587 | FoM -2.4027 | best +0.4837 | failed sims 6
+[td3] step  2400 | sims  2642 | FoM -3.8749 | best +0.4837 | failed sims 6
+[td3] step  2450 | sims  2697 | FoM -2.2524 | best +0.4837 | failed sims 6
+[td3] step  2500 | sims  2752 | FoM -1.0974 | best +0.4837 | failed sims 6
+[td3] step  2550 | sims  2807 | FoM -3.4172 | best +0.4837 | failed sims 6
+[td3] step  2600 | sims  2862 | FoM -2.3186 | best +0.4837 | failed sims 6
+[td3] step  2650 | sims  2917 | FoM -2.2400 | best +0.4837 | failed sims 6
+[td3] step  2700 | sims  2972 | FoM -2.7744 | best +0.4837 | failed sims 6
+[td3] step  2750 | sims  3027 | FoM -3.9390 | best +0.4837 | failed sims 6
+[td3] step  2800 | sims  3082 | FoM -2.9135 | best +0.4837 | failed sims 6
+[td3] step  2850 | sims  3137 | FoM -2.5652 | best +0.4837 | failed sims 6
+[td3] step  2900 | sims  3192 | FoM -2.1639 | best +0.4837 | failed sims 6
+[td3] step  2950 | sims  3247 | FoM -1.6622 | best +0.4837 | failed sims 6
+[td3] step  3000 | sims  3302 | FoM -2.0880 | best +0.4837 | failed sims 6
+[td3] step  3050 | sims  3357 | FoM -2.5458 | best +0.4837 | failed sims 6
+[td3] step  3100 | sims  3412 | FoM -2.3948 | best +0.4837 | failed sims 6
+[td3] step  3150 | sims  3467 | FoM -2.8266 | best +0.4837 | failed sims 6
+rm: cannot remove 'no_backup/output_files': Directory not empty
+mkdir: cannot create directory ‘no_backup/output_files’: File exists
+[td3] step  3200 | sims  3522 | FoM -0.6947 | best +0.4837 | failed sims 6
+[td3] step  3250 | sims  3577 | FoM -2.3617 | best +0.4837 | failed sims 6
+[td3] step  3300 | sims  3632 | FoM -1.4983 | best +0.4837 | failed sims 6
+[td3] step  3350 | sims  3687 | FoM -0.5071 | best +0.4837 | failed sims 6
+[td3] step  3400 | sims  3742 | FoM -0.4526 | best +0.4837 | failed sims 6
+[td3] step  3450 | sims  3797 | FoM -0.6488 | best +0.4837 | failed sims 6
+[td3] step  3500 | sims  3852 | FoM -0.3967 | best +0.4837 | failed sims 6
+[td3] step  3550 | sims  3907 | FoM -2.0151 | best +0.4837 | failed sims 6
+[td3] step  3600 | sims  3962 | FoM -0.8391 | best +0.4837 | failed sims 6
+[td3] step  3650 | sims  4017 | FoM -1.6789 | best +0.4837 | failed sims 6
+[td3] step  3700 | sims  4072 | FoM -1.7656 | best +0.4837 | failed sims 6
+[td3] step  3750 | sims  4127 | FoM -1.9287 | best +0.4837 | failed sims 6
+[td3] step  3800 | sims  4182 | FoM -2.5450 | best +0.4837 | failed sims 6
+[td3] step  3850 | sims  4237 | FoM -2.7175 | best +0.4837 | failed sims 6
+[td3] step  3900 | sims  4292 | FoM -3.4163 | best +0.4837 | failed sims 6
+[td3] step  3950 | sims  4347 | FoM -3.0829 | best +0.4837 | failed sims 6
+[td3] step  4000 | sims  4402 | FoM -2.8187 | best +0.4837 | failed sims 6
+[td3] step  4050 | sims  4457 | FoM -2.9496 | best +0.4837 | failed sims 6
+[td3] step  4100 | sims  4512 | FoM -1.9216 | best +0.4837 | failed sims 6
+[td3] step  4150 | sims  4567 | FoM -3.9640 | best +0.4837 | failed sims 6
+[td3] step  4200 | sims  4622 | FoM -3.8856 | best +0.4837 | failed sims 6
+[td3] step  4250 | sims  4677 | FoM -2.9045 | best +0.4837 | failed sims 6
+rm: cannot remove 'no_backup/output_files': Directory not empty
+mkdir: cannot create directory ‘no_backup/output_files’: File exists
+[td3] step  4300 | sims  4732 | FoM -3.1241 | best +0.4837 | failed sims 6
+[td3] step  4350 | sims  4787 | FoM -2.2356 | best +0.4837 | failed sims 6
+[td3] step  4400 | sims  4842 | FoM -3.8764 | best +0.4837 | failed sims 6
+[td3] step  4450 | sims  4897 | FoM -1.5206 | best +0.4837 | failed sims 6
+[td3] step  4500 | sims  4952 | FoM -1.6964 | best +0.4837 | failed sims 6
+32 feasible designs, 3 on the Pareto front -> solutions/final_g099_s7/
+{
+  "args": {
+    "seed": 7,
+    "noise_sigma": 0.1,
+    "batch_size": 128,
+    "w": 128,
+    "pi_lr": 0.0003,
+    "q_lr": 0.001,
+    "gamma": 0.99,
+    "tau": 0.005,
+    "target_update_interval": 1,
+    "actor_update_interval": 2,
+    "hidden_size": 256,
+    "T": 10000,
+    "max_sims": 5000,
+    "replay_size": 1000000,
+    "cuda": false,
+    "pvt_robust": false,
+    "run_id": "final_g099_s7"
+  },
+  "env_steps": 4545,
+  "n_simulations": 5000,
+  "n_failed_sims": 6,
+  "n_corner_sims": 5000,
+  "best_fom": 0.4836652701419665,
+  "first_feasible_step_and_sims": [
+    668,
+    736
+  ],
+  "runtime_s": 4151.8
+}
