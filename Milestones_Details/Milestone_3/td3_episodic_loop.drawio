@@ -1,0 +1,128 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="TD3 episodic loop" id="td3loop">
+    <mxGraphModel dx="1200" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="960" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- start -->
+        <mxCell id="start" value="&lt;b&gt;Start&lt;/b&gt;&lt;br&gt;seed, CircuitEnv, TD3 agent, ReplayBuffer" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="250" y="20" width="240" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- warmup -->
+        <mxCell id="warmup" value="&lt;b&gt;1. Warmup&lt;/b&gt; (w = 128 steps, no learning)&lt;br&gt;reset() → random design a ~ U[−1, 1]&lt;sup&gt;20&lt;/sup&gt; → env.step(a)&lt;br&gt;→ push (s, a, r, s′, done) to the buffer&lt;br&gt;&lt;i&gt;gives the critic diverse data before the actor follows it&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="210" y="110" width="320" height="90" as="geometry" />
+        </mxCell>
+
+        <!-- training container label -->
+        <mxCell id="trainlbl" value="&lt;b&gt;2. Training&lt;/b&gt; (episodes of 10 steps)" style="text;html=1;align=left;verticalAlign=middle;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="30" y="225" width="260" height="30" as="geometry" />
+        </mxCell>
+
+        <!-- reset -->
+        <mxCell id="reset" value="&lt;b&gt;env.reset()&lt;/b&gt;&lt;br&gt;random start design (costs 1 simulation)&lt;br&gt;→ state s = 7 normalised specs" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="240" y="260" width="260" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- select action -->
+        <mxCell id="select" value="&lt;b&gt;agent.select_action(s)&lt;/b&gt;&lt;br&gt;a = clip(μ(s) + ε, −1, 1),  ε ~ N(0, 0.1²)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="240" y="360" width="260" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- step -->
+        <mxCell id="step" value="&lt;b&gt;env.step(a)&lt;/b&gt;&lt;br&gt;ngspice: tran, ac, noise, op&lt;br&gt;→ specs → FoM (reward r), s′" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="240" y="450" width="260" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- push -->
+        <mxCell id="push" value="&lt;b&gt;ReplayBuffer.push&lt;/b&gt;(s, a, r, s′, done)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="240" y="550" width="260" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- update -->
+        <mxCell id="update" value="&lt;b&gt;agent.update_parameters&lt;/b&gt;(batch of 128)&lt;br&gt;critics Q1, Q2: every step&lt;br&gt;actor + target networks: every 2nd step" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="240" y="630" width="260" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- budget diamond -->
+        <mxCell id="budget" value="Budget left?&lt;br&gt;sims &amp;lt; 5000&lt;br&gt;(resets included)" style="rhombus;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="285" y="730" width="170" height="100" as="geometry" />
+        </mxCell>
+
+        <!-- episode diamond -->
+        <mxCell id="episode" value="Episode done?&lt;br&gt;(10 steps)" style="rhombus;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="285" y="870" width="170" height="90" as="geometry" />
+        </mxCell>
+
+        <!-- finalise -->
+        <mxCell id="final" value="&lt;b&gt;3. Finalise&lt;/b&gt;&lt;br&gt;• max-FoM vs. simulations plot&lt;br&gt;• all feasible designs → area–current Pareto front&lt;br&gt;• Pareto netlists regenerated → solutions/final_g099/&lt;br&gt;&lt;i&gt;(clean.sh deleted the originals)&lt;/i&gt;&lt;br&gt;• agent weights, summary.json" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="560" y="720" width="330" height="120" as="geometry" />
+        </mxCell>
+
+        <!-- clean.sh note -->
+        <mxCell id="clean" value="&lt;b&gt;clean.sh&lt;/b&gt; every 100 steps&lt;br&gt;empties no_backup/ (netlists, CSVs)" style="shape=note;whiteSpace=wrap;html=1;size=14;fillColor=#ffffff;strokeColor=#999999;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="560" y="455" width="230" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- edges main flow -->
+        <mxCell id="e1" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;" edge="1" parent="1" source="start" target="warmup">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;" edge="1" parent="1" source="warmup" target="reset">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;" edge="1" parent="1" source="reset" target="select">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;" edge="1" parent="1" source="select" target="step">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;" edge="1" parent="1" source="step" target="push">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e6" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;" edge="1" parent="1" source="push" target="update">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e7" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;" edge="1" parent="1" source="update" target="budget">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- budget no -> finalise -->
+        <mxCell id="e8" value="no" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;fontStyle=1;" edge="1" parent="1" source="budget" target="final">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <!-- budget yes -> episode -->
+        <mxCell id="e9" value="yes" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;fontStyle=1;" edge="1" parent="1" source="budget" target="episode">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- episode no -> select (inner loop) -->
+        <mxCell id="e10" value="no: next step" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;exitX=0;exitY=0.5;entryX=0;entryY=0.5;fontStyle=1;" edge="1" parent="1" source="episode" target="select">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="190" y="915" />
+              <mxPoint x="190" y="390" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- episode yes -> reset (outer loop) -->
+        <mxCell id="e11" value="yes: new episode" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;exitX=0.5;exitY=1;entryX=0;entryY=0.5;fontStyle=1;" edge="1" parent="1" source="episode" target="reset">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="370" y="1000" />
+              <mxPoint x="100" y="1000" />
+              <mxPoint x="100" y="295" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- clean.sh dashed link -->
+        <mxCell id="e12" style="html=1;endArrow=none;dashed=1;strokeColor=#999999;" edge="1" parent="1" source="clean" target="step">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
